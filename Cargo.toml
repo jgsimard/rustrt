@@ -6,5 +6,22 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nalgebra = "0.31.1"
+# nalgebra = "0.31.1"
+nalgebra = {version ="0.31", features = ["serde-serialize"]}
+nalgebra-glm = "0.17.0"
 rand = "0.8.5"
+clap = { version = "4.0", features = ["derive"] } 
+serde = "1.0.145"
+serde_json = "1.0.85"
+serde_derive = "1.0.145"
+image = "0.24.4"
+assert_approx_eq = "1.1.0"
+
+
+[[bin]]
+name = "tuto0"
+path = "src/tuto0.rs"
+
+[[bin]]
+name = "tuto1"
+path = "src/tuto1.rs"

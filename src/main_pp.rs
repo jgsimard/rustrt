@@ -26,7 +26,8 @@ fn ray_color(r: &Ray, world: &World, depth: u32) -> Vector3<f32> {
     if let Some(rec) = world.hit(r, 0.0001, f32::INFINITY){
         if let Some((attenuation, scattered)) = rec.material.scatter(&r, &rec){
             // attenuation * ray_color(&scattered, world, depth -1)
-            attenuation.zip_map(&ray_color(&scattered, world, depth -1), |l,r| l*r)
+            // attenuation.zip_map(&ray_color(&scattered, world, depth -1), |l,r| l*r)
+            attenuation.component_mul(&ray_color(&scattered, world, depth -1))
         } else{
             Vector3::<f32>::zeros()
         }

@@ -1,6 +1,32 @@
 use nalgebra::Vector3;
 
 use rand::Rng;
+use std::ops::{Add, Sub, Mul};
+
+
+pub fn rad2deg(rad: f32) -> f32{
+    180.0 / std::f32::consts::PI  * rad
+}
+
+pub fn deg2rad(rad: f32) -> f32{
+    std::f32::consts::PI / 180.0 * rad
+}
+
+pub fn luminance(c: &Vector3<f32>) -> f32 {
+    c.dot(&Vector3::new(0.212671, 0.715160, 0.072169))
+}
+
+// pub fn lerp<T: 'static>(a: &T, b: &T, t: f32) -> T where f32: Mul<&T>,  <f32 as Mul<&'static T>>::Output: Add{
+//     (1.0 - t) * a + t * b
+// }
+
+pub fn lerp<T, F>(a: T, b: T, f: F) -> T
+where
+    T: Clone + Add<T, Output=T> + Sub<T, Output=T> + Mul<F, Output=T>
+{
+    a.clone() + (b-a)*f
+}
+
 
 pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vector3<f32>{
     let unit = Vector3::new(1.0, 1.0, 0.0);
