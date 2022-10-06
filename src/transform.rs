@@ -1,5 +1,5 @@
 use crate::ray::Ray;
-use crate::utils::{deg2rad};
+use crate::utils::deg2rad;
 
 use nalgebra::{Vector3, Vector4, Matrix4, Matrix3x4};
 use std::ops::{Mul};
@@ -48,7 +48,7 @@ impl Transform{
         (self.m * p.insert_row(3, 1.0)).xyz()
     }
 
-    /// Apply the homogeneous transformation to a ray
+    /// Apply the homogeneous transformation to a Ray
     pub fn ray(&self, r: &Ray) -> Ray {
         Ray { 
             origin: self.point(&r.origin), 
@@ -56,6 +56,12 @@ impl Transform{
             mint: r.mint, 
             maxt: r.mint  
         }
+    }
+    pub fn axis_offset(x: &Vector3<f32>, y: &Vector3<f32>, z: &Vector3<f32>, o: &Vector3<f32>) -> Transform{
+        let m = Matrix3x4::from_columns(&[*x, *y, *z, *o]);
+        let mut m = m.insert_row(3, 0.);
+        m[(3,3)] = 1.0;
+        Transform::new(m)
     }
 }
 
@@ -89,61 +95,52 @@ impl Default for Transform {
             }
             return t;
         }
-        println!("{}", "HERE".to_string());
         // single transform
         let kv: HashMap<String, serde_json::Value> = serde_json::from_value(t_json).unwrap();
-        // wtf is this ?  unreadable
+        let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
+        let read = |s: &str, default| kv.get(s).map_or(default, read_vector3);
+
         if kv.contains_key("from") || kv.contains_key("at") || kv.contains_key("to") || kv.contains_key("up")
         {   
-            println!("{}", "HERE 1".to_string());
-            let from: Vector3<f32> = if kv.contains_key("from"){from_value(kv.get("from").unwrap().clone()).unwrap()} else {Vector3::z()};
-            let to: Vector3<f32> = if kv.contains_key("to"){from_value(kv.get("to").unwrap().clone()).unwrap()} else {Vector3::zeros()};
-            let at: Vector3<f32> = if kv.contains_key("at"){from_value(kv.get("at").unwrap().clone()).unwrap()} else {Vector3::zeros()};
-            let up: Vector3<f32> = if kv.contains_key("up"){from_value(kv.get("up").unwrap().clone()).unwrap()} else {Vector3::y()};
+            let from = read("from", Vector3::z());
+            let to = read("to", Vector3::zeros());
+            let at = read("at", Vector3::zeros());
+            let up = read("up", Vector3::y());
 
             let dir = (from - at).normalize();
             let left = up.cross(&dir).normalize();
             let new_up = dir.cross(&left).normalize();
             
-            
-            let m = Matrix3x4::from_columns(&[left, new_up, dir, from]);
-            let mut m = m.insert_row(3, 0.);
-            m[(3,3)] = 1.0;
-
-            return Transform::new(m);
+            return Transform::axis_offset(&left, &new_up, &dir, &from);
         } 
         else if kv.contains_key("o") || kv.contains_key("x") || kv.contains_key("y") || kv.contains_key("z")
         {
-            let o = if kv.contains_key("o"){from_value(kv.get("o").unwrap().clone()).unwrap()} else {Vector3::zeros()};
-            let x = if kv.contains_key("x"){from_value(kv.get("x").unwrap().clone()).unwrap()} else {Vector3::x()};
-            let y = if kv.contains_key("y"){from_value(kv.get("y").unwrap().clone()).unwrap()} else {Vector3::y()};
-            let z = if kv.contains_key("z"){from_value(kv.get("z").unwrap().clone()).unwrap()} else {Vector3::z()};
+            let o = read("o", Vector3::zeros());
+            let x = read("x", Vector3::x());
+            let y = read("y", Vector3::y());
+            let z = read("z", Vector3::z());
 
-            let m = Matrix3x4::from_columns(&[x, y, z, o]);
-            let mut m = m.insert_row(3, 0.);
-            m[(3,3)] = 1.0;
-
-            return Transform::new(m);
+            return Transform::axis_offset(&x, &y, &z, &o);
         }
         else if kv.contains_key("translate") 
         {
-            let v: Vector3<f32> = from_value(kv.get("translate").unwrap().clone()).unwrap();
-            return Transform::new(Matrix4::new_translation(&v))
+            let t = read("translate", Vector3::zeros());
+            return Transform::new(Matrix4::new_translation(&t))
         }
         else if kv.contains_key("scale") 
         {   
             let scale = kv.get("scale").unwrap().clone();
             if scale.is_number(){
-                let sn: f32 = from_value(scale).unwrap();
+                let sn: f32 = from_value(scale).expect("could not load 'scale' number Transform");
                 return Transform::new(Matrix4::new_scaling(sn));
             }
-            let sv: Vector3<f32> = from_value(scale).unwrap();
-            Transform::new(Matrix4::new_nonuniform_scaling(&sv));
+            let sv: Vector3<f32> = from_value(scale).expect("could not load 'scale' vector Transform");
+            return Transform::new(Matrix4::new_nonuniform_scaling(&sv));
         }
         else if kv.contains_key("axis") || kv.contains_key("angle")
         {
-            let axis: Vector3<f32> = if kv.contains_key("axis"){from_value(kv.get("axis").unwrap().clone()).unwrap()} else {Vector3::x()};
-            let angle = if kv.contains_key("angle"){from_value(kv.get("angle").unwrap().clone()).unwrap()} else {0.0};
+            let axis = read("axis", Vector3::x());
+            let angle = kv.get("angle").map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
             let angle = deg2rad(angle);
 
             return Transform::new(Matrix4::from_scaled_axis(axis * angle));
