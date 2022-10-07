@@ -3,11 +3,11 @@ extern crate nalgebra_glm as glm;
 
 use nalgebra::{Vector2, Vector3};
 
-use serde_json::{Result, Value, from_value};
+use serde_json::{Value, from_value};
 
 use crate::ray::Ray;
 use crate::transform::Transform;
-use crate::utils::{random_in_unit_sphere, reflect, luminance};
+use crate::utils::{random_in_unit_sphere, reflect};
 
 pub struct HitInfo
 {   
@@ -38,18 +38,18 @@ impl HitInfo {
         }
     }
 }
-/// Data record for conveniently querying and sampling emitters
-pub struct EmitterRecord
-{
-    /// Origin point from which we sample the emitter
-    o: Vector3<f32>,
-    /// Direction vector from 'o' to 'hit.p
-    wi: Vector3<f32>,  
-    /// Solid angle density wrt. 'o'
-    pdf: f32, 
-    /// Hit information at the sampled point
-    hit: HitInfo
-}
+// /// Data record for conveniently querying and sampling emitters
+// pub struct EmitterRecord
+// {
+//     /// Origin point from which we sample the emitter
+//     o: Vector3<f32>,
+//     /// Direction vector from 'o' to 'hit.p
+//     wi: Vector3<f32>,  
+//     /// Solid angle density wrt. 'o'
+//     pdf: f32, 
+//     /// Hit information at the sampled point
+//     hit: HitInfo
+// }
 
 ////////////////////////
 /// SURFACE 
@@ -216,7 +216,7 @@ pub struct  Lambertian{
 }
 
 impl Material for Lambertian{
-    fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vector3<f32>, Ray)> {
+    fn scatter(&self, _r_in: &Ray, hit: &HitInfo) -> Option<(Vector3<f32>, Ray)> {
         let mut rng = rand::thread_rng();
         let mut scatter_direction = hit.sn + random_in_unit_sphere(&mut rng).normalize();
         

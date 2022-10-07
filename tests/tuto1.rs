@@ -1,43 +1,17 @@
-#![allow(unused)]
 
-
-use serde::Deserialize;
-mod ray;
-mod utils;
-mod image2d;
-mod surface;
-mod camera;
-mod transform;
-
-// mod hit;
-// mod sphere;
-// mod material;
-// mod scene;
 
 use std::rc::Rc;
-use std::ops::{Index, IndexMut};
 use nalgebra::{Vector2, Vector3, Vector4, Matrix4};
-use nalgebra_glm::sqrt;
-use serde::Deserializer;
-use serde_json::{Result, Value, json};
-use std::cmp;
-use assert_approx_eq::assert_approx_eq;
-// use indicatif::ProgressBar;
-use std::{cmp::min, fmt::Write};
-use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use atomic_counter::RelaxedCounter;
+use serde_json::{Value, json};
 
 
-use crate::ray::Ray;
-use crate::transform::Transform;
-use crate::utils::{rad2deg, luminance, lerp};
-use crate::image2d::Image2d;
-use crate::surface::{Sphere,Lambertian, Metal, Surface, Material, HitInfo, create_material};
-use crate::surface::SurfaceGroup;
-// use hit::{Hit, World};
-// use sphere::Sphere;
-use camera::{Camera, PinholeCamera};
-// use material::{Lambertian, Metal, Dielectric};
+use rustrt::ray::Ray;
+use rustrt::transform::Transform;
+use rustrt::utils::lerp;
+use rustrt::image2d::Image2d;
+use rustrt::surface::{Sphere,Lambertian, Surface, Material, HitInfo, create_material};
+use rustrt::surface::SurfaceGroup;
+use rustrt::camera::PinholeCamera;
 
 
 fn vec2color(dir: &Vector3<f32>) -> Vector3<f32>{
@@ -59,6 +33,7 @@ fn intersection2color(r: &Ray, sphere: &Sphere) -> Vector3<f32>
 }
 
 // Generate rays by hand
+#[test]
 fn test_manual_camera_image()
 {
     println!("\n{}{}{}", 
@@ -103,7 +78,7 @@ fn test_manual_camera_image()
     ray_image.save(filename);
 }
 
-
+#[test]
 fn test_json()
 {
     // Darts also includes a C++ library (https://github.com/nlohmann/json)
@@ -161,6 +136,7 @@ fn test_json()
     function_with_json_parameters(&parameters);
 }
 
+
 fn function_with_json_parameters(j: &Value)
 {
     // Many of the constructors for ray tracing in darts take a JSON object. This
@@ -179,15 +155,15 @@ fn function_with_json_parameters(j: &Value)
     // Replace the below two lines to extract the parameters radius (default=1.f),
     // and center (default={0,0,0}) from the JSON object j
     
-    let radius: f32 = serde_json::from_value(j["radius"].clone()).unwrap_or_else(|x|1.0);
-    let center: Vector3<f32> = serde_json::from_value(j["center"].clone()).unwrap_or_else(|x|Vector3::zeros());
+    let radius: f32 = serde_json::from_value(j["radius"].clone()).unwrap_or(1.0);
+    let center: Vector3<f32> = serde_json::from_value(j["center"].clone()).unwrap_or(Vector3::zeros());
     println!("The radius is: {}", radius);
     println!("The center is:\n{}", center);
 }
 
-use std::collections::HashMap;
 
 // Next, we will generate the same image, but using the Camera class
+#[test]
 fn test_camera_class_image()
 {
     println!("\n{}{}{}",
@@ -231,6 +207,7 @@ fn test_camera_class_image()
     ray_image.save(filename);
 }
 
+#[test]
 fn test_transforms()
 {
     println!("\n{}{}{}",
@@ -308,6 +285,7 @@ fn test_transforms()
 
 }
 
+#[test]
 fn test_xformed_camera_image()
 {
     println!("\n{}{}{}",
@@ -353,6 +331,7 @@ fn test_xformed_camera_image()
     ray_image.save(filename);
 }
 
+#[test]
 fn test_ray_sphere_intersection()
 {
     println!("\n{}{}{}",
@@ -426,6 +405,7 @@ fn test_ray_sphere_intersection()
 
 
 /// Now: Let's allow our camera to be positioned and oriented using a Transform, and will use it to raytrace a Sphere
+#[test]
 fn test_sphere_image()
 {
     println!("\n{}{}{}",
@@ -485,7 +465,7 @@ fn test_sphere_image()
     ray_image.save(filename);
 }
 
-
+#[test]
 fn test_materials()
 {
     println!("\n{}{}{}",
@@ -529,7 +509,7 @@ fn test_materials()
     // Let's create a fictitious hitpoint
     let surface_point = Vector3::new(1.0, 2.0, 0.0);
     let normal = Vector3::new(1.0, 2.0, -1.0).normalize();
-    let mut hit = HitInfo{
+    let hit = HitInfo{
         t: 0.0,
         p: surface_point,
         uv: Vector2::new(0.0, 0.0),
@@ -588,6 +568,7 @@ fn test_materials()
     
 }
 
+#[test]
 fn test_recursive_raytracing()
 {
     println!("\n{}{}{}",
@@ -602,7 +583,7 @@ fn test_recursive_raytracing()
     let mut ray_image = Image2d::new(300, 150);
 
     // We want to average over several rays to get a more pleasing result
-    const NUM_SAMPLES: u32 = 4;
+    const NUM_SAMPLES: u32 = 1;
 
     // Set up a camera with some reasonable parameters
     let camera_json = json!({
@@ -621,17 +602,11 @@ fn test_recursive_raytracing()
     let ground = create_material(json!({"type": "lambertian", "albedo": 0.5 }));
     let matte  = create_material(json!({"type": "lambertian", "albedo": Vector3::new(1.0, 0.25, 0.25) }));
     let shiny  = create_material(json!({"type": "metal", "albedo": 1.0, "roughness": 0.3}));
-    // let ground = DartsFactory<Material>::create(json{{"type", "lambertian"}, {"albedo", 0.5f}});
-    // let matte  = DartsFactory<Material>::create(json{{"type", "lambertian"}, {"albedo", Vec3f(1.0f, 0.25f, 0.25f)}});
-    // let shiny  = DartsFactory<Material>::create(json{{"type", "metal"}, {"albedo", 1.f}, {"roughness", 0.3f}});
+
 
     let matte_sphere  = Rc::new(Sphere{radius: 1.0, transform: Transform::translate(&Vector3::new(3., 1., 0.)), material: matte});
     let shiny_sphere  = Rc::new(Sphere{radius: 1.0, transform: Transform::translate(&Vector3::new(0., 1., 1.)), material: shiny});
     let ground_sphere = Rc::new(Sphere{radius: 1000.0, transform: Transform::translate(&Vector3::new(0., -1000., 0.)), material: ground});
-
-    // let matte_sphere  = make_shared<Sphere>(1.f, matte, Transform::translate({3.f, 1.f, 0.f}));
-    // let shiny_sphere  = make_shared<Sphere>(1.f, shiny, Transform::translate({0.f, 1.f, 1.f}));
-    // let ground_sphere = make_shared<Sphere>(1000.f, ground, Transform::translate({0.f, -1000.f, 0.f}));
 
     // To raytrace more than one object at a time, we can put them into a group
     let mut scene = SurfaceGroup::new();
@@ -651,7 +626,7 @@ fn test_recursive_raytracing()
             for x in 0..ray_image.size_x
             {
                 let mut color = Vector3::new(0.0, 0.0, 0.0);
-                for i in 0..NUM_SAMPLES{
+                for _ in 0..NUM_SAMPLES{
                     // rays_traced.inc(1);
                     let ray = camera.generate_ray(&Vector2::new((x as f32) + 0.5, (y as f32) + 0.5));
                     // Call recursive_color ``num_samples'' times and average the
@@ -674,7 +649,7 @@ fn test_recursive_raytracing()
 
 fn recursive_color(ray : &Ray, scene: &SurfaceGroup, depth: u32) -> Vector3<f32>
 {
-    const MAX_DEPTH: u32 = 64;
+    const MAX_DEPTH: u32 = 4;
     const BLACK: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
     const WHITE: Vector3<f32> = Vector3::new(1.0, 1.0, 1.0);
 
@@ -692,7 +667,7 @@ fn recursive_color(ray : &Ray, scene: &SurfaceGroup, depth: u32) -> Vector3<f32>
     
     if let Some(hit) = scene.intersect(ray)
     {
-        if (depth < MAX_DEPTH){
+        if depth < MAX_DEPTH{
             if let Some((attenuation, scattered)) = hit.mat.scatter(ray, &hit){
                 return attenuation.component_mul(&recursive_color(&scattered, &scene, depth + 1));
             }
@@ -711,16 +686,16 @@ fn recursive_color(ray : &Ray, scene: &SurfaceGroup, depth: u32) -> Vector3<f32>
 
 
 fn main() {
-    // test_manual_camera_image();
-    // test_json();
-    // test_camera_class_image();
+    test_manual_camera_image();
+    test_json();
+    test_camera_class_image();
 
-    // test_transforms();
-    // test_xformed_camera_image();
+    test_transforms();
+    test_xformed_camera_image();
 
-    // test_ray_sphere_intersection();
-    // test_sphere_image();
+    test_ray_sphere_intersection();
+    test_sphere_image();
 
-    // test_materials();
+    test_materials();
     test_recursive_raytracing();
 }
