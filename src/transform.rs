@@ -8,7 +8,7 @@ use serde::{Serialize, Deserialize};
 use serde_json::{Result, Value, json, from_value};
 
 
-
+#[derive(Debug)]
 pub struct Transform{
     pub m: Matrix4<f32>,
     pub m_inv: Matrix4<f32>
@@ -54,7 +54,7 @@ impl Transform{
             origin: self.point(&r.origin), 
             direction: self.vector(&r.direction),
             mint: r.mint, 
-            maxt: r.mint  
+            maxt: r.maxt  
         }
     }
     pub fn axis_offset(x: &Vector3<f32>, y: &Vector3<f32>, z: &Vector3<f32>, o: &Vector3<f32>) -> Transform{
@@ -62,6 +62,10 @@ impl Transform{
         let mut m = m.insert_row(3, 0.);
         m[(3,3)] = 1.0;
         Transform::new(m)
+    }
+
+    pub fn translate(t: &Vector3<f32>) -> Transform{
+        Transform::new(Matrix4::new_translation(&t))
     }
 }
 

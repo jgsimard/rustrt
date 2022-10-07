@@ -101,7 +101,7 @@ impl Camera{
 // \endverbatim
 
  
-
+#[derive(Debug)]
 pub struct PinholeCamera{
     pub transform: Transform,       // Local coordinate system
     pub size: Vector2<f32>,         // Physical size of the image plane

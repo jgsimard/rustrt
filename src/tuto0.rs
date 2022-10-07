@@ -45,12 +45,12 @@ fn test_vector_and_matrices(){
 
     // TODO: look in vec.h to find an appropriate function to call to compute
     // the dot product and cross product between two vectors.
-    println!("The dot product of v1 and v3 is: {}", v1.dot(&v3));
-    println!("The cross product of v1 and v2 is: {}", v1.cross(&v2));
+    println!("The dot product of v1 and v3 is: {}", glm::dot(&v1, &v3));
+    println!("The cross product of v1 and v2 is: {}", glm::cross(&v1, &v2));
 
     // TODO: compute the angle between v1 and v3 (in degrees) using
     // either the dot or cross product. Use the rad2deg function from common.h.
-    let dot: f32 = v1.dot(&v3);
+    let dot: f32 = glm::dot(&v1, &v3);
     let norm = v1.norm() * v3.norm();
     let degrees: f32 = rad2deg((dot / norm).acos());
 

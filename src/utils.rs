@@ -1,4 +1,5 @@
 use nalgebra::Vector3;
+extern crate nalgebra_glm as glm;
 
 use rand::Rng;
 use std::ops::{Add, Sub, Mul};
@@ -13,7 +14,7 @@ pub fn deg2rad(rad: f32) -> f32{
 }
 
 pub fn luminance(c: &Vector3<f32>) -> f32 {
-    c.dot(&Vector3::new(0.212671, 0.715160, 0.072169))
+    glm::dot(c, &Vector3::new(0.212671, 0.715160, 0.072169))
 }
 
 // pub fn lerp<T: 'static>(a: &T, b: &T, t: f32) -> T where f32: Mul<&T>,  <f32 as Mul<&'static T>>::Output: Add{
@@ -29,18 +30,19 @@ where
 
 
 pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vector3<f32>{
-    let unit = Vector3::new(1.0, 1.0, 0.0);
+    let ones = Vector3::new(1.0, 1.0, 1.0);
     loop{
-        let p = 2.0 * Vector3::new(rng.gen::<f32>(), rng.gen::<f32>(), 0.0) - unit;
-        if p.norm() < 1.0_{
+        let p = 2.0 * Vector3::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>()) - ones;
+        if p.norm_squared() < 1.0_{
             return p
         }
     }
+
 }
 
 pub fn random_in_hemishere(rng: &mut impl Rng, normal: &Vector3<f32>) -> Vector3<f32>{
     let in_unit_sphere = random_in_unit_sphere(rng);
-    if in_unit_sphere.dot(normal) > 0.0 {
+    if glm::dot(&in_unit_sphere, normal) > 0.0 {
         in_unit_sphere
     } else {
         -1.0 * in_unit_sphere
@@ -62,7 +64,7 @@ pub fn reflect(direction: &Vector3<f32>, normal: &Vector3<f32>) -> Vector3<f32>{
 }
 
 pub fn refract(direction_in: &Vector3<f32>, normal: &Vector3<f32>, etai_over_etat: f32) -> Vector3<f32> {
-    let cos_theta = (-1.0 * direction_in).dot(normal).min(1.0);
+    let cos_theta = glm::dot(&(-1.0 * direction_in), normal).min(1.0);
     let r_out_perp = etai_over_etat * (direction_in + cos_theta * normal);
     let r_out_parallel = -(1.0 - r_out_perp.norm_squared()).abs().sqrt() * normal;
     r_out_perp + r_out_parallel
