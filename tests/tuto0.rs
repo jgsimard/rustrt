@@ -1,19 +1,17 @@
+#[cfg(test)]
+
 extern crate nalgebra_glm as glm;
 
 use assert_approx_eq::assert_approx_eq;
 
 
-mod ray;
-mod utils;
-mod image2d;
-
-
-use crate::ray::Ray;
-use crate::utils::{lerp, luminance, rad2deg};
-use crate::image2d::Image2d;
+use rustrt::ray::Ray;
+use rustrt::utils::{luminance, rad2deg};
+use rustrt::image2d::Image2d;
 
 use nalgebra::{Vector3, Matrix4};
 
+#[test]
 fn test_vector_and_matrices(){
     let v1 = Vector3::new(-0.1, 0.2, -0.3);
     let v2 = Vector3::new(1.0, 1.0, -1.0);
@@ -84,7 +82,7 @@ fn test_vector_and_matrices(){
     println!("mat*inv should be the identity\n{}.", matrix * matrix.try_inverse().unwrap());
 }
 
-
+#[test]
 fn test_color_and_image()
 {
 

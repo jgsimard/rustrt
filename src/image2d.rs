@@ -63,3 +63,12 @@ impl IndexMut<(usize, usize)> for Image2d {
         &mut self.data[index]
     }
 }
+// how to write unit tests !!!
+// #[cfg(test)]
+// mod tests{
+//     #[test]
+//     fn it_works() {
+//         let result = 2 + 2;
+//         assert_eq!(result, 4);
+//     }
+// }

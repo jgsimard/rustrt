@@ -19,12 +19,3 @@ assert_approx_eq = "1.1"
 enum_dispatch = "0.3"
 indicatif = "0.17"
 atomic-counter = "1.0"
-
-
-[[bin]]
-name = "tuto0"
-path = "src/tuto0.rs"
-
-[[bin]]
-name = "tuto1"
-path = "src/tuto1.rs"

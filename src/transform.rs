@@ -1,11 +1,12 @@
 use crate::ray::Ray;
 use crate::utils::deg2rad;
 
-use nalgebra::{Vector3, Vector4, Matrix4, Matrix3x4};
+extern crate nalgebra_glm as glm;
+
+use nalgebra::{Vector3, Matrix4, Matrix3x4};
 use std::ops::{Mul};
 use std::collections::HashMap;
-use serde::{Serialize, Deserialize};
-use serde_json::{Result, Value, json, from_value};
+use serde_json::{Value, from_value};
 
 
 #[derive(Debug)]
@@ -108,12 +109,12 @@ impl Default for Transform {
         {   
             let from = read("from", Vector3::z());
             let to = read("to", Vector3::zeros());
-            let at = read("at", Vector3::zeros());
+            let at = read("at", Vector3::zeros()) + to;
             let up = read("up", Vector3::y());
 
-            let dir = (from - at).normalize();
-            let left = up.cross(&dir).normalize();
-            let new_up = dir.cross(&left).normalize();
+            let dir     = glm::normalize(&(from - at));
+            let left    = glm::normalize(&glm::cross(&up, &dir));
+            let new_up  = glm::normalize(&glm::cross(&dir, &left));
             
             return Transform::axis_offset(&left, &new_up, &dir, &from);
         } 
