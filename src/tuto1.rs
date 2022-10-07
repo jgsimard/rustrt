@@ -5,26 +5,35 @@ use serde::Deserialize;
 mod ray;
 mod utils;
 mod image2d;
+mod surface;
+mod camera;
+mod transform;
+
 // mod hit;
 // mod sphere;
-mod camera;
 // mod material;
-mod transform;
 // mod scene;
 
-
+use std::rc::Rc;
 use std::ops::{Index, IndexMut};
 use nalgebra::{Vector2, Vector3, Vector4, Matrix4};
+use nalgebra_glm::sqrt;
 use serde::Deserializer;
 use serde_json::{Result, Value, json};
 use std::cmp;
 use assert_approx_eq::assert_approx_eq;
+// use indicatif::ProgressBar;
+use std::{cmp::min, fmt::Write};
+use indicatif::{ProgressBar, ProgressState, ProgressStyle};
+use atomic_counter::RelaxedCounter;
 
 
 use crate::ray::Ray;
 use crate::transform::Transform;
 use crate::utils::{rad2deg, luminance, lerp};
 use crate::image2d::Image2d;
+use crate::surface::{Sphere,Lambertian, Metal, Surface, Material, HitInfo, create_material};
+use crate::surface::SurfaceGroup;
 // use hit::{Hit, World};
 // use sphere::Sphere;
 use camera::{Camera, PinholeCamera};
@@ -39,12 +48,20 @@ fn ray2color(ray: &Ray) -> Vector3<f32>{
     return vec2color(&ray.direction.normalize())
 }
 
+fn intersection2color(r: &Ray, sphere: &Sphere) -> Vector3<f32>
+{
+    if let Some(hit) = sphere.intersect(r){
+        return vec2color(&hit.sn.normalize())
+    } else {
+        vec2color(&r.direction.normalize())
+    }
+        
+}
 
 // Generate rays by hand
 fn test_manual_camera_image()
 {
-    println!("");
-    println!("{}{}{}", 
+    println!("\n{}{}{}", 
     "--------------------------------------------------------\n",
     "PROGRAMMING ASSIGNMENT, PART 1: Generating rays by hand \n",
     "--------------------------------------------------------\n");
@@ -101,8 +118,7 @@ fn test_json()
     //  1) As a generic way to pass named parameters to functions
     //  2) As a way to specify and load text-based scene files
 
-    println!("");
-    println!("{}{}{}", 
+    println!("\n{}{}{}", 
     "--------------------------------------------------------\n",
     "PROGRAMMING ASSIGNMENT, PART 2: passing data using JSON \n",
     "--------------------------------------------------------\n");
@@ -174,8 +190,7 @@ use std::collections::HashMap;
 // Next, we will generate the same image, but using the Camera class
 fn test_camera_class_image()
 {
-    println!("");
-    println!("{}{}{}",
+    println!("\n{}{}{}",
     "--------------------------------------------------------\n",
     "PROGRAMMING ASSIGNMENT, PART 3: Camera class generate_ray\n",
     "--------------------------------------------------------\n");
@@ -218,8 +233,7 @@ fn test_camera_class_image()
 
 fn test_transforms()
 {
-    println!("");
-    println!("{}{}{}",
+    println!("\n{}{}{}",
     "--------------------------------------------------------\n",
     "PROGRAMMING ASSIGNMENT, PART4: Transforms              \n",
     "--------------------------------------------------------\n");
@@ -293,10 +307,420 @@ fn test_transforms()
     assert!(ray_error < 1e-5);
 
 }
+
+fn test_xformed_camera_image()
+{
+    println!("\n{}{}{}",
+    "--------------------------------------------------------\n",
+    "PROGRAMMING ASSIGNMENT, PART 5: Transformed camera      \n",
+    "--------------------------------------------------------\n");
+
+    // Setup the output image
+    let mut ray_image = Image2d::new(200, 100);
+
+    // Set up a camera with some reasonable parameters
+    // Look in camera.h and implement the camera constructor
+    let camera_json = json!({
+        "vfov": 90.,
+        "resolution": [ray_image.size_x, ray_image.size_y],
+        "fdist": 1.0,
+        "transform":{
+            "from": [5.0, 15.0, -25.0], 
+            "to": [0.0, 0.0, 0.0], 
+            "up": [0.0, 1.0, 0.0]
+        }
+    });
+    let camera = PinholeCamera::new(camera_json);
+    println!("{:?}", camera);
+    
+    // Generate a ray for each pixel in the ray image
+    for y in 0..ray_image.size_y
+    {
+        for x in 0..ray_image.size_x
+        {
+            // Look in camera.h|cpp and implement camera.generate_ray
+
+            // Make sure to take the camera transform into account!
+
+            // We add 0.5 to the pixel coordinate to center the ray within the pixel
+            let ray        = camera.generate_ray(&Vector2::new(x as f32 + 0.5, y as f32 + 0.5));
+            ray_image[(x, y)] = ray2color(&ray);
+        }
+    }
+
+    let filename = "scenes/assignment1/01_xformed_camera_ray_image.png".to_string();
+    println!("Saving ray image to {}....", filename);
+    ray_image.save(filename);
+}
+
+fn test_ray_sphere_intersection()
+{
+    println!("\n{}{}{}",
+    "--------------------------------------------------------\n",
+    "PROGRAMMING ASSIGNMENT, PART 6: Ray-Sphere intersection \n",
+    "--------------------------------------------------------\n");
+
+    // Go to sphere.cpp and implement Sphere::intersect
+
+    // Let's check if your implementation was correct:
+    let material: Rc<dyn Material> = Rc::new(Lambertian{albedo: Vector3::new(1.0, 1.0, 1.0)});
+    // let material = Lambertian(json!{{"albedo", 1.}});
+    let test_sphere = Sphere::new(1.0, Rc::clone(&material));
+
+    println!("Testing untransformed sphere intersection");
+    let test_ray = Ray::new(Vector3::new(-0.25, 0.5, 4.0), Vector3::new(0.0, 0.0, -1.0));
+    // HitInfo hit;
+    if let Some(hit) = test_sphere.intersect(&test_ray)
+    {
+        let correct_t = 3.170844;
+        let correct_p = Vector3::new(-0.25, 0.5, 0.829156);
+        let correct_n = Vector3::new(-0.25, 0.5, 0.829156);
+
+        println!("Hit sphere! Distance is:\n{}, and it should be:\n{}", hit.t, correct_t);
+        println!("Intersection point is:\n{}, and it should be:\n{}", hit.p, correct_p);
+        println!("Intersection normal is:\n{}, and it should be:\n{}", hit.sn, correct_n);
+        
+        let sphere_error = [
+            (correct_p - hit.p).abs().max(), 
+            (correct_n - hit.sn).abs().max(), 
+            (correct_t - hit.t).abs()].into_iter().reduce(f32::max).unwrap();
+        assert!(sphere_error < 1e-5);
+    }
+    else{
+        panic!("Sphere intersection incorrect! Should hit sphere");
+    }
+
+    // Now, let's check if you implemented sphere transforms correctly!
+    let transform = Transform::axis_offset(
+        &Vector3::new(2.0, 0.0, 0.0), // x-axis
+        &Vector3::new(0.0, 1.0, 0.0), // y-axis
+        &Vector3::new(0.0, 0.0, 0.5), // z-axis
+        &Vector3::new(0.0, 0.25, 5.0) // translation
+    );
+    let transformed_sphere = Sphere{radius: 1.0, transform: transform, material: Rc::clone(&material)};
+    let test_ray = Ray::new(Vector3::new(1.0, 0.5, 8.0), Vector3::new(0.0, 0.0, -1.0));
+
+    println!("Testing transformed sphere intersection");
+    if let Some(hit) = transformed_sphere.intersect(&test_ray)
+    {
+        let correct_t = 2.585422;
+        let correct_p = Vector3::new(1.0, 0.5, 5.41458);
+        let correct_n = Vector3::new(0.147442, 0.147442, 0.978019);
+
+        println!("Hit sphere! Distance is:\n{}, and it should be:\n{}", hit.t, correct_t);
+        println!("Intersection point is:\n{}, and it should be:\n{}", hit.p, correct_p);
+        println!("Intersection normal is:\n{}, and it should be:\n{}", hit.sn, correct_n);
+        
+        let sphere_error = [
+            (correct_p - hit.p).abs().max(), 
+            (correct_n - hit.sn).abs().max(), 
+            (correct_t - hit.t).abs()].into_iter().reduce(f32::max).unwrap();
+        assert!(sphere_error < 1e-5);
+
+    }
+    else{
+        panic!("Transformed sphere intersection incorrect! Should hit sphere");
+    }
+        
+}
+
+
+/// Now: Let's allow our camera to be positioned and oriented using a Transform, and will use it to raytrace a Sphere
+fn test_sphere_image()
+{
+    println!("\n{}{}{}",
+    "--------------------------------------------------------\n",
+    "PROGRAMMING ASSIGNMENT, PART 7: False-color sphere image\n",
+    "--------------------------------------------------------\n");
+
+    // Setup the output image
+    let mut ray_image = Image2d::new(200, 100);
+
+    // Set up a camera with some reasonable parameters
+    let camera_json = json!({
+        "vfov": 90.,
+        "resolution": [ray_image.size_x, ray_image.size_y],
+        "fdist": 1.0,
+        "transform":{
+            "from": [5.0, 15.0, -25.0], 
+            "to": [0.0, 0.0, 0.0], 
+            "up": [0.0, 1.0, 0.0]
+        }
+    });
+    let camera = PinholeCamera::new(camera_json);
+
+
+    // letz   material = DartsFactory<Material>::create(json{{"type", "lambertian"}, {"albedo", 1.f}});
+    // Sphere sphere(20.f, material);
+
+    let material = create_material(json!({"type": "lambertian", "albedo": 1.0 }));
+    let sphere = Sphere::new(20.0, material);
+
+
+    // Generate a ray for each pixel in the ray image
+    for y in 0..ray_image.size_y
+    {
+        for x in 0..ray_image.size_x
+        {
+            // TODO: Look in camera.h|.cpp and implement camera.generate_ray
+
+            // Make sure to take the camera transform into account!
+
+            // We add 0.5 to the pixel coordinate to center the ray within the
+            // pixel
+            // let ray = camera.generate_ray(Vec2f(x + 0.5f, y + 0.5f));
+
+            // If we hit the sphere, output the sphere normal; otherwise,
+            // convert the ray direction into a color so we can have some visual
+            // debugging
+            // ray_image(x, y) = intersection2color(ray, sphere);
+
+            let ray        = camera.generate_ray(&Vector2::new(x as f32 + 0.5, y as f32 + 0.5));
+            ray_image[(x, y)] = intersection2color(&ray, &sphere);
+        }
+    }
+
+    let filename = "scenes/assignment1/01_xformed_camera_sphere_image.png".to_string();
+    println!("Saving ray image to {}....", filename);
+    ray_image.save(filename);
+}
+
+
+fn test_materials()
+{
+    println!("\n{}{}{}",
+    "--------------------------------------------------------\n",
+    "PROGRAMMING ASSIGNMENT, PART 8: Materials               \n",
+    "--------------------------------------------------------\n");
+
+    // Look at material.h|cpp and then go implement the Lambertian and Metal materials in lambertian.cpp and
+    // metal.cpp, respectively
+
+    // Note the line at the end of both files that looks something like this:
+    // DARTS_REGISTER_CLASS_IN_FACTORY(Material, Lambertian, "lambertian")
+    // This macro creates some code that informs a "Factory" how to create Materials of type Lambertian, and allows us
+    // to later create them by providing the key "lambertian".
+
+    // Let's see how this works by creating a red Lambertian material.
+    //
+    // The DartsFactory<Material>::create() function accepts a json object as a parameter, and returns a shared_ptr to a
+    // Material. It determines the specific Material class to use by looking for a "type" field in the json object. In
+    // this case it is "lambertian", which matches the third parameter in the DARTS_REGISTER_CLASS_IN_FACTORY macro
+    // above
+    let surface_color = Vector3::new(1.0, 0.25, 0.25);
+
+    let lambert_json = json!({
+        "type": "lambertian",
+        "albedo": surface_color
+    });
+    let lambert_material = create_material(lambert_json);
+
+    // And now let's create a slightly shiny metal surface
+    let metal_json = json!({
+        "type": "metal",
+        "albedo": surface_color,
+        "roughness": 0.3
+    });
+    let metal_material = create_material(metal_json);
+
+    // Later we will also use DartsFactory<Type>::create() with different classes for the Type, such as Surface,
+    // Integrator, etc.
+
+    // Let's create a fictitious hitpoint
+    let surface_point = Vector3::new(1.0, 2.0, 0.0);
+    let normal = Vector3::new(1.0, 2.0, -1.0).normalize();
+    let mut hit = HitInfo{
+        t: 0.0,
+        p: surface_point,
+        uv: Vector2::new(0.0, 0.0),
+        gn: normal,
+        sn: normal,
+        mat: Rc::clone(&lambert_material)
+    };
+
+    // And a fictitious ray
+    let ray = Ray::new(Vector3::new(2.0, 3.0, -1.0), Vector3::new(-1.0, -1.0, 1.0));
+
+    // Now, let's test your implementation!
+    if let Some((lambert_attenuation, lambert_scattered)) = lambert_material.scatter(&ray, &hit)
+    {
+        let correct_origin      = surface_point.clone();
+        let correct_attenuation = surface_color.clone();
+        let correct_direction = Vector3::new(1.206627e+00, 3.683379e-01, -8.104229e-01);
+
+        println!("Scattered ray origin is:\n{}, and it should be:\n{}.", lambert_scattered.origin, correct_origin);
+        println!("Attenuation is:\n{}, and it should be:\n{}.", lambert_attenuation, correct_attenuation);
+        println!("Ray direction is:\n{}, and it should be:\n{}.", lambert_scattered.direction, correct_direction);
+
+        // , (correct_direction - lambert_scattered.direction).abs().max()
+
+        let lambert_error = [
+            (correct_origin - lambert_scattered.origin).abs().max(), 
+            (lambert_attenuation - correct_attenuation).abs().max()].into_iter().reduce(f32::max).unwrap();
+        assert!(lambert_error < 1e-5, "lambert error is too big");
+    } else { 
+        println!("Lambert scatter incorrect! Scattering should have been successful\n");
+    }
+        
+
+    println!("Testing metal scatter");
+    if let Some((metal_attenuation, metal_scattered))  = metal_material.scatter(&ray, &hit)
+    {
+        let correct_origin      = surface_point.clone();
+        let correct_attenuation = surface_color.clone();
+        let correct_direction = Vector3::new(2.697650e-01, 9.322242e-01, -2.421507e-01);
+
+        println!("Scattered! Ray origin is:\n{}, and it should be:\n{}.", metal_scattered.origin, correct_origin);
+        println!("Attenuation is:\n{}, and it should be:\n{}.", metal_attenuation, correct_attenuation);
+        println!("Ray direction is:\n{}, and it should be:\n{}.", metal_scattered.direction, correct_direction);
+
+
+        // , (correct_direction - metal_scattered.direction).abs().max()
+
+        let metal_error = [
+            (correct_origin - metal_scattered.origin).abs().max(), 
+            (metal_attenuation - correct_attenuation).abs().max()].into_iter().reduce(f32::max).unwrap();
+        assert!(metal_error < 1e-5, "lambert error is too big");
+    }
+    else{
+        println!("Metal scatter incorrect! Scattering should have been successful\n");
+    }
+    
+}
+
+fn test_recursive_raytracing()
+{
+    println!("\n{}{}{}",
+    "--------------------------------------------------------\n",
+    "PROGRAMMING ASSIGNMENT, PART 9: Recursive Ray Tracing   \n",
+    "--------------------------------------------------------\n");
+
+    // let intersection_tests = RelaxedCounter::new(0);
+    // let rays_traced = RelaxedCounter::new(0);
+
+    // Setup the output image
+    let mut ray_image = Image2d::new(300, 150);
+
+    // We want to average over several rays to get a more pleasing result
+    const NUM_SAMPLES: u32 = 4;
+
+    // Set up a camera with some reasonable parameters
+    let camera_json = json!({
+        "vfov": 45.,
+        "resolution": [ray_image.size_x, ray_image.size_y],
+        "fdist": 1.0,
+        "transform":{
+            "from": [1.9, 0.8, -3.5], 
+            "to": [1.9, 0.8, 0.0], 
+            "up": [0.0, 1.0, 0.0]
+        }
+    });
+    let camera = PinholeCamera::new(camera_json);
+    println!("{:?}", camera);
+
+    let ground = create_material(json!({"type": "lambertian", "albedo": 0.5 }));
+    let matte  = create_material(json!({"type": "lambertian", "albedo": Vector3::new(1.0, 0.25, 0.25) }));
+    let shiny  = create_material(json!({"type": "metal", "albedo": 1.0, "roughness": 0.3}));
+    // let ground = DartsFactory<Material>::create(json{{"type", "lambertian"}, {"albedo", 0.5f}});
+    // let matte  = DartsFactory<Material>::create(json{{"type", "lambertian"}, {"albedo", Vec3f(1.0f, 0.25f, 0.25f)}});
+    // let shiny  = DartsFactory<Material>::create(json{{"type", "metal"}, {"albedo", 1.f}, {"roughness", 0.3f}});
+
+    let matte_sphere  = Rc::new(Sphere{radius: 1.0, transform: Transform::translate(&Vector3::new(3., 1., 0.)), material: matte});
+    let shiny_sphere  = Rc::new(Sphere{radius: 1.0, transform: Transform::translate(&Vector3::new(0., 1., 1.)), material: shiny});
+    let ground_sphere = Rc::new(Sphere{radius: 1000.0, transform: Transform::translate(&Vector3::new(0., -1000., 0.)), material: ground});
+
+    // let matte_sphere  = make_shared<Sphere>(1.f, matte, Transform::translate({3.f, 1.f, 0.f}));
+    // let shiny_sphere  = make_shared<Sphere>(1.f, shiny, Transform::translate({0.f, 1.f, 1.f}));
+    // let ground_sphere = make_shared<Sphere>(1000.f, ground, Transform::translate({0.f, -1000.f, 0.f}));
+
+    // To raytrace more than one object at a time, we can put them into a group
+    let mut scene = SurfaceGroup::new();
+    scene.add_child(matte_sphere);
+    scene.add_child(shiny_sphere);
+    scene.add_child(ground_sphere);
+
+    {
+        // let progress_bar = ProgressBar::new(ray_image.size() as u64);
+        // progress_bar.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos:>7}/{len:7} ({eta})")
+        // .unwrap()
+        // .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
+        // .progress_chars("#>-"));
+        // Generate a ray for each pixel in the ray image
+        for y in 0..ray_image.size_y
+        {
+            for x in 0..ray_image.size_x
+            {
+                let mut color = Vector3::new(0.0, 0.0, 0.0);
+                for i in 0..NUM_SAMPLES{
+                    // rays_traced.inc(1);
+                    let ray = camera.generate_ray(&Vector2::new((x as f32) + 0.5, (y as f32) + 0.5));
+                    // Call recursive_color ``num_samples'' times and average the
+                    // results. Assign the average color to ``color''
+                    color += recursive_color(&ray, &scene, 0) / (NUM_SAMPLES as f32);
+                }
+                ray_image[(x, y)] = color;
+                // progress_bar.inc(1);
+            }
+        }
+        // println!("Rendering time : {:?}", progress_bar.elapsed());
+    } // progress reporter goes out of scope here
+
+    // println!("Average number of intersection tests per ray: {} ", (intersection_tests as f32) / (rays_traced as f32));
+
+    let filename = "scenes/assignment1/01_recursive_raytracing.png".to_string();
+    println!("Saving rendered image to {} ...", filename);
+    ray_image.save(filename);
+}
+
+fn recursive_color(ray : &Ray, scene: &SurfaceGroup, depth: u32) -> Vector3<f32>
+{
+    const MAX_DEPTH: u32 = 64;
+    const BLACK: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
+    const WHITE: Vector3<f32> = Vector3::new(1.0, 1.0, 1.0);
+
+    // Implement this function
+    // Pseudo-code:
+    //
+    // if scene.intersect:
+    // 		if depth < max_depth and hit_material.scatter(....) is successful:
+    //			recursive_color = call this function recursively with the scattered ray and increased depth
+    //          return attenuation * recursive_color
+    //		else
+    //			return black;
+    // else:
+    // 		return white
+    
+    if let Some(hit) = scene.intersect(ray)
+    {
+        if (depth < MAX_DEPTH){
+            if let Some((attenuation, scattered)) = hit.mat.scatter(ray, &hit){
+                return attenuation.component_mul(&recursive_color(&scattered, &scene, depth + 1));
+            }
+            return BLACK;
+        }
+        else
+        {
+            return BLACK;
+        }
+    }
+    else
+    {
+        return  WHITE;
+    }
+}
+
+
 fn main() {
-    // test_vector_and_matrices();
     // test_manual_camera_image();
     // test_json();
     // test_camera_class_image();
-    test_transforms()
+
+    // test_transforms();
+    // test_xformed_camera_image();
+
+    // test_ray_sphere_intersection();
+    // test_sphere_image();
+
+    // test_materials();
+    test_recursive_raytracing();
 }

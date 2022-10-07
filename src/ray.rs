@@ -1,6 +1,9 @@
 use nalgebra::{Vector3};
+// use nalgebra::Unit;
 
 // TODO : Use Unit for direction
+
+#[derive(Debug, Clone)]
 pub struct Ray {
     pub origin : Vector3<f32>,
     pub direction : Vector3<f32>,

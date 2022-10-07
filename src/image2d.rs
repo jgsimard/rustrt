@@ -19,6 +19,10 @@ impl Image2d {
     fn index_1d(&self, x: usize, y: usize) -> usize{ 
         y * self.size_x + x
     }
+    
+    pub fn size(&self) -> usize{
+        self.size_x * self.size_y
+    }
 
     pub fn new(size_x: usize, size_y: usize) -> Image2d{
         Image2d{
@@ -33,7 +37,7 @@ impl Image2d {
         
         for x in 0..self.size_x{
             for y in 0..self.size_y{
-                let v = self[(x,y)];
+                let v = glm::sqrt(&self[(x,y)]);
                 img_buffer.put_pixel(x as u32, y as u32, Rgb([v.x, v.y, v.z]));
             }
         }
