@@ -1,4 +1,5 @@
 use nalgebra::{Vector2, Vector3};
+use serde_json::Value;
 use std::rc::Rc;
 use std::fmt::Write;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
@@ -22,8 +23,8 @@ pub struct Scene{
 
 
 impl Scene {
-    pub fn new() -> Scene{
-        Scene{surfaces: Vec::new()}
+    pub fn new(scene_json: Value) -> Scene{
+        // Scene{surfaces: Vec::new()}
     }
     pub fn add_child(&mut self, surface: Rc<dyn Surface>)
     {

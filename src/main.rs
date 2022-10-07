@@ -7,29 +7,9 @@ mod camera;
 mod transform;
 mod scene;
 
-// use std::rc::Rc;
-// use std::ops::{Index, IndexMut};
-// use nalgebra::{Vector2, Vector3, Vector4, Matrix4};
-// use nalgebra_glm::sqrt;
-// use serde::Deserializer;
-// use serde_json::{Result, Value, json};
-// use std::cmp;
-// use assert_approx_eq::assert_approx_eq;
-// // use indicatif::ProgressBar;
-// use std::{cmp::min, fmt::Write};
-// use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-// use atomic_counter::RelaxedCounter;
-
-
-// use rustrt::ray::Ray;
-// use rustrt::transform::Transform;
-// use rustrt::utils::{rad2deg, luminance, lerp};
-// use rustrt::image2d::Image2d;
-// use rustrt::surface::{Sphere,Lambertian, Metal, Surface, Material, HitInfo, create_material};
-// use rustrt::surface::SurfaceGroup;
-
 use rustrt::scene::Scene;
 use clap::Parser;
+use serde_json::json;
 
 #[derive(Parser)]
 struct Cli {
@@ -56,4 +36,21 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
+
+    let mock_json = json!({"patate": 1});
+
+    let scene = Scene::new(mock_json);
+
+    let outfile = "something".to_string();
+
+    let image = scene.raytrace();
+
+    println!("Number of intersection tests: {}", intersection_tests);
+    println!("Number of rays traced: {}", rays_traced);
+    println!("Average number of intersection tests per ray: {}", (intersection_tests as f32) / (rays_traced as f32));
+    println!("Writing rendered image to file \"{}\"...", outfile);
+
+    image.save(outfile);
+
+    println!("Done");
 }
