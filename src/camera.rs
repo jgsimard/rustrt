@@ -1,14 +1,10 @@
 use nalgebra::{Vector2, Vector3};
 
-
-use serde_json::{Value, from_value};
-
+use serde_json::{from_value, Value};
 
 use crate::ray::Ray;
+use crate::transform::{parse_transform, Transform};
 use crate::utils::deg2rad;
-use crate::transform::{Transform, parse_transform};
-
-
 
 // A virtual (pinhole) camera.
 //
@@ -39,19 +35,14 @@ use crate::transform::{Transform, parse_transform};
 //           eye                                 '-,_|
 // \endverbatim
 
- 
 #[derive(Debug)]
-pub struct PinholeCamera{
-    pub transform: Transform,       // Local coordinate system
-    pub size: Vector2<f32>,         // Physical size of the image plane
-    pub focal_distance: f32,                 // Focal distance : Distance to image plane along local z axis
-    pub resolution: Vector2<f32>,   // Image resolution
-    pub aperture_radius: f32               // The size of the aperture for depth of field
+pub struct PinholeCamera {
+    pub transform: Transform,     // Local coordinate system
+    pub size: Vector2<f32>,       // Physical size of the image plane
+    pub focal_distance: f32,      // Focal distance : Distance to image plane along local z axis
+    pub resolution: Vector2<f32>, // Image resolution
+    pub aperture_radius: f32,     // The size of the aperture for depth of field
 }
-
-
-
-
 
 // #[derive(Serialize, Deserialize, Debug)]
 // struct CameraJson{
@@ -65,8 +56,9 @@ pub struct PinholeCamera{
 // }
 
 impl PinholeCamera {
-    pub fn new(json: Value) -> PinholeCamera{
-        let resolution: Vector2<f32> = from_value(json["resolution"].clone()).unwrap_or(Vector2::new(512., 512.));
+    pub fn new(json: &Value) -> PinholeCamera {
+        let resolution: Vector2<f32> =
+            from_value(json["resolution"].clone()).unwrap_or(Vector2::new(512., 512.));
         let aperture_radius: f32 = from_value(json["aperture"].clone()).unwrap_or(0.);
         let focal_distance: f32 = from_value(json["fdist"].clone()).unwrap_or(1.);
         let vfov: f32 = from_value(json["vfov"].clone()).unwrap_or(90.);
@@ -79,24 +71,25 @@ impl PinholeCamera {
         // from one to the other
         let height = 2.0 * focal_distance * deg2rad(vfov / 2.0).tan();
         let width = resolution[0] / resolution[1] * height;
-        let size = Vector2::new(width,  -height); // FIXME : might need to change this
+        let size = Vector2::new(width, -height); // FIXME : might need to change this
 
-
-        PinholeCamera { 
-            transform: transform, 
-            size: size, 
-            focal_distance: focal_distance, 
-            resolution: resolution, 
-            aperture_radius: 
-            aperture_radius 
+        PinholeCamera {
+            transform: transform,
+            size: size,
+            focal_distance: focal_distance,
+            resolution: resolution,
+            aperture_radius: aperture_radius,
         }
     }
 
     pub fn generate_ray(&self, pixel: &Vector2<f32>) -> Ray {
         let origin = Vector3::zeros();
-        let xy = self.size.component_mul(&pixel).component_div(&self.resolution) - self.size / 2.0;
+        let xy = self
+            .size
+            .component_mul(&pixel)
+            .component_div(&self.resolution)
+            - self.size / 2.0;
         let direction = Vector3::new(xy.x, xy.y, -self.focal_distance);
         self.transform.ray(&Ray::new(origin, direction))
     }
-    
 }
