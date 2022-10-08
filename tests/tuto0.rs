@@ -1,18 +1,16 @@
 #[cfg(test)]
-
 extern crate nalgebra_glm as glm;
 
 use assert_approx_eq::assert_approx_eq;
 
-
+use rustrt::image2d::Image2d;
 use rustrt::ray::Ray;
 use rustrt::utils::{luminance, rad2deg};
-use rustrt::image2d::Image2d;
 
-use nalgebra::{Vector3, Matrix4};
+use nalgebra::{Matrix4, Vector3};
 
 #[test]
-fn test_vector_and_matrices(){
+fn test_vector_and_matrices() {
     let v1 = Vector3::new(-0.1, 0.2, -0.3);
     let v2 = Vector3::new(1.0, 1.0, -1.0);
     let v3 = Vector3::new(0.5, 0.25, -0.123);
@@ -28,7 +26,12 @@ fn test_vector_and_matrices(){
     println!("We can also element-wise add, subtract, and multiply vectors:");
     println!("v1 + v2:\n   {}\n + {}\n = {}", v1, v2, v1 + v2);
     // TODO: divide vector 1 by vector 3
-    println!("v1 / v3:\n   {}\n / {}\n = {}\n", v1, v3, v1.component_div(&v3));
+    println!(
+        "v1 / v3:\n   {}\n / {}\n = {}\n",
+        v1,
+        v3,
+        v1.component_div(&v3)
+    );
 
     println!("or perform mixed vector-scalar arithmetic");
     println!("scalar * v2:\n   {}\n * {}\n = {}", 2.0, v2, 2.0 * v2);
@@ -39,12 +42,18 @@ fn test_vector_and_matrices(){
     println!("The squared length of v2 is: {}", v2.norm_squared());
     let normalized2 = v2.normalize();
     println!("A normalized copy of v2 is: {}", normalized2);
-    println!("Let's confirm that its length is 1: {}\n", normalized2.norm());
+    println!(
+        "Let's confirm that its length is 1: {}\n",
+        normalized2.norm()
+    );
 
     // TODO: look in vec.h to find an appropriate function to call to compute
     // the dot product and cross product between two vectors.
     println!("The dot product of v1 and v3 is: {}", glm::dot(&v1, &v3));
-    println!("The cross product of v1 and v2 is: {}", glm::cross(&v1, &v2));
+    println!(
+        "The cross product of v1 and v2 is: {}",
+        glm::cross(&v1, &v2)
+    );
 
     // TODO: compute the angle between v1 and v3 (in degrees) using
     // either the dot or cross product. Use the rad2deg function from common.h.
@@ -56,9 +65,7 @@ fn test_vector_and_matrices(){
     assert_approx_eq!(degrees, 80.0787, 1e-4);
 
     // We will also make use of rays, which represent an origin and a direction:
-    let ray = Ray::new(
-        Vector3::new(0.5, 2.0, -3.0), 
-        Vector3::new(-0.25, -0.5, 0.3));
+    let ray = Ray::new(Vector3::new(0.5, 2.0, -3.0), Vector3::new(-0.25, -0.5, 0.3));
 
     // Let's print some info about our ray
     println!("The origin of ray is    {}.", ray.origin);
@@ -70,28 +77,26 @@ fn test_vector_and_matrices(){
     // Note that because we pass in columns, visually the matrix below looks
     // transposed: the vector {4, 5, 6, 1} is the 4th column, not row.
     let matrix = Matrix4::new(
-        1., 0., 0., 0., 
-        0., 2., 0., 0., 
-        0., 0., 3., 0., 
-        4., 5., 6., 1.
+        1., 0., 0., 0., 0., 2., 0., 0., 0., 0., 3., 0., 4., 5., 6., 1.,
     );
 
     // We also provide the ability to compute matrix products and inverses.
     println!("The matrix is\n{}.", matrix);
     println!("The inverse is\n{}.", matrix.try_inverse().unwrap());
-    println!("mat*inv should be the identity\n{}.", matrix * matrix.try_inverse().unwrap());
+    println!(
+        "mat*inv should be the identity\n{}.",
+        matrix * matrix.try_inverse().unwrap()
+    );
 }
 
 #[test]
-fn test_color_and_image()
-{
-
+fn test_color_and_image() {
     let red = Vector3::new(1., 0., 0.);
     let blue = Vector3::new(0., 0., 1.);
     let white = Vector3::new(1., 1., 1.); // This is the same as Color3f(1,1,1);
 
     // We can perform basic element-wise arithmatic on Colors:
-    let magenta   = red + blue;
+    let magenta = red + blue;
     let still_red = red.component_mul(&white);
 
     // TODO: Initialize the color pinkish to the average of white and red
@@ -116,7 +121,10 @@ fn test_color_and_image()
 
     pinkish[0] *= 2.;
 
-    println!("After scaling by 2, red channel of pinkish is: {}", pinkish[0]);
+    println!(
+        "After scaling by 2, red channel of pinkish is: {}",
+        pinkish[0]
+    );
 
     // The Color3f class provides a few additional operations which are useful
     // specifically for manipulating colors, see the bottom of the vec.h file.
@@ -142,8 +150,8 @@ fn test_color_and_image()
 
     // We can access individual pixels of an Image3f using the (x,y) operator:
     // image1(5, 10) = white; // This sets the pixel to white
-    image1[(5,10)] = white;
-    
+    image1[(5, 10)] = white;
+
     println!("{}", white);
     // The file common.h defines a simple linear interpolation function: lerp
     // which allows us to specify two values, a and b, and an interpolation
@@ -152,7 +160,10 @@ fn test_color_and_image()
     // scalar. Just as we could interpolate between two scalar values, we can
     // also use it to interpolate between two colors:
 
-    println!("25% of the way from blue to red is: {}.", glm::lerp(&blue, &red, 0.25));
+    println!(
+        "25% of the way from blue to red is: {}.",
+        glm::lerp(&blue, &red, 0.25)
+    );
 
     // Now, let's populate the colors of an entire image, and write it to a PNG
     // file.
@@ -171,7 +182,7 @@ fn test_color_and_image()
     // "gradient.png".
 
     println!("Creating gradient image.");
-    
+
     // for i in 0..200{
     //     for j in 0..100{
     //         gradient[(i,j)] = Vector3::new(
@@ -181,9 +192,10 @@ fn test_color_and_image()
     //     }
     // }
 
-    for i in 0..200{
-        for j in 0..100{
-            gradient[(i,j)] = Vector3::new(((i as f32) + 0.5)/200., ((j as f32) + 0.5)/100., 0.);
+    for i in 0..200 {
+        for j in 0..100 {
+            gradient[(i, j)] =
+                Vector3::new(((i as f32) + 0.5) / 200., ((j as f32) + 0.5) / 100., 0.);
         }
     }
     // put_your_code_here("Populate an image with a color gradient and save to \"scenes/assignment0/gradient.png\"");
