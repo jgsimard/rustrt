@@ -39,7 +39,7 @@ fn main() {
     let args = Cli::parse();
 
     // let mock_json = json!({"patate": 1});
-    let mock_json = create_example_scene(0);
+    let mock_json = create_example_scene(1);
 
     println!("{}", mock_json);
 

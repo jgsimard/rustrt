@@ -16,9 +16,6 @@ pub fn luminance(c: &Vector3<f32>) -> f32 {
     glm::dot(c, &Vector3::new(0.212671, 0.715160, 0.072169))
 }
 
-// pub fn lerp<T: 'static>(a: &T, b: &T, t: f32) -> T where f32: Mul<&T>,  <f32 as Mul<&'static T>>::Output: Add{
-//     (1.0 - t) * a + t * b
-// }
 
 pub fn lerp<T, F>(a: T, b: T, f: F) -> T
 where
@@ -72,6 +69,7 @@ pub fn refract(
 
 pub fn reflectance(cosine: f32, ref_idx: f32) -> f32 {
     // Use Schlick's approximation for reflectance
-    let r0 = ((1.0 - ref_idx) / (1.0 + ref_idx)).powi(2);
+    let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+    let r0 = r0 * r0;
     r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
