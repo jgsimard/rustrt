@@ -1,13 +1,15 @@
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use nalgebra::{Vector2, Vector3};
-use serde_json::{from_value, json, Value};
+use serde_json::{from_value, Value};
 use std::fmt::Write;
 use std::rc::Rc;
 
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
 use crate::ray::Ray;
-use crate::surface::{make_surface, HitInfo, Surface, SurfaceGroup};
+use crate::surface::{HitInfo, Surface, SurfaceGroup, Factory};
+
+use crate::surface::SurfaceFactory;
 
 pub struct Scene {
     pub surfaces: SurfaceGroup,
@@ -16,21 +18,10 @@ pub struct Scene {
     // pub sampler: Rc<dyn Sampler>,
     pub camera: PinholeCamera,
     pub background: Vector3<f32>,
-    pub num_samples: u32,
+    pub num_samples: i32,
     pub max_depth: i32,
 }
 
-fn make_sampler(m: serde_json::Value) -> i32 {
-    -1
-}
-
-fn make_integrator(v: &Value) -> i32 {
-    -1
-}
-
-fn make_accelerator(v: &Value) -> i32 {
-    -1
-}
 
 impl Scene {
     pub fn new(scene_json: Value) -> Scene {
@@ -95,15 +86,15 @@ impl Scene {
         //     make_integrator(&json!({}))
         // };
 
-        //
-        // create the scene-wide acceleration structure so we can put other surfaces into it
-        //
-        let surfaces = if map_json.contains_key("accelerator") {
-            make_accelerator(map_json.get("accelerator").unwrap())
-        } else {
-            // default to a naive linear accelerator
-            make_accelerator(&json!({}))
-        };
+        // //
+        // // create the scene-wide acceleration structure so we can put other surfaces into it
+        // //
+        // let surfaces = if map_json.contains_key("accelerator") {
+        //     make_accelerator(map_json.get("accelerator").unwrap())
+        // } else {
+        //     // default to a naive linear accelerator
+        //     make_accelerator(&json!({}))
+        // };
 
         //
         // parse scene background
@@ -127,9 +118,17 @@ impl Scene {
         //
         // parse surfaces
         //
+        let surface_facory = SurfaceFactory;
+        let mut surfaces = Vec::new();
         if map_json.contains_key("surfaces") {
-            for sur in map_json.get("surfaces").unwrap().as_array().unwrap() {
-                let surface = make_surface(sur);
+            for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
+                // let surface = make_surface(sur);
+                if let Some(surface) = surface_facory.make(surface_json){
+                    surfaces.push(surface.clone());
+                }
+                else {
+                    panic!("surface of type : {} not yet supported", surface_json["type"]);
+                }
                 // DartsFactory<Surface>::create(s);
                 // surface->add_to_parent(this, surface, j);
             }
@@ -138,15 +137,19 @@ impl Scene {
         //
         // parse num_samples and max_depth
         //
-        let num_samples: u32 =
-            from_value(map_json.get("num_samples").ok_or(8).unwrap().clone()).unwrap();
-        let max_depth: i32 =
-            from_value(map_json.get("max_depth").ok_or(64).unwrap().clone()).unwrap();
+        // let read_i32 = |s, d| from_value(map_json.get(s).ok_or(d).unwrap().clone() ).unwrap();
+        // let num_samples: i32 = read_i32("num_samples", 8);
+        //     // from_value(map_json.get("num_samples").ok_or(8).unwrap().clone() ).unwrap();
+        // let max_depth: i32 = read_i32("max_depth", 64);
+        //     // from_value(map_json.get("max_depth").ok_or(64).unwrap().clone()).unwrap();
+
+        let num_samples: i32 = 8;
+        let max_depth: i32 = 64;
+        
+        println!("{:?}", camera);
 
         Scene {
-            surfaces: SurfaceGroup {
-                surfaces: Vec::new(),
-            },
+            surfaces: SurfaceGroup { surfaces: surfaces },
             camera: camera,
             background: background,
             num_samples: num_samples,
@@ -177,7 +180,8 @@ impl Scene {
     }
 
     pub fn raytrace(&self) -> Image2d {
-        let mut image = Image2d::new(self.camera.size.x as usize, self.camera.size.y as usize);
+        let mut image = Image2d::new(self.camera.resolution.x as usize, self.camera.resolution.y as usize);
+        println!("Image size : ({}, {})", image.size_x, image.size_y);
         let sample_count = self.num_samples;
 
         {

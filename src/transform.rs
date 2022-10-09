@@ -5,7 +5,6 @@ extern crate nalgebra_glm as glm;
 
 use nalgebra::{Matrix3x4, Matrix4, Vector3};
 use serde_json::{from_value, Value};
-use std::collections::HashMap;
 use std::ops::Mul;
 
 #[derive(Debug)]
@@ -109,7 +108,8 @@ pub fn parse_transform(json: &Value) -> Transform {
         }
         // single transform
         let kv = t_json.as_object().unwrap();
-        let kv: HashMap<String, serde_json::Value> = serde_json::from_value(t_json).unwrap();
+        // let kv: HashMap<String, serde_json::Value> = serde_json::from_value(t_json).unwrap();
+
         let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
         let read = |s: &str, default| kv.get(s).map_or(default, read_vector3);
 

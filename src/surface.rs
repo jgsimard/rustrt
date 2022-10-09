@@ -4,10 +4,66 @@ extern crate nalgebra_glm as glm;
 use nalgebra::{Vector2, Vector3};
 
 use serde_json::{from_value, Value};
+// use std::collections::HashMap;
+
 
 use crate::ray::Ray;
-use crate::transform::Transform;
+use crate::transform::{Transform, parse_transform};
 use crate::utils::{random_in_unit_sphere, reflect};
+
+pub trait Factory<T>{
+    fn make(&self, v: &Value) -> Option<T>;
+}
+
+pub struct SurfaceFactory;
+
+impl Factory<Rc<dyn Surface>> for SurfaceFactory{
+    fn make(&self, v: &Value) -> Option<Rc<dyn Surface>>{
+        let m = v.as_object().unwrap();
+        let t = m.get("type").unwrap();
+
+        // match m.get("type").unwrap().as_str().unwrap() {
+        //     "sphere" => {
+
+        //     }
+        // }
+        if t == "sphere"{
+            let radius = if let Some(r) = m.get("radius") { from_value((*r).clone()).unwrap()} else {1.0};
+            let transform = parse_transform(v);
+            let material = if let Some(mat) = m.get("material") {
+                if mat.is_string(){
+                    // do something else
+                    create_material((*mat).clone())
+                }
+                else {
+                    create_material((*mat).clone())
+                }
+            } else { panic!("Invalid material");};
+
+            return Some(Rc::new(Sphere{radius, transform, material}));
+        }
+        else if t == "quad"{
+            
+        }
+        None     
+    }
+}
+
+// pub struct MaterialFactory{
+//     materials : HashMap<String, Rc<dyn Material>>
+// }
+
+// impl Factory<Rc<dyn Material>> for MaterialFactory {
+//     fn make(&self, v: &Value) {
+//         let m = v.as_object().unwrap();
+//         let name = m.get("name").unwrap().to_string();
+//         self.materials.insert(name, create_material(*v));
+        
+//     }
+    
+// }
+
+
 
 pub struct HitInfo {
     /// Ray parameter for the hit
@@ -65,14 +121,11 @@ pub trait Surface {
     // fn is_emissive() -> bool;
 }
 
-pub fn make_surface(v: &Value) -> dyn Surface {
-    -1
-}
 
 pub struct Sphere {
     pub radius: f32,
     pub transform: Transform,
-    pub material: Rc<dyn Material>,
+    pub material: Rc<dyn Material>
 }
 impl Sphere {
     pub fn new(radius: f32, material: Rc<dyn Material>) -> Sphere {
@@ -120,6 +173,53 @@ impl Surface for Sphere {
             gn: n,
             sn: n,
             uv: Vector2::new(0.0, 0.0),
+            mat: Rc::clone(&self.material),
+        };
+        Some(hit)
+    }
+}
+
+
+pub struct Quad {
+    pub size: Vector2<f32>,
+    pub transform: Transform,
+    pub material: Rc<dyn Material>
+}
+
+impl Surface for Quad {
+    fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+        // compute ray intersection (and ray parameter), continue if not hit
+        // put ray into sphere frame
+        let ray_transformed = self.transform.inverse().ray(ray);
+
+        if ray_transformed.direction.z == 0.0 {return None;};
+
+        let t = - ray_transformed.origin.z / ray_transformed.direction.z;
+        let mut p = ray_transformed.at(t);
+
+        if self.size.x < p.x ||self.size.y < p.y{
+            return None
+        }
+
+        // check if computed param is within ray.mint and ray.maxt
+        if t < ray_transformed.mint || t > ray_transformed.maxt{
+            return None
+        }
+
+        // project hitpoint onto plane to reduce floating-point error
+        p.z = 0.0;
+
+        let n = glm::normalize(&self.transform.normal(&Vector3::z()));
+        let uv = 0.5 * p.xy().component_div(&self.size).add_scalar(1.0);
+        let uv = glm::clamp(&uv, 0.000001, 0.999999); 
+
+        // if hit, set intersection record values
+        let hit = HitInfo {
+            t: t,
+            p: self.transform.point(&p),
+            gn: n,
+            sn: n,
+            uv: uv,
             mat: Rc::clone(&self.material),
         };
         Some(hit)
