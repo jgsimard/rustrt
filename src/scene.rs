@@ -143,7 +143,7 @@ impl Scene {
         // let max_depth: i32 = read_i32("max_depth", 64);
         //     // from_value(map_json.get("max_depth").ok_or(64).unwrap().clone()).unwrap();
 
-        let num_samples: i32 = 8;
+        let num_samples: i32 = 1;
         let max_depth: i32 = 64;
         
         println!("{:?}", camera);
@@ -185,11 +185,11 @@ impl Scene {
         let sample_count = self.num_samples;
 
         {
-            let progress_bar = ProgressBar::new(image.size() as u64);
+            let progress_bar = ProgressBar::new(image.size() as u64).;
             progress_bar.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos:>7}/{len:7} ({eta})")
                 .unwrap()
                 .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
-                .progress_chars("#>-"));
+                .progress_chars("#>-")).;
             println!("Rendering ...");
             // Generate a ray for each pixel in the ray image
             for y in 0..image.size_y {

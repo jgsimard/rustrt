@@ -12,7 +12,6 @@ use crate::example_scenes::create_example_scene;
 use crate::scene::Scene;
 
 use clap::Parser;
-use serde_json::json;
 
 #[derive(Parser)]
 struct Cli {
@@ -38,10 +37,9 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
 
-    // let mock_json = json!({"patate": 1});
-    let mock_json = create_example_scene(1);
+    let mock_json = create_example_scene(2);
 
-    println!("{}", mock_json);
+    // println!("{}", mock_json);
 
     let scene = Scene::new(mock_json);
 

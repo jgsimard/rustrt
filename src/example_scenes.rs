@@ -1,5 +1,8 @@
-use serde_json;
+use serde_json::{self, json};
 use serde_json::Value;
+use nalgebra::Vector3;
+
+extern crate nalgebra_glm as glm;
 
 fn create_sphere_scene() -> Value {
     let data = r#"
@@ -55,64 +58,93 @@ pub fn create_example_scene(scene_number: i32) -> Value {
     match scene_number {
         0 => create_sphere_scene(),
         1 => create_sphere_plane_scene(),
-        // 2 => create_steinbach_scene(),
+        2 => create_steinbach_scene(),
         // 3 => create_shirley_scene(),
         _ => unimplemented!(),
     }
 }
 
-// json create_steinbach_scene()
-// {
-//     json j;
+fn create_steinbach_scene() -> Value
+{
+    // Compose the camera
+    let  mut j = json!({
+        "camera":{
+            "transform":{
+                "from": [-10.0, 10.0, 40.0], 
+                "to": [0.0, -1.0, 0.0], 
+                "up": [0.0, 1.0, 0.0]
+            },
+            "vfov" : 18.,
+            "resolution": [512, 512]
+        }
+    });
 
-//     // Compose the camera
-//     j["camera"] = {{"transform", {{"from", {-10.0, 10.0, 40.0}}, {"to", {0.0, -1.0, 0.0}}, {"up", {0.0, 1.0, 0.0}}}},
-//                    {"vfov", 18},
-//                    {"resolution", {512, 512}}};
 
-//     // compose the image properties
-//     j["sampler"]["samples"] = 10;
-//     j["background"]         = {1, 1, 1};
+    // compose the image properties
+    j["sampler"] = json!({"samples": 10});
+    j["background"] = serde_json::to_value([1.0, 1.0 , 1.0]).unwrap(); // json!({[1.0, 1.0 , 1.0]});
 
-//     Vec3f object_center(0.0f, 0.0f, 0.0f);
-//     float radius = 0.5f;
-//     int   num_s  = 40;
-//     int   num_t  = 40;
-//     for (auto is : range(num_s))
-//     {
-//         for (auto it : range(num_t))
-//         {
-//             float   s = (is + 0.5f) / num_s;
-//             float   t = (it + 0.5f) / num_t;
-//             float   u = s * (8) - 4.0f;
-//             float   v = t * (6.25f);
-//             Vec3f   center(-u * cos(v), v * cos(u) * 0.75f, u * sin(v));
-//             Color3f kd = 0.35f * lerp(lerp(Color3f(0.9f, 0.0f, 0.0f), Color3f(0.0f, 0.9f, 0.0f), t),
-//                                       lerp(Color3f(0.0f, 0.0f, 0.9f), Color3f(0.0f, 0.0f, 0.0f), t), s);
+    let object_center = Vector3::new(0.0, 0.0, 0.0);
+    let radius = 0.5;
+    let num_s  = 40;
+    let num_t  = 40;
+    let mut surfaces: Vec<Value> = Vec::new();
+    
+    for is in 0..num_s
+    {
+        for it in 0..num_t
+        {
+            let   s = (is as f32 + 0.5) / (num_s as f32);
+            let   t = (it as f32 + 0.5) / (num_t as f32);
+            let   u = s * 8.0 - 4.0;
+            let   v = t * 6.25;
 
-//             j["surfaces"] += {{"type", "sphere"},
-//                               {"radius", radius},
-//                               {"transform",
-//                                {{"o", object_center + center},
-//                                 {"x", {1.0, 0.0, 0.0}},
-//                                 {"y", {0.0, 1.0, 0.0}},
-//                                 {"z", {0.0, 0.0, 1.0}}}},
-//                               {"material", {{"type", "lambertian"}, {"albedo", kd}}}};
-//         }
-//     }
+            let center = Vector3::new(-u * v.cos(), v * u.cos() * 0.75, u * v.sin());
+            let kd = 0.35 *  glm::lerp(&glm::lerp(&Vector3::new(0.9, 0.0, 0.0), &Vector3::new(0.0, 0.9, 0.0), t),
+                                      &glm::lerp(&Vector3::new(0.0, 0.0, 0.9), &Vector3::new(0.0, 0.0, 0.0), t), s);
 
-//     j["surfaces"] +=
-//         {{"type", "quad"},
-//          {"size", {100, 100}},
-//          {"transform",
-//           {{"o", {0.0, -5.0, 0.0}}, {"x", {1.0, 0.0, 0.0}}, {"y", {0.0, 0.0, -1.0}}, {"z", {0.0, 1.0, 0.0}}}},
-//          {"material", {{"type", "lambertian"}, {"albedo", 1.0}}}};
+            let s = json!({
+                "type": "sphere",
+                "radius": radius,
+                "transform":{
+                    "o": object_center + center,
+                    "x": [1.0, 0.0, 0.0],
+                    "y": [0.0, 1.0, 0.0],
+                    "z": [0.0, 0.0, 1.0]
+                },
+                "material": {
+                    "type": "lambertian", 
+                    "albedo": kd
+                }
+            });
+            surfaces.push(s);
+        }
 
-//     // BVH
-//     j["accelerator"] = {{"type", "bbh"}};
+    }
 
-//     return j;
-// }
+    let s = json!({
+        "type": "quad",
+        "rsize": [100, 100],
+        "transform":{
+            "o": [0.0, -5.0, 0.0],
+            "x": [1.0, 0.0, 0.0],
+            "y": [0.0, 0.0, -1.0],
+            "z": [0.0, 1.0, 0.0]
+        },
+        "material": {
+            "type": "lambertian", 
+            "albedo": 1.0
+        }
+    });
+    surfaces.push(s);
+    
+    j["surfaces"] = serde_json::Value::Array(surfaces);
+    
+    // // BVH
+    // j["accelerator"] = {{"type", "bbh"}};
+
+    return j;
+}
 
 // json create_shirley_scene()
 // {
