@@ -22,13 +22,8 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory{
         let m = v.as_object().unwrap();
         let t = m.get("type").unwrap();
 
-        // match m.get("type").unwrap().as_str().unwrap() {
-        //     "sphere" => {
-
-        //     }
-        // }
         if t == "sphere"{
-            let radius = if let Some(r) = m.get("radius") { from_value((*r).clone()).unwrap()} else {1.0};
+            let radius = if let Some(r) = m.get("radius") {from_value((*r).clone()).unwrap()} else {1.0};
             let transform = parse_transform(v);
             let material = if let Some(mat) = m.get("material") {
                 if mat.is_string(){
@@ -43,7 +38,20 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory{
             return Some(Rc::new(Sphere{radius, transform, material}));
         }
         else if t == "quad"{
-            
+            let size = read_vector2_f32(v, "size", Vector2::new(69.0, 69.0));
+            let transform = parse_transform(v);
+            let material = if let Some(mat) = m.get("material") {
+                if mat.is_string(){
+                    // do something else
+                    create_material((*mat).clone())
+                }
+                else {
+                    create_material((*mat).clone())
+                }
+            } else { panic!("Invalid material");};
+
+            return Some(Rc::new(Quad{size, transform, material}));
+
         }
         None     
     }
@@ -356,6 +364,15 @@ impl Material for Metal {
     }
 }
 
+pub fn read_vector2_f32(v: &Value, name: &str, default: Vector2<f32>) -> Vector2<f32>
+{
+    v.get(name).map_or(default, |v: &Value| { from_value::<Vector2<f32>>(v.clone()).unwrap()})
+}
+
+pub fn read_vector3_f32(v: &Value, name: &str, default: Vector3<f32>) -> Vector3<f32>
+{
+    v.get(name).map_or(default, |v: &Value| { from_value::<Vector3<f32>>(v.clone()).unwrap()})
+}
 pub fn create_material(material_json: Value) -> Rc<dyn Material> {
     let type_material = material_json
         .get("type")
@@ -368,9 +385,10 @@ pub fn create_material(material_json: Value) -> Rc<dyn Material> {
             let albedo_number: f32 = from_value(v).unwrap();
             albedo = Vector3::new(albedo_number, albedo_number, albedo_number);
         } else {
-            albedo = j.get("albedo").map_or(Vector3::zeros(), |v: &Value| {
-                from_value::<Vector3<f32>>(v.clone()).unwrap()
-            });
+            albedo = read_vector3_f32(j, "albedo", Vector3::zeros());
+            // albedo = j.get("albedo").map_or(Vector3::zeros(), |v: &Value| {
+            //     from_value::<Vector3<f32>>(v.clone()).unwrap()
+            // });
         }
         albedo
     }
