@@ -20,8 +20,6 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
-
-
 #[derive(Parser)]
 struct Cli {
     /// The filename of the JSON scenefile to load (or the string \"example_sceneN\", where N is 0, 1, 2, or 3).
@@ -60,16 +58,15 @@ fn main() {
 
     println!("scene : {}", args.scene.to_string_lossy());
 
-
     // let char = 'E';
     // let b = args.scene.to_string_lossy().parse::<i32>().is_ok();
 
     // let j = read_scene_from_file(args.scene);
-    
-    let scene_json = if args.scene.exists(){
+
+    let scene_json = if args.scene.exists() {
         println!("existing file");
         read_scene_from_file(args.scene).unwrap()
-    } else if args.scene.to_string_lossy().parse::<i32>().is_ok(){
+    } else if args.scene.to_string_lossy().parse::<i32>().is_ok() {
         let index = args.scene.to_string_lossy().parse::<i32>().unwrap();
         create_example_scene(index)
     } else {
@@ -83,7 +80,7 @@ fn main() {
     //     let reader = BufReader::new(file);
     //     serde_json::from_reader(reader).unwrap()
     // } else {
-        
+
     // };
     println!("{}", scene_json);
 

@@ -148,8 +148,7 @@ pub fn parse_transform(json: &Value) -> Transform {
             let sn: f32 = from_value(scale).expect("could not load 'scale' number Transform");
             return Transform::new(Matrix4::new_scaling(sn));
         }
-        let sv: Vector3<f32> =
-            from_value(scale).expect("could not load 'scale' vector Transform");
+        let sv: Vector3<f32> = from_value(scale).expect("could not load 'scale' vector Transform");
         return Transform::new(Matrix4::new_nonuniform_scaling(&sv));
     } else if kv.contains_key("axis") || kv.contains_key("angle") {
         let axis = read("axis", Vector3::x());

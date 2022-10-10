@@ -38,17 +38,16 @@ use crate::utils::deg2rad;
 #[derive(Debug)]
 pub struct PinholeCamera {
     /// Local coordinate system
-    pub transform: Transform,     
+    pub transform: Transform,
     /// Physical size of the image plane
-    pub size: Vector2<f32>,       
+    pub size: Vector2<f32>,
     /// Distance to image plane along local z axis
-    pub focal_distance: f32,      
+    pub focal_distance: f32,
     /// Image resolution
-    pub resolution: Vector2<f32>, 
+    pub resolution: Vector2<f32>,
     /// The size of the aperture for depth of field
-    pub aperture_radius: f32,     
+    pub aperture_radius: f32,
 }
-
 
 impl PinholeCamera {
     pub fn new(json: &Value) -> PinholeCamera {

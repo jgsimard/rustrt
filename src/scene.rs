@@ -7,7 +7,7 @@ use std::rc::Rc;
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
 use crate::ray::Ray;
-use crate::surface::{HitInfo, Surface, SurfaceGroup, Factory, MaterialFactory};
+use crate::surface::{Factory, HitInfo, MaterialFactory, Surface, SurfaceGroup};
 
 use crate::surface::SurfaceFactory;
 
@@ -21,7 +21,6 @@ pub struct Scene {
     pub num_samples: i32,
     pub max_depth: i32,
 }
-
 
 impl Scene {
     pub fn new(scene_json: Value) -> Scene {
@@ -106,16 +105,16 @@ impl Scene {
         //
         // parse materials
         //
-        let mut material_factory =  MaterialFactory::new() ;
-        if map_json.contains_key("materials")
-        {
+        let mut material_factory = MaterialFactory::new();
+        if map_json.contains_key("materials") {
             for material_json in map_json.get("materials").unwrap().as_array().unwrap() {
                 // let surface = make_surface(sur);
-                if let Some(_material) = material_factory.make(material_json)
-                {
-                }
-                else {
-                    panic!("surface of type : {} not yet supported", material_json["type"]);
+                if let Some(_material) = material_factory.make(material_json) {
+                } else {
+                    panic!(
+                        "surface of type : {} not yet supported",
+                        material_json["type"]
+                    );
                 }
             }
         }
@@ -123,16 +122,20 @@ impl Scene {
         //
         // parse surfaces
         //
-        let mut surface_facory = SurfaceFactory{material_factory: material_factory};
+        let mut surface_facory = SurfaceFactory {
+            material_factory: material_factory,
+        };
         let mut surfaces = Vec::new();
         if map_json.contains_key("surfaces") {
             for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
                 // let surface = make_surface(sur);
-                if let Some(surface) = surface_facory.make(surface_json){
+                if let Some(surface) = surface_facory.make(surface_json) {
                     surfaces.push(surface.clone());
-                }
-                else {
-                    panic!("surface of type : {} not yet supported", surface_json["type"]);
+                } else {
+                    panic!(
+                        "surface of type : {} not yet supported",
+                        surface_json["type"]
+                    );
                 }
                 // DartsFactory<Surface>::create(s);
                 // surface->add_to_parent(this, surface, j);
@@ -150,7 +153,7 @@ impl Scene {
 
         let num_samples: i32 = 1;
         let max_depth: i32 = 64;
-        
+
         println!("{:?}", camera);
 
         Scene {
@@ -185,7 +188,10 @@ impl Scene {
     }
 
     pub fn raytrace(&self) -> Image2d {
-        let mut image = Image2d::new(self.camera.resolution.x as usize, self.camera.resolution.y as usize);
+        let mut image = Image2d::new(
+            self.camera.resolution.x as usize,
+            self.camera.resolution.y as usize,
+        );
         println!("Image size : ({}, {})", image.size_x, image.size_y);
         let sample_count = self.num_samples;
 

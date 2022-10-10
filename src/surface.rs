@@ -8,86 +8,119 @@ use std::collections::HashMap;
 
 use rand::Rng;
 
-
 use crate::ray::Ray;
-use crate::transform::{Transform, parse_transform};
-use crate::utils::{random_in_unit_sphere, reflect, refract, reflectance};
+use crate::transform::{parse_transform, Transform};
+use crate::utils::{random_in_unit_sphere, reflect, reflectance, refract};
 
-pub trait Factory<T>{
+pub trait Factory<T> {
     fn make(&mut self, v: &Value) -> Option<T>;
 }
 
-pub struct SurfaceFactory{
-    pub material_factory: MaterialFactory
+pub struct SurfaceFactory {
+    pub material_factory: MaterialFactory,
 }
 
-impl Factory<Rc<dyn Surface>> for SurfaceFactory{
-    fn make(&mut self, v: &Value) -> Option<Rc<dyn Surface>>{
+impl Factory<Rc<dyn Surface>> for SurfaceFactory {
+    fn make(&mut self, v: &Value) -> Option<Rc<dyn Surface>> {
         let m = v.as_object().unwrap();
         let t = m.get("type").unwrap();
 
-        if t == "sphere"{
-            let radius = if let Some(r) = m.get("radius") {from_value((*r).clone()).unwrap()} else {1.0};
-            let transform = if m.contains_key("transform"){parse_transform(&v["transform"])} else {Default::default()};
+        if t == "sphere" {
+            let radius = if let Some(r) = m.get("radius") {
+                from_value((*r).clone()).unwrap()
+            } else {
+                1.0
+            };
+            let transform = if m.contains_key("transform") {
+                parse_transform(&v["transform"])
+            } else {
+                Default::default()
+            };
             let material = if let Some(mat) = m.get("material") {
-                if mat.is_string(){
-                    (*self.material_factory.materials.get(mat.as_str().unwrap()).unwrap()).clone()
-                }
-                else {
+                if mat.is_string() {
+                    (*self
+                        .material_factory
+                        .materials
+                        .get(mat.as_str().unwrap())
+                        .unwrap())
+                    .clone()
+                } else {
                     create_material((*mat).clone())
                 }
-            } else { panic!("Invalid material");};
+            } else {
+                panic!("Invalid material");
+            };
 
-            return Some(Rc::new(Sphere{radius, transform, material}));
-        }
-        else if t == "quad"{
-            let size = if m.get("size").unwrap().is_number(){ 
+            return Some(Rc::new(Sphere {
+                radius,
+                transform,
+                material,
+            }));
+        } else if t == "quad" {
+            let size = if m.get("size").unwrap().is_number() {
                 let s = m.get("size").unwrap().as_f64().unwrap() as f32;
                 Vector2::new(s, s)
             } else {
                 read_vector2_f32(v, "size", Vector2::new(69.0, 69.0))
             };
-            
+
             // let transform = parse_transform(&v["transform"]);
-            let transform = if m.contains_key("transform"){parse_transform(&v["transform"])} else {Default::default()};
+            let transform = if m.contains_key("transform") {
+                parse_transform(&v["transform"])
+            } else {
+                Default::default()
+            };
             let material = if let Some(mat) = m.get("material") {
-                if mat.is_string(){
-                    (*self.material_factory.materials.get(mat.as_str().unwrap()).unwrap()).clone()
-                }
-                else {
+                if mat.is_string() {
+                    (*self
+                        .material_factory
+                        .materials
+                        .get(mat.as_str().unwrap())
+                        .unwrap())
+                    .clone()
+                } else {
                     create_material((*mat).clone())
                 }
-            } else { panic!("Invalid material");};
+            } else {
+                panic!("Invalid material");
+            };
 
-            return Some(Rc::new(Quad{size, transform, material}));
-
+            return Some(Rc::new(Quad {
+                size,
+                transform,
+                material,
+            }));
         }
-        None     
+        None
     }
 }
 
-pub struct MaterialFactory{
-    materials : HashMap<String, Rc<dyn Material>>
+pub struct MaterialFactory {
+    materials: HashMap<String, Rc<dyn Material>>,
 }
 
 impl MaterialFactory {
-    pub fn new() -> MaterialFactory{
-        MaterialFactory{materials: HashMap::new()}
-    }   
+    pub fn new() -> MaterialFactory {
+        MaterialFactory {
+            materials: HashMap::new(),
+        }
+    }
 }
 
 impl Factory<Rc<dyn Material>> for MaterialFactory {
-    fn make(&mut self, v: &Value) -> Option<Rc<dyn Material>>{
+    fn make(&mut self, v: &Value) -> Option<Rc<dyn Material>> {
         let m = v.as_object().unwrap();
-        let name = m.get("name").unwrap().to_string().trim_matches('"').to_string();
+        let name = m
+            .get("name")
+            .unwrap()
+            .to_string()
+            .trim_matches('"')
+            .to_string();
         let material = create_material((*v).clone());
         self.materials.insert(name, material.clone());
         Some(material)
     }
-    
 }
-
-
 
 pub struct HitInfo {
     /// Ray parameter for the hit
@@ -146,11 +179,10 @@ pub trait Surface {
     // fn is_emissive() -> bool;
 }
 
-
 pub struct Sphere {
     pub radius: f32,
     pub transform: Transform,
-    pub material: Rc<dyn Material>
+    pub material: Rc<dyn Material>,
 }
 impl Sphere {
     pub fn new(radius: f32, material: Rc<dyn Material>) -> Sphere {
@@ -204,11 +236,10 @@ impl Surface for Sphere {
     }
 }
 
-
 pub struct Quad {
     pub size: Vector2<f32>,
     pub transform: Transform,
-    pub material: Rc<dyn Material>
+    pub material: Rc<dyn Material>,
 }
 
 impl Surface for Quad {
@@ -217,18 +248,20 @@ impl Surface for Quad {
         // put ray into sphere frame
         let ray_transformed = self.transform.inverse().ray(ray);
 
-        if ray_transformed.direction.z == 0.0 {return None;};
+        if ray_transformed.direction.z == 0.0 {
+            return None;
+        };
 
-        let t = - ray_transformed.origin.z / ray_transformed.direction.z;
+        let t = -ray_transformed.origin.z / ray_transformed.direction.z;
         let mut p = ray_transformed.at(t);
 
-        if self.size.x < p.x ||self.size.y < p.y{
-            return None
+        if self.size.x < p.x || self.size.y < p.y {
+            return None;
         }
 
         // check if computed param is within ray.mint and ray.maxt
-        if t < ray_transformed.mint || t > ray_transformed.maxt{
-            return None
+        if t < ray_transformed.mint || t > ray_transformed.maxt {
+            return None;
         }
 
         // project hitpoint onto plane to reduce floating-point error
@@ -236,7 +269,7 @@ impl Surface for Quad {
 
         let n = glm::normalize(&self.transform.normal(&Vector3::z()));
         let uv = 0.5 * p.xy().component_div(&self.size).add_scalar(1.0);
-        let uv = glm::clamp(&uv, 0.000001, 0.999999); 
+        let uv = glm::clamp(&uv, 0.000001, 0.999999);
 
         // if hit, set intersection record values
         let hit = HitInfo {
@@ -383,14 +416,14 @@ impl Material for Metal {
 }
 
 pub struct Dielectric {
-    pub ior: f32
+    pub ior: f32,
 }
 
 impl Material for Dielectric {
     fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vector3<f32>, Ray)> {
         let front_face = glm::dot(&hit.gn, &r_in.direction) < 0.0;
 
-        let (normal, ratio_index_of_refraction) = if front_face{
+        let (normal, ratio_index_of_refraction) = if front_face {
             (hit.sn, 1.0 / self.ior)
         } else {
             (-hit.sn, self.ior)
@@ -400,9 +433,8 @@ impl Material for Dielectric {
 
         let cos_theta = glm::dot(&((-1.0) * unit_direction), &normal).min(1.0);
         let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
-        
-        let total_intern_reflection = ratio_index_of_refraction * sin_theta >= 1.0;
 
+        let total_intern_reflection = ratio_index_of_refraction * sin_theta >= 1.0;
 
         let mut rng = rand::thread_rng();
         let will_reflect = rng.gen::<f32>() < reflectance(cos_theta, ratio_index_of_refraction);
@@ -412,21 +444,23 @@ impl Material for Dielectric {
         } else {
             refract(&unit_direction, &normal, ratio_index_of_refraction)
         };
-        
+
         let scattered = Ray::new(hit.p, direction);
 
         Some((Vector3::new(1.0, 1.0, 1.0), scattered))
     }
 }
 
-pub fn read_vector2_f32(v: &Value, name: &str, default: Vector2<f32>) -> Vector2<f32>
-{
-    v.get(name).map_or(default, |v: &Value| { from_value::<Vector2<f32>>(v.clone()).unwrap()})
+pub fn read_vector2_f32(v: &Value, name: &str, default: Vector2<f32>) -> Vector2<f32> {
+    v.get(name).map_or(default, |v: &Value| {
+        from_value::<Vector2<f32>>(v.clone()).unwrap()
+    })
 }
 
-pub fn read_vector3_f32(v: &Value, name: &str, default: Vector3<f32>) -> Vector3<f32>
-{
-    v.get(name).map_or(default, |v: &Value| { from_value::<Vector3<f32>>(v.clone()).unwrap()})
+pub fn read_vector3_f32(v: &Value, name: &str, default: Vector3<f32>) -> Vector3<f32> {
+    v.get(name).map_or(default, |v: &Value| {
+        from_value::<Vector3<f32>>(v.clone()).unwrap()
+    })
 }
 
 pub fn create_material(material_json: Value) -> Rc<dyn Material> {
@@ -460,14 +494,15 @@ pub fn create_material(material_json: Value) -> Rc<dyn Material> {
             albedo: albedo,
             roughness: roughness,
         })
-    } else if type_material == "dielectric"{
+    } else if type_material == "dielectric" {
         let ior = material_json
             .get("ior")
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
-        Rc::new(Dielectric{
-            ior: ior
-        })
+        Rc::new(Dielectric { ior: ior })
     } else {
-        panic!("The material type '{}' is not yet implemented", type_material)
+        panic!(
+            "The material type '{}' is not yet implemented",
+            type_material
+        )
     }
 }

@@ -16,7 +16,6 @@ pub fn luminance(c: &Vector3<f32>) -> f32 {
     glm::dot(c, &Vector3::new(0.212671, 0.715160, 0.072169))
 }
 
-
 pub fn lerp<T, F>(a: T, b: T, f: F) -> T
 where
     T: Clone + Add<T, Output = T> + Sub<T, Output = T> + Mul<F, Output = T>,
