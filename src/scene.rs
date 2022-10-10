@@ -7,7 +7,7 @@ use std::rc::Rc;
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
 use crate::ray::Ray;
-use crate::surface::{HitInfo, Surface, SurfaceGroup, Factory};
+use crate::surface::{HitInfo, Surface, SurfaceGroup, Factory, MaterialFactory};
 
 use crate::surface::SurfaceFactory;
 
@@ -103,22 +103,27 @@ impl Scene {
             .get("background")
             .map_or(Vector3::zeros(), read_vector3);
 
-        // //
-        // // parse materials
-        // //
-        // if (j.contains("materials"))
-        // {
-        //     for (auto &m : j["materials"])
-        //     {
-        //         auto material = DartsFactory<Material>::create(m);
-        //         DartsFactory<Material>::register_instance(check_key("name", "material", m), material);
-        //     }
-        // }
+        //
+        // parse materials
+        //
+        let mut material_factory =  MaterialFactory::new() ;
+        if map_json.contains_key("materials")
+        {
+            for material_json in map_json.get("materials").unwrap().as_array().unwrap() {
+                // let surface = make_surface(sur);
+                if let Some(material) = material_factory.make(material_json)
+                {
+                }
+                else {
+                    panic!("surface of type : {} not yet supported", material_json["type"]);
+                }
+            }
+        }
 
         //
         // parse surfaces
         //
-        let surface_facory = SurfaceFactory;
+        let mut surface_facory = SurfaceFactory{material_factory: material_factory};
         let mut surfaces = Vec::new();
         if map_json.contains_key("surfaces") {
             for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
@@ -185,11 +190,11 @@ impl Scene {
         let sample_count = self.num_samples;
 
         {
-            let progress_bar = ProgressBar::new(image.size() as u64).;
+            let progress_bar = ProgressBar::new(image.size() as u64);
             progress_bar.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos:>7}/{len:7} ({eta})")
                 .unwrap()
                 .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
-                .progress_chars("#>-")).;
+                .progress_chars("#>-"));
             println!("Rendering ...");
             // Generate a ray for each pixel in the ray image
             for y in 0..image.size_y {

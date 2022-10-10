@@ -12,6 +12,9 @@ use crate::example_scenes::create_example_scene;
 use crate::scene::Scene;
 
 use clap::Parser;
+use serde_json::Value;
+use std::path::PathBuf;
+
 
 #[derive(Parser)]
 struct Cli {
@@ -25,7 +28,7 @@ struct Cli {
 
     /// Specify the output image filename (extension must be one accepted by -f)
     #[arg(short, long)]
-    outfile: std::path::PathBuf,
+    outfile: PathBuf,
     // /// The path to the file to read
     // verbosity: i32,
 
@@ -34,14 +37,65 @@ struct Cli {
     // seed: i32
 }
 
+use serde::Deserialize;
+
+use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::Path;
+
+// #[derive(Deserialize, Debug)]
+// struct User {
+//     fingerprint: String,
+//     location: String,
+// }
+
+
+fn read_scene_from_file<P: AsRef<Path>>(path: P) -> Result<Value, Box<dyn Error>> {
+    // Open the file in read-only mode with buffer.
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+
+    // Read the JSON contents of the file as an instance of `User`.
+    let j = serde_json::from_reader(reader)?;
+
+    // Return the `User`.
+    Ok(j)
+}
+
 fn main() {
     let args = Cli::parse();
 
-    let mock_json = create_example_scene(2);
+    println!("scene : {}", args.scene.to_string_lossy());
 
-    // println!("{}", mock_json);
 
-    let scene = Scene::new(mock_json);
+    // let char = 'E';
+    // let b = args.scene.to_string_lossy().parse::<i32>().is_ok();
+
+    // let j = read_scene_from_file(args.scene);
+    
+    let scene_json = if args.scene.exists(){
+        println!("existing file");
+        read_scene_from_file(args.scene).unwrap()
+    } else if args.scene.to_string_lossy().parse::<i32>().is_ok(){
+        let index = args.scene.to_string_lossy().parse::<i32>().unwrap();
+        create_example_scene(index)
+    } else {
+        // Value::new()
+        panic!("I dont know how to parse {}", args.scene.to_string_lossy());
+    };
+    // let sj = if read_scene_from_file(args.scene). {scene_json} else if {args.scene.}
+    // let b =  j.ok();
+
+    // let scene_json: Value = if let Some(file = File::open(args.scene).{
+    //     let reader = BufReader::new(file);
+    //     serde_json::from_reader(reader).unwrap()
+    // } else {
+        
+    // };
+    println!("{}", scene_json);
+
+    let scene = Scene::new(scene_json);
 
     // let outfile = "something".to_string();
 
