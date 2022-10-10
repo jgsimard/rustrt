@@ -155,8 +155,10 @@ pub fn parse_transform(json: &Value) -> Transform {
         let angle = kv
             .get("angle")
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
-        let angle = deg2rad(angle);
+        println!("{} {}", axis, angle);
 
+        let angle = deg2rad(angle);
+        // return Transform::new(Matrix4::new)
         return Transform::new(Matrix4::from_scaled_axis(axis * angle));
     } else if kv.contains_key("matrix") {
         unimplemented!();
