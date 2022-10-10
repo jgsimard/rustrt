@@ -4,16 +4,16 @@ use std::rc::Rc;
 
 use rustrt::camera::PinholeCamera;
 use rustrt::image2d::Image2d;
-use rustrt::ray::Ray;
-use rustrt::surfaces::surface_group::SurfaceGroup;
-use rustrt::transform::Transform;
-use rustrt::surfaces::surface::Surface;
-use rustrt::surfaces::sphere::Sphere;
 use rustrt::materials::factory::create_material;
-use rustrt::utils::lerp;
-use rustrt::surfaces::surface::HitInfo;
 use rustrt::materials::lambertian::Lambertian;
 use rustrt::materials::material::Material;
+use rustrt::ray::Ray;
+use rustrt::surfaces::sphere::Sphere;
+use rustrt::surfaces::surface::HitInfo;
+use rustrt::surfaces::surface::Surface;
+use rustrt::surfaces::surface_group::SurfaceGroup;
+use rustrt::transform::Transform;
+use rustrt::utils::lerp;
 
 fn vec2color(dir: &Vector3<f32>) -> Vector3<f32> {
     0.5 * (dir.add_scalar(1.0))
