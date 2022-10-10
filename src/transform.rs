@@ -163,5 +163,4 @@ pub fn parse_transform(json: &Value) -> Transform {
     } else {
         panic!("Unrecognized 'transform' command:")
     }
-    Default::default()
 }
