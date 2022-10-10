@@ -5,10 +5,15 @@ use std::rc::Rc;
 use rustrt::camera::PinholeCamera;
 use rustrt::image2d::Image2d;
 use rustrt::ray::Ray;
-use rustrt::surface::SurfaceGroup;
-use rustrt::surface::{create_material, HitInfo, Lambertian, Material, Sphere, Surface};
+use rustrt::surfaces::surface_group::SurfaceGroup;
 use rustrt::transform::Transform;
+use rustrt::surfaces::surface::Surface;
+use rustrt::surfaces::sphere::Sphere;
+use rustrt::materials::factory::create_material;
 use rustrt::utils::lerp;
+use rustrt::surfaces::surface::HitInfo;
+use rustrt::materials::lambertian::Lambertian;
+use rustrt::materials::material::Material;
 
 fn vec2color(dir: &Vector3<f32>) -> Vector3<f32> {
     0.5 * (dir.add_scalar(1.0))
@@ -194,7 +199,7 @@ fn test_camera_class_image() {
 
     let camera_map: Value = serde_json::from_str(camera_data).unwrap();
 
-    let camera: PinholeCamera = PinholeCamera::new(camera_map);
+    let camera: PinholeCamera = PinholeCamera::new(&camera_map);
 
     // println!("{}, {}, {}, {}, {}", camera.size, camera.focal_distance, camera.resolution, camera.aperture_radius, camera.transform.m);
 
@@ -342,7 +347,7 @@ fn test_xformed_camera_image() {
             "up": [0.0, 1.0, 0.0]
         }
     });
-    let camera = PinholeCamera::new(camera_json);
+    let camera = PinholeCamera::new(&camera_json);
     println!("{:?}", camera);
 
     // Generate a ray for each pixel in the ray image
@@ -486,7 +491,7 @@ fn test_sphere_image() {
             "up": [0.0, 1.0, 0.0]
         }
     });
-    let camera = PinholeCamera::new(camera_json);
+    let camera = PinholeCamera::new(&camera_json);
 
     // letz   material = DartsFactory<Material>::create(json{{"type", "lambertian"}, {"albedo", 1.f}});
     // Sphere sphere(20.f, material);
@@ -673,7 +678,7 @@ fn test_recursive_raytracing() {
             "up": [0.0, 1.0, 0.0]
         }
     });
-    let camera = PinholeCamera::new(camera_json);
+    let camera = PinholeCamera::new(&camera_json);
     println!("{:?}", camera);
 
     let ground = create_material(json!({"type": "lambertian", "albedo": 0.5 }));

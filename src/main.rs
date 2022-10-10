@@ -1,8 +1,9 @@
 mod camera;
 mod image2d;
+mod materials;
 mod ray;
 mod scene;
-mod surface;
+mod surfaces;
 mod transform;
 mod utils;
 

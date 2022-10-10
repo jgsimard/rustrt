@@ -7,9 +7,14 @@ use std::rc::Rc;
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
 use crate::ray::Ray;
-use crate::surface::{Factory, HitInfo, MaterialFactory, Surface, SurfaceGroup};
 
-use crate::surface::SurfaceFactory;
+use crate::surfaces::surface::HitInfo;
+use crate::surfaces::surface::Surface;
+
+use crate::materials::factory::MaterialFactory;
+use crate::surfaces::factory::SurfaceFactory;
+use crate::surfaces::surface_group::SurfaceGroup;
+use crate::utils::Factory;
 
 pub struct Scene {
     pub surfaces: SurfaceGroup,
@@ -151,7 +156,7 @@ impl Scene {
         // let max_depth: i32 = read_i32("max_depth", 64);
         //     // from_value(map_json.get("max_depth").ok_or(64).unwrap().clone()).unwrap();
 
-        let num_samples: i32 = 10;
+        let num_samples: i32 = 4;
         let max_depth: i32 = 64;
 
         println!("{:?}", camera);
@@ -194,7 +199,6 @@ impl Scene {
             self.camera.resolution.x as usize,
             self.camera.resolution.y as usize,
         );
-        println!("Image size : ({}, {})", image.size_x, image.size_y);
         let sample_count = self.num_samples;
 
         {
