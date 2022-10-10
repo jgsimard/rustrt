@@ -26,12 +26,10 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory{
 
         if t == "sphere"{
             let radius = if let Some(r) = m.get("radius") {from_value((*r).clone()).unwrap()} else {1.0};
-            let transform = parse_transform(v);
+            let transform = if m.contains_key("transform"){parse_transform(&v["transform"])} else {Default::default()};
             let material = if let Some(mat) = m.get("material") {
                 if mat.is_string(){
                     (*self.material_factory.materials.get(mat.as_str().unwrap()).unwrap()).clone()
-                    // do something else
-                    // create_material((*mat).clone())
                 }
                 else {
                     create_material((*mat).clone())
@@ -48,24 +46,11 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory{
                 read_vector2_f32(v, "size", Vector2::new(69.0, 69.0))
             };
             
-            let transform = parse_transform(v);
+            // let transform = parse_transform(&v["transform"]);
+            let transform = if m.contains_key("transform"){parse_transform(&v["transform"])} else {Default::default()};
             let material = if let Some(mat) = m.get("material") {
                 if mat.is_string(){
-                    let mat_string = mat.as_str().unwrap().to_string();
-
-                    // do something else
-                    // create_material((*mat).clone())
-                    println!("{}", mat);
-                    println!("these are the available materials : ");
-                    for key in self.material_factory.materials.keys() {
-                        println!("key={key} len={},  v={mat_string} len={}, {}",key.len(), mat_string.len(), key == &mat_string);
-                    }
-                    println!("--------------");
-                    // println!("{}", self.material_factory.materials.keys())
-                    println!("{}", mat_string);
-                    println!("{}", self.material_factory.materials.contains_key(&mat_string));
-                    (*self.material_factory.materials.get(&mat_string).unwrap()).clone()
-                    
+                    (*self.material_factory.materials.get(mat.as_str().unwrap()).unwrap()).clone()
                 }
                 else {
                     create_material((*mat).clone())
@@ -93,7 +78,6 @@ impl Factory<Rc<dyn Material>> for MaterialFactory {
     fn make(&mut self, v: &Value) -> Option<Rc<dyn Material>>{
         let m = v.as_object().unwrap();
         let name = m.get("name").unwrap().to_string().trim_matches('"').to_string();
-        println!("making {} ...", name);
         let material = create_material((*v).clone());
         self.materials.insert(name, material.clone());
         Some(material)
@@ -133,6 +117,7 @@ impl HitInfo {
         }
     }
 }
+
 // /// Data record for conveniently querying and sampling emitters
 // pub struct EmitterRecord
 // {
@@ -404,6 +389,7 @@ pub fn read_vector3_f32(v: &Value, name: &str, default: Vector3<f32>) -> Vector3
 {
     v.get(name).map_or(default, |v: &Value| { from_value::<Vector3<f32>>(v.clone()).unwrap()})
 }
+
 pub fn create_material(material_json: Value) -> Rc<dyn Material> {
     let type_material = material_json
         .get("type")

@@ -15,6 +15,12 @@ use clap::Parser;
 use serde_json::Value;
 use std::path::PathBuf;
 
+use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::Path;
+
+
 
 #[derive(Parser)]
 struct Cli {
@@ -36,20 +42,6 @@ struct Cli {
     // #[arg(short, long, default_value_t = 1)]
     // seed: i32
 }
-
-use serde::Deserialize;
-
-use std::error::Error;
-use std::fs::File;
-use std::io::BufReader;
-use std::path::Path;
-
-// #[derive(Deserialize, Debug)]
-// struct User {
-//     fingerprint: String,
-//     location: String,
-// }
-
 
 fn read_scene_from_file<P: AsRef<Path>>(path: P) -> Result<Value, Box<dyn Error>> {
     // Open the file in read-only mode with buffer.

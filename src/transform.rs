@@ -95,75 +95,74 @@ impl Default for Transform {
 }
 
 pub fn parse_transform(json: &Value) -> Transform {
-    if json["transform"] != Value::Null {
-        let t_json = json["transform"].clone();
+    // if json["transform"] != Value::Null {
+    // let t_json = json["transform"].clone();
 
-        // multiple transforms
-        if t_json.is_array() {
-            let mut t: Transform = Default::default();
-            for sub_t in t_json.as_array().unwrap() {
-                t = parse_transform(&sub_t) * t;
-            }
-            return t;
+    // multiple transforms
+    if json.is_array() {
+        let mut t: Transform = Default::default();
+        for sub_t in json.as_array().unwrap() {
+            t = parse_transform(&sub_t) * t;
         }
-        // single transform
-        let kv = t_json.as_object().unwrap();
-        // let kv: HashMap<String, serde_json::Value> = serde_json::from_value(t_json).unwrap();
+        return t;
+    }
+    // single transform
+    let kv = json.as_object().unwrap();
+    // let kv: HashMap<String, serde_json::Value> = serde_json::from_value(t_json).unwrap();
 
-        let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
-        let read = |s: &str, default| kv.get(s).map_or(default, read_vector3);
+    let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
+    let read = |s: &str, default| kv.get(s).map_or(default, read_vector3);
 
-        if kv.contains_key("from")
-            || kv.contains_key("at")
-            || kv.contains_key("to")
-            || kv.contains_key("up")
-        {
-            let from = read("from", Vector3::z());
-            let to = read("to", Vector3::zeros());
-            let at = read("at", Vector3::zeros()) + to;
-            let up = read("up", Vector3::y());
+    if kv.contains_key("from")
+        || kv.contains_key("at")
+        || kv.contains_key("to")
+        || kv.contains_key("up")
+    {
+        let from = read("from", Vector3::z());
+        let to = read("to", Vector3::zeros());
+        let at = read("at", Vector3::zeros()) + to;
+        let up = read("up", Vector3::y());
 
-            let dir = glm::normalize(&(from - at));
-            let left = glm::normalize(&glm::cross(&up, &dir));
-            let new_up = glm::normalize(&glm::cross(&dir, &left));
+        let dir = glm::normalize(&(from - at));
+        let left = glm::normalize(&glm::cross(&up, &dir));
+        let new_up = glm::normalize(&glm::cross(&dir, &left));
 
-            return Transform::axis_offset(&left, &new_up, &dir, &from);
-        } else if kv.contains_key("o")
-            || kv.contains_key("x")
-            || kv.contains_key("y")
-            || kv.contains_key("z")
-        {
-            let o = read("o", Vector3::zeros());
-            let x = read("x", Vector3::x());
-            let y = read("y", Vector3::y());
-            let z = read("z", Vector3::z());
+        return Transform::axis_offset(&left, &new_up, &dir, &from);
+    } else if kv.contains_key("o")
+        || kv.contains_key("x")
+        || kv.contains_key("y")
+        || kv.contains_key("z")
+    {
+        let o = read("o", Vector3::zeros());
+        let x = read("x", Vector3::x());
+        let y = read("y", Vector3::y());
+        let z = read("z", Vector3::z());
 
-            return Transform::axis_offset(&x, &y, &z, &o);
-        } else if kv.contains_key("translate") {
-            let t = read("translate", Vector3::zeros());
-            return Transform::new(Matrix4::new_translation(&t));
-        } else if kv.contains_key("scale") {
-            let scale = kv.get("scale").unwrap().clone();
-            if scale.is_number() {
-                let sn: f32 = from_value(scale).expect("could not load 'scale' number Transform");
-                return Transform::new(Matrix4::new_scaling(sn));
-            }
-            let sv: Vector3<f32> =
-                from_value(scale).expect("could not load 'scale' vector Transform");
-            return Transform::new(Matrix4::new_nonuniform_scaling(&sv));
-        } else if kv.contains_key("axis") || kv.contains_key("angle") {
-            let axis = read("axis", Vector3::x());
-            let angle = kv
-                .get("angle")
-                .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
-            let angle = deg2rad(angle);
-
-            return Transform::new(Matrix4::from_scaled_axis(axis * angle));
-        } else if kv.contains_key("matrix") {
-            unimplemented!();
-        } else {
-            panic!("Unrecognized 'transform' command:")
+        return Transform::axis_offset(&x, &y, &z, &o);
+    } else if kv.contains_key("translate") {
+        let t = read("translate", Vector3::zeros());
+        return Transform::new(Matrix4::new_translation(&t));
+    } else if kv.contains_key("scale") {
+        let scale = kv.get("scale").unwrap().clone();
+        if scale.is_number() {
+            let sn: f32 = from_value(scale).expect("could not load 'scale' number Transform");
+            return Transform::new(Matrix4::new_scaling(sn));
         }
+        let sv: Vector3<f32> =
+            from_value(scale).expect("could not load 'scale' vector Transform");
+        return Transform::new(Matrix4::new_nonuniform_scaling(&sv));
+    } else if kv.contains_key("axis") || kv.contains_key("angle") {
+        let axis = read("axis", Vector3::x());
+        let angle = kv
+            .get("angle")
+            .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
+        let angle = deg2rad(angle);
+
+        return Transform::new(Matrix4::from_scaled_axis(axis * angle));
+    } else if kv.contains_key("matrix") {
+        unimplemented!();
+    } else {
+        panic!("Unrecognized 'transform' command:")
     }
     Default::default()
 }
