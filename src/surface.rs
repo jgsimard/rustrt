@@ -6,10 +6,12 @@ use nalgebra::{Vector2, Vector3};
 use serde_json::{from_value, Value};
 use std::collections::HashMap;
 
+use rand::Rng;
+
 
 use crate::ray::Ray;
 use crate::transform::{Transform, parse_transform};
-use crate::utils::{random_in_unit_sphere, reflect};
+use crate::utils::{random_in_unit_sphere, reflect, refract, reflectance};
 
 pub trait Factory<T>{
     fn make(&mut self, v: &Value) -> Option<T>;
@@ -380,6 +382,43 @@ impl Material for Metal {
     }
 }
 
+pub struct Dielectric {
+    pub ior: f32
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vector3<f32>, Ray)> {
+        let front_face = glm::dot(&hit.gn, &r_in.direction) < 0.0;
+
+        let (normal, ratio_index_of_refraction) = if front_face{
+            (hit.sn, 1.0 / self.ior)
+        } else {
+            (-hit.sn, self.ior)
+        };
+
+        let unit_direction = glm::normalize(&r_in.direction);
+
+        let cos_theta = glm::dot(&((-1.0) * unit_direction), &normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
+        
+        let total_intern_reflection = ratio_index_of_refraction * sin_theta >= 1.0;
+
+
+        let mut rng = rand::thread_rng();
+        let will_reflect = rng.gen::<f32>() < reflectance(cos_theta, ratio_index_of_refraction);
+
+        let direction = if total_intern_reflection || will_reflect {
+            reflect(&unit_direction, &normal)
+        } else {
+            refract(&unit_direction, &normal, ratio_index_of_refraction)
+        };
+        
+        let scattered = Ray::new(hit.p, direction);
+
+        Some((Vector3::new(1.0, 1.0, 1.0), scattered))
+    }
+}
+
 pub fn read_vector2_f32(v: &Value, name: &str, default: Vector2<f32>) -> Vector2<f32>
 {
     v.get(name).map_or(default, |v: &Value| { from_value::<Vector2<f32>>(v.clone()).unwrap()})
@@ -421,7 +460,14 @@ pub fn create_material(material_json: Value) -> Rc<dyn Material> {
             albedo: albedo,
             roughness: roughness,
         })
+    } else if type_material == "dielectric"{
+        let ior = material_json
+            .get("ior")
+            .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
+        Rc::new(Dielectric{
+            ior: ior
+        })
     } else {
-        panic!("This type is not yet implemented")
+        panic!("The material type '{}' is not yet implemented", type_material)
     }
 }
