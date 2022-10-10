@@ -151,7 +151,7 @@ impl Scene {
         // let max_depth: i32 = read_i32("max_depth", 64);
         //     // from_value(map_json.get("max_depth").ok_or(64).unwrap().clone()).unwrap();
 
-        let num_samples: i32 = 1;
+        let num_samples: i32 = 10;
         let max_depth: i32 = 64;
 
         println!("{:?}", camera);
@@ -174,13 +174,14 @@ impl Scene {
         const BLACK: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
 
         if let Some(hit) = self.intersect(ray) {
+            let emitted = hit.mat.emmitted(ray, &hit).unwrap_or(BLACK);
             if depth < self.max_depth {
                 if let Some((attenuation, scattered)) = hit.mat.scatter(ray, &hit) {
-                    return attenuation.component_mul(&self.recursive_color(&scattered, depth + 1));
+                    return emitted + attenuation.component_mul(&self.recursive_color(&scattered, depth + 1));
                 }
-                return BLACK;
+                return emitted;
             } else {
-                return BLACK;
+                return emitted;
             }
         } else {
             return self.background;

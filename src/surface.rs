@@ -1,7 +1,7 @@
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 
-use nalgebra::{Vector2, Vector3};
+use nalgebra::{Vector2, Vector3, ComplexField};
 
 use serde_json::{from_value, Value};
 use std::collections::HashMap;
@@ -61,8 +61,10 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
                 let s = m.get("size").unwrap().as_f64().unwrap() as f32;
                 Vector2::new(s, s)
             } else {
-                read_vector2_f32(v, "size", Vector2::new(69.0, 69.0))
+                read_vector2_f32(v, "size", Vector2::new(1.0, 1.0))
             };
+            let size = size / 2.0;
+            println!("size = {}", size);
 
             // let transform = parse_transform(&v["transform"]);
             let transform = if m.contains_key("transform") {
@@ -184,6 +186,7 @@ pub struct Sphere {
     pub transform: Transform,
     pub material: Rc<dyn Material>,
 }
+
 impl Sphere {
     pub fn new(radius: f32, material: Rc<dyn Material>) -> Sphere {
         Sphere {
@@ -255,7 +258,7 @@ impl Surface for Quad {
         let t = -ray_transformed.origin.z / ray_transformed.direction.z;
         let mut p = ray_transformed.at(t);
 
-        if self.size.x < p.x || self.size.y < p.y {
+        if self.size.x < p.x.abs() || self.size.y < p.y.abs() {
             return None;
         }
 
@@ -337,14 +340,14 @@ pub trait Material {
     ///The base Material does not scatter any light, so it simply returns false.
     fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vector3<f32>, Ray)>;
 
-    // /// Compute the amount of emitted light at the surface hitpoint.
-    // /// The base Material class does not emit light, so it simply returns black.
-    // fn emmitted(&self, ray: &Ray, hit: &HitInfo);
+    /// Compute the amount of emitted light at the surface hitpoint.
+    /// The base Material class does not emit light, so it simply returns black.
+    fn emmitted(&self, ray: &Ray, hit: &HitInfo) -> Option<Vector3<f32>>;
 
-    // /// Return whether or not this Material is emissive.
-    // ///
-    // /// This is primarily used to create a global list of emitters for sampling.
-    // fn is_emissive(&self) -> bool;
+    /// Return whether or not this Material is emissive.
+    ///
+    /// This is primarily used to create a global list of emitters for sampling.
+    fn is_emissive(&self) -> bool;
 
     // /// Evaluate the material response for the given pair of directions.
     // ///
@@ -389,6 +392,13 @@ impl Material for Lambertian {
 
         Some((attenuation, ray_out))
     }
+
+    fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vector3<f32>> {
+        None
+    }
+    fn is_emissive(&self) -> bool {
+        false
+    }
 }
 
 pub struct Metal {
@@ -412,6 +422,14 @@ impl Material for Metal {
         let ray_out = Ray::new(hit.p, scatter_direction.normalize());
 
         Some((attenuation, ray_out))
+    }
+
+    fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vector3<f32>> {
+        None
+    }
+
+    fn is_emissive(&self) -> bool {
+        false
     }
 }
 
@@ -449,6 +467,37 @@ impl Material for Dielectric {
 
         Some((Vector3::new(1.0, 1.0, 1.0), scattered))
     }
+
+    fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vector3<f32>> {
+        None
+    }
+
+    fn is_emissive(&self) -> bool {
+        false
+    }
+}
+
+pub struct DiffuseLight {
+    emit: Vector3<f32>,
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, _r_in: &Ray, _hit: &HitInfo) -> Option<(Vector3<f32>, Ray)> {
+        None
+    }
+
+    fn emmitted(&self, ray: &Ray, hit: &HitInfo) -> Option<Vector3<f32>> {
+        // only emit from the normal-facing side
+        if glm::dot(&ray.direction, &hit.sn) > 0.0{
+            Some(Vector3::zeros())
+        } else {
+            Some(self.emit)
+        }
+    }
+
+    fn is_emissive(&self) -> bool {
+        true
+    }
 }
 
 pub fn read_vector2_f32(v: &Value, name: &str, default: Vector2<f32>) -> Vector2<f32> {
@@ -468,25 +517,22 @@ pub fn create_material(material_json: Value) -> Rc<dyn Material> {
         .get("type")
         .expect("material should have a type");
 
-    fn read_albedo(j: &Value) -> Vector3<f32> {
-        let v = j.get("albedo").unwrap().clone();
-        let albedo: Vector3<f32>;
+    fn read_v_or_f(j: &Value, thing_name: &str, default: Vector3<f32>) -> Vector3<f32> {
+        let v = j.get(thing_name).unwrap().clone();
+        let thing: Vector3<f32>;
         if v.is_number() {
-            let albedo_number: f32 = from_value(v).unwrap();
-            albedo = Vector3::new(albedo_number, albedo_number, albedo_number);
+            let thing_number: f32 = from_value(v).unwrap();
+            thing = Vector3::new(thing_number, thing_number, thing_number);
         } else {
-            albedo = read_vector3_f32(j, "albedo", Vector3::zeros());
-            // albedo = j.get("albedo").map_or(Vector3::zeros(), |v: &Value| {
-            //     from_value::<Vector3<f32>>(v.clone()).unwrap()
-            // });
+            thing = read_vector3_f32(j, thing_name, default);
         }
-        albedo
+        thing
     }
     if type_material == "lambertian" {
-        let albedo = read_albedo(&material_json);
+        let albedo = read_v_or_f(&material_json, "albedo", Vector3::zeros());
         Rc::new(Lambertian { albedo: albedo })
     } else if type_material == "metal" {
-        let albedo = read_albedo(&material_json);
+        let albedo = read_v_or_f(&material_json, "albedo", Vector3::zeros());
         let roughness = material_json
             .get("roughness")
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
@@ -499,6 +545,11 @@ pub fn create_material(material_json: Value) -> Rc<dyn Material> {
             .get("ior")
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
         Rc::new(Dielectric { ior: ior })
+    } else if type_material == "diffuse_light"{
+        let emit = read_v_or_f(&material_json, "emit", Vector3::new(1.0, 1.0, 1.0));
+        Rc::new(DiffuseLight{
+            emit: emit
+        })
     } else {
         panic!(
             "The material type '{}' is not yet implemented",
