@@ -1,4 +1,5 @@
 use nalgebra::Vector3;
+use rand::Rng;
 use serde_json::Value;
 use serde_json::{self, json};
 
@@ -59,7 +60,7 @@ pub fn create_example_scene(scene_number: i32) -> Value {
         0 => create_sphere_scene(),
         1 => create_sphere_plane_scene(),
         2 => create_steinbach_scene(),
-        // 3 => create_shirley_scene(),
+        3 => create_shirley_scene(),
         _ => unimplemented!(),
     }
 }
@@ -153,89 +154,126 @@ fn create_steinbach_scene() -> Value {
     return j;
 }
 
-// json create_shirley_scene()
-// {
-//     pcg32 rng = pcg32();
+fn create_shirley_scene() -> Value {
+    let mut rng = rand::thread_rng();
 
-//     json j;
+    // Compose the camera
+    let mut j = json!({
+        "camera": {
+            "transform":{
+                "from":[13, 2, 3],
+                "to": [0, 0, 0],
+                "up": [0, 1, 0]
+            },
+            "vfov": 20,
+            "fdist": 10,
+            "aperture": 0.1,
+            "resolution": [600, 400]
+        }
+    });
 
-//     // Compose the camera
-//     j["camera"] = {{"transform", {{"from", {13, 2, 3}}, {"to", {0, 0, 0}}, {"up", {0, 1, 0}}}},
-//                    {"vfov", 20},
-//                    {"fdist", 10},
-//                    {"aperture", 0.1},
-//                    {"resolution", {600, 400}}};
+    // compose the image properties
+    // j["sampler"]["samples"] = 10;
+    // j["background"]         = {1, 1, 1};
+    j["sampler"] = json!({"samples": 10});
+    j["background"] = serde_json::to_value([1.0, 1.0, 1.0]).unwrap();
 
-//     // compose the image properties
-//     j["sampler"]["samples"] = 10;
-//     j["background"]         = {1, 1, 1};
+    // // BVH
+    // j["accelerator"] = {{"type", "bbh"}};
 
-//     // BVH
-//     j["accelerator"] = {{"type", "bbh"}};
+    let mut surfaces: Vec<Value> = Vec::new();
 
-//     // ground plane
-//     j["surfaces"] +=
-//         {{"type", "quad"},
-//          {"size", {100, 100}},
-//          {"transform",
-//           {{"o", {0.0, 0.0, 0.0}}, {"x", {1.0, 0.0, 0.0}}, {"y", {0.0, 0.0, -1.0}}, {"z", {0.0, 1.0, 0.0}}}},
-//          {"material", {{"type", "lambertian"}, {"albedo", {0.5, 0.5, 0.5}}}}};
+    // ground plane
+    let gp = json!({
+        "type": "quad",
+        "size": [100, 100],
+        "transform":{
+            "o": [0.0, 0.0, 0.0],
+            "x": [1.0, 0.0, 0.0],
+            "y": [0.0, 0.0, -1.0],
+            "z": [0.0, 1.0, 0.0]},
+         "material": {
+            "type": "lambertian",
+            "albedo": [0.5, 0.5, 0.5]
+        }
+    });
+    surfaces.push(gp);
 
-//     for (int a = -11; a < 11; a++)
-//     {
-//         for (int b = -11; b < 11; b++)
-//         {
-//             float choose_mat = rng.nextFloat();
-//             float r1 = rng.nextFloat();
-//             float r2 = rng.nextFloat();
-//             Vec3f center(a + 0.9f * r1, 0.2f, b + 0.9f * r2);
-//             if (length(center - Vec3f(4.0f, 0.2f, 0.0f)) > 0.9f)
-//             {
-//                 json sphere = {{"type", "sphere"}, {"radius", 0.2f}, {"transform", {{"translate", center}}}};
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = rng.gen::<f32>();
+            let r1 = rng.gen::<f32>();
+            let r2 = rng.gen::<f32>();
+            let center = Vector3::new(a as f32 + 0.9 * r1, 0.2, b as f32 + 0.9 * r2);
+            if glm::length(&(center - Vector3::new(4.0, 0.2, 0.0))) > 0.9 {
+                let mut sphere =
+                    json!({"type": "sphere", "radius": 0.2, "transform": {"translate": center}});
 
-//                 if (choose_mat < 0.8)
-//                 { // diffuse
-//                     float r1 = rng.nextFloat();
-//                     float r2 = rng.nextFloat();
-//                     float r3 = rng.nextFloat();
-//                     float r4 = rng.nextFloat();
-//                     float r5 = rng.nextFloat();
-//                     float r6 = rng.nextFloat();
-//                     Color3f albedo(r1*r2, r3*r4, r5*r6);
-//                     sphere["material"] = {{"type", "lambertian"}, {"albedo", albedo}};
-//                 }
-//                 else if (choose_mat < 0.95)
-//                 { // metal
-//                     float r1 = rng.nextFloat();
-//                     float r2 = rng.nextFloat();
-//                     float r3 = rng.nextFloat();
-//                     float r4 = rng.nextFloat();
-//                     Color3f albedo(0.5f * (1 + r1), 0.5f * (1.0f + r2), 0.5f * (1.0f + r3));
-//                     float   rough      = 0.5f * r4;
-//                     sphere["material"] = {{"type", "metal"}, {"albedo", albedo}, {"roughness", rough}};
-//                 }
-//                 else
-//                 { // glass
-//                     sphere["material"] = {{"type", "dielectric"}, {"ior", 1.5}};
-//                 }
+                if choose_mat < 0.8 {
+                    // diffuse
+                    let r1 = rng.gen::<f32>();
+                    let r2 = rng.gen::<f32>();
+                    let r3 = rng.gen::<f32>();
+                    let r4 = rng.gen::<f32>();
+                    let r5 = rng.gen::<f32>();
+                    let r6 = rng.gen::<f32>();
+                    let albedo = Vector3::new(r1 * r2, r3 * r4, r5 * r6);
+                    sphere["material"] = json!({"type": "lambertian", "albedo": albedo});
+                } else if (choose_mat < 0.95) {
+                    // metal
+                    let r1 = rng.gen::<f32>();
+                    let r2 = rng.gen::<f32>();
+                    let r3 = rng.gen::<f32>();
+                    let r4 = rng.gen::<f32>();
+                    let albedo = Vector3::new(0.5 * (1.0 + r1), 0.5 * (1.0 + r2), 0.5 * (1.0 + r3));
+                    let rough = 0.5 * r4;
+                    sphere["material"] =
+                        json!({"type": "metal", "albedo": albedo, "roughness": rough});
+                } else {
+                    // glass
+                    sphere["material"] = json!({"type": "dielectric", "ior": 1.5});
+                }
+                surfaces.push(sphere);
+            }
+        }
+    }
 
-//                 j["surfaces"] += sphere;
-//             }
-//         }
-//     }
+    surfaces.push(json!({
+        "type": "sphere",
+        "radius": 1.0,
+        "transform": {
+            "translate": [0, 1, 0]
+        },
+        "material": {
+            "type": "dielectric",
+            "ior": 1.5
+        }
+    }));
+    surfaces.push(json!({
+        "type": "sphere",
+        "radius": 1.0,
+        "transform": {
+            "translate": [-4, 1, 0]
+        },
+        "material": {
+            "type": "lambertian",
+            "albedo": [0.4, 0.2, 0.1]
+        }
+    }));
+    surfaces.push(json!({
+        "type": "sphere",
+        "radius": 1.0,
+        "transform": {
+            "translate": [4, 1, 0]
+        },
+        "material": {
+            "type": "metal",
+            "albedo": [0.7, 0.6, 0.5],
+            "roughness": 0.0
+        }
+    }));
 
-//     j["surfaces"] += {{"type", "sphere"},
-//                       {"radius", 1.f},
-//                       {"transform", {{"translate", {0, 1, 0}}}},
-//                       {"material", {{"type", "dielectric"}, {"ior", 1.5}}}};
-//     j["surfaces"] += {{"type", "sphere"},
-//                       {"radius", 1.f},
-//                       {"transform", {{"translate", {-4, 1, 0}}}},
-//                       {"material", {{"type", "lambertian"}, {"albedo", {0.4, 0.2, 0.1}}}}};
-//     j["surfaces"] += {{"type", "sphere"},
-//                       {"radius", 1.f},
-//                       {"transform", {{"translate", {4, 1, 0}}}},
-//                       {"material", {{"type", "metal"}, {"albedo", {0.7, 0.6, 0.5}}, {"roughness", 0.0}}}};
+    j["surfaces"] = serde_json::Value::Array(surfaces);
 
-//     return j;
-// }
+    return j;
+}

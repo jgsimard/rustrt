@@ -70,19 +70,9 @@ fn main() {
         let index = args.scene.to_string_lossy().parse::<i32>().unwrap();
         create_example_scene(index)
     } else {
-        // Value::new()
         panic!("I dont know how to parse {}", args.scene.to_string_lossy());
     };
-    // let sj = if read_scene_from_file(args.scene). {scene_json} else if {args.scene.}
-    // let b =  j.ok();
-
-    // let scene_json: Value = if let Some(file = File::open(args.scene).{
-    //     let reader = BufReader::new(file);
-    //     serde_json::from_reader(reader).unwrap()
-    // } else {
-
-    // };
-    println!("{}", scene_json);
+    // println!("{}", scene_json);
 
     let scene = Scene::new(scene_json);
 
