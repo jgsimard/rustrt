@@ -4,7 +4,7 @@ extern crate nalgebra_glm as glm;
 use nalgebra::{Vector2, Vector3};
 
 use serde_json::{from_value, Value};
-// use std::collections::HashMap;
+use std::collections::HashMap;
 
 
 use crate::ray::Ray;
@@ -12,13 +12,15 @@ use crate::transform::{Transform, parse_transform};
 use crate::utils::{random_in_unit_sphere, reflect};
 
 pub trait Factory<T>{
-    fn make(&self, v: &Value) -> Option<T>;
+    fn make(&mut self, v: &Value) -> Option<T>;
 }
 
-pub struct SurfaceFactory;
+pub struct SurfaceFactory{
+    pub material_factory: MaterialFactory
+}
 
 impl Factory<Rc<dyn Surface>> for SurfaceFactory{
-    fn make(&self, v: &Value) -> Option<Rc<dyn Surface>>{
+    fn make(&mut self, v: &Value) -> Option<Rc<dyn Surface>>{
         let m = v.as_object().unwrap();
         let t = m.get("type").unwrap();
 
@@ -27,8 +29,9 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory{
             let transform = parse_transform(v);
             let material = if let Some(mat) = m.get("material") {
                 if mat.is_string(){
+                    (*self.material_factory.materials.get(mat.as_str().unwrap()).unwrap()).clone()
                     // do something else
-                    create_material((*mat).clone())
+                    // create_material((*mat).clone())
                 }
                 else {
                     create_material((*mat).clone())
@@ -38,12 +41,31 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory{
             return Some(Rc::new(Sphere{radius, transform, material}));
         }
         else if t == "quad"{
-            let size = read_vector2_f32(v, "size", Vector2::new(69.0, 69.0));
+            let size = if m.get("size").unwrap().is_number(){ 
+                let s = m.get("size").unwrap().as_f64().unwrap() as f32;
+                Vector2::new(s, s)
+            } else {
+                read_vector2_f32(v, "size", Vector2::new(69.0, 69.0))
+            };
+            
             let transform = parse_transform(v);
             let material = if let Some(mat) = m.get("material") {
                 if mat.is_string(){
+                    let mat_string = mat.as_str().unwrap().to_string();
+
                     // do something else
-                    create_material((*mat).clone())
+                    // create_material((*mat).clone())
+                    println!("{}", mat);
+                    println!("these are the available materials : ");
+                    for key in self.material_factory.materials.keys() {
+                        println!("key={key} len={},  v={mat_string} len={}, {}",key.len(), mat_string.len(), key == &mat_string);
+                    }
+                    println!("--------------");
+                    // println!("{}", self.material_factory.materials.keys())
+                    println!("{}", mat_string);
+                    println!("{}", self.material_factory.materials.contains_key(&mat_string));
+                    (*self.material_factory.materials.get(&mat_string).unwrap()).clone()
+                    
                 }
                 else {
                     create_material((*mat).clone())
@@ -57,19 +79,27 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory{
     }
 }
 
-// pub struct MaterialFactory{
-//     materials : HashMap<String, Rc<dyn Material>>
-// }
+pub struct MaterialFactory{
+    materials : HashMap<String, Rc<dyn Material>>
+}
 
-// impl Factory<Rc<dyn Material>> for MaterialFactory {
-//     fn make(&self, v: &Value) {
-//         let m = v.as_object().unwrap();
-//         let name = m.get("name").unwrap().to_string();
-//         self.materials.insert(name, create_material(*v));
-        
-//     }
+impl MaterialFactory {
+    pub fn new() -> MaterialFactory{
+        MaterialFactory{materials: HashMap::new()}
+    }   
+}
+
+impl Factory<Rc<dyn Material>> for MaterialFactory {
+    fn make(&mut self, v: &Value) -> Option<Rc<dyn Material>>{
+        let m = v.as_object().unwrap();
+        let name = m.get("name").unwrap().to_string().trim_matches('"').to_string();
+        println!("making {} ...", name);
+        let material = create_material((*v).clone());
+        self.materials.insert(name, material.clone());
+        Some(material)
+    }
     
-// }
+}
 
 
 
@@ -277,6 +307,7 @@ impl SurfaceGroup {
 
     pub fn add_to_parent(&self) {}
 }
+
 //////////////////////////////
 /// MATERIAL
 //////////////////////////////

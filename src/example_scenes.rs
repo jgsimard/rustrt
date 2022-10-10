@@ -124,7 +124,7 @@ fn create_steinbach_scene() -> Value
 
     let s = json!({
         "type": "quad",
-        "rsize": [100, 100],
+        "size": [100, 100],
         "transform":{
             "o": [0.0, -5.0, 0.0],
             "x": [1.0, 0.0, 0.0],
