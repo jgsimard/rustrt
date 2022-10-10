@@ -177,7 +177,8 @@ impl Scene {
             let emitted = hit.mat.emmitted(ray, &hit).unwrap_or(BLACK);
             if depth < self.max_depth {
                 if let Some((attenuation, scattered)) = hit.mat.scatter(ray, &hit) {
-                    return emitted + attenuation.component_mul(&self.recursive_color(&scattered, depth + 1));
+                    return emitted
+                        + attenuation.component_mul(&self.recursive_color(&scattered, depth + 1));
                 }
                 return emitted;
             } else {

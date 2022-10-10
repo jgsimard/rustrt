@@ -1,7 +1,7 @@
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 
-use nalgebra::{Vector2, Vector3, ComplexField};
+use nalgebra::{ComplexField, Vector2, Vector3};
 
 use serde_json::{from_value, Value};
 use std::collections::HashMap;
@@ -488,7 +488,7 @@ impl Material for DiffuseLight {
 
     fn emmitted(&self, ray: &Ray, hit: &HitInfo) -> Option<Vector3<f32>> {
         // only emit from the normal-facing side
-        if glm::dot(&ray.direction, &hit.sn) > 0.0{
+        if glm::dot(&ray.direction, &hit.sn) > 0.0 {
             Some(Vector3::zeros())
         } else {
             Some(self.emit)
@@ -545,11 +545,9 @@ pub fn create_material(material_json: Value) -> Rc<dyn Material> {
             .get("ior")
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
         Rc::new(Dielectric { ior: ior })
-    } else if type_material == "diffuse_light"{
+    } else if type_material == "diffuse_light" {
         let emit = read_v_or_f(&material_json, "emit", Vector3::new(1.0, 1.0, 1.0));
-        Rc::new(DiffuseLight{
-            emit: emit
-        })
+        Rc::new(DiffuseLight { emit: emit })
     } else {
         panic!(
             "The material type '{}' is not yet implemented",
