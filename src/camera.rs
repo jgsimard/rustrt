@@ -57,7 +57,7 @@ impl PinholeCamera {
         let aperture_radius: f32 = from_value(json["aperture"].clone()).unwrap_or(0.);
         let focal_distance: f32 = from_value(json["fdist"].clone()).unwrap_or(1.);
         let vfov: f32 = from_value(json["vfov"].clone()).unwrap_or(90.);
-        let transform: Transform = parse_transform(&json);
+        let transform: Transform = parse_transform(&json["transform"]);
 
         // Assignment 1: read the vertical field-of-view from j ("vfov"),
         // and compute the width and height of the image plane. Remember that

@@ -111,7 +111,7 @@ impl Scene {
         {
             for material_json in map_json.get("materials").unwrap().as_array().unwrap() {
                 // let surface = make_surface(sur);
-                if let Some(material) = material_factory.make(material_json)
+                if let Some(_material) = material_factory.make(material_json)
                 {
                 }
                 else {
