@@ -219,7 +219,7 @@ fn create_shirley_scene() -> Value {
                     let r6 = rng.gen::<f32>();
                     let albedo = Vector3::new(r1 * r2, r3 * r4, r5 * r6);
                     sphere["material"] = json!({"type": "lambertian", "albedo": albedo});
-                } else if (choose_mat < 0.95) {
+                } else if choose_mat < 0.95 {
                     // metal
                     let r1 = rng.gen::<f32>();
                     let r2 = rng.gen::<f32>();

@@ -1,8 +1,13 @@
 use nalgebra::Vector3;
+use serde_json::Value;
 extern crate nalgebra_glm as glm;
 
 use rand::Rng;
 use std::ops::{Add, Mul, Sub};
+
+pub trait Factory<T> {
+    fn make(&mut self, v: &Value) -> Option<T>;
+}
 
 pub fn rad2deg(rad: f32) -> f32 {
     180.0 / std::f32::consts::PI * rad

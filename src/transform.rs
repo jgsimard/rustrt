@@ -95,9 +95,6 @@ impl Default for Transform {
 }
 
 pub fn parse_transform(json: &Value) -> Transform {
-    // if json["transform"] != Value::Null {
-    // let t_json = json["transform"].clone();
-
     // multiple transforms
     if json.is_array() {
         let mut t: Transform = Default::default();
@@ -155,7 +152,6 @@ pub fn parse_transform(json: &Value) -> Transform {
         let angle = kv
             .get("angle")
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
-        println!("{} {}", axis, angle);
 
         let angle = deg2rad(angle);
         // return Transform::new(Matrix4::new)
