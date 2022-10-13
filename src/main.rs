@@ -1,4 +1,4 @@
-mod box3;
+mod aabb;
 mod camera;
 mod image2d;
 mod materials;

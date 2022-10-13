@@ -1,4 +1,4 @@
-use crate::box3::Box3;
+use crate::aabb::Aabb;
 use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
@@ -21,8 +21,8 @@ impl Sphere {
         }
     }
 
-    pub fn local_bounds(&self) -> Box3 {
-        Box3 {
+    pub fn local_bounds(&self) -> Aabb {
+        Aabb {
             min: Vector3::new(-self.radius, -self.radius, -self.radius),
             max: Vector3::new(self.radius, self.radius, self.radius),
         }
@@ -70,7 +70,7 @@ impl Surface for Sphere {
         Some(hit)
     }
 
-    fn bounds(&self) -> Box3 {
+    fn bounds(&self) -> Aabb {
         self.transform.box3(&self.local_bounds())
     }
 }
