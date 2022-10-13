@@ -63,7 +63,7 @@ fn create_sphere_plane_scene() -> Value {
         "background": [1, 1, 1]
     }"#;
 
-    let mut j : Value = serde_json::from_str(data).unwrap();
+    let mut j: Value = serde_json::from_str(data).unwrap();
 
     // BVH
     j["accelerator"] = json!({"type": "bbh"});

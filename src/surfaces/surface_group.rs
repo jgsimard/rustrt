@@ -1,4 +1,3 @@
-
 extern crate nalgebra_glm as glm;
 
 use crate::box3::Box3;
@@ -49,15 +48,14 @@ pub struct Bvh {
 }
 
 impl Bvh {
-    pub fn new(surfaces: &mut Vec<Rc<dyn Surface>>) -> Bvh{
+    pub fn new(surfaces: &mut Vec<Rc<dyn Surface>>) -> Bvh {
         let max_leaf_size = 3;
         let root = BvhNode::new(surfaces.as_mut_slice(), 0, max_leaf_size);
 
-        Bvh{
+        Bvh {
             root: root,
-            max_leaf_size: max_leaf_size
+            max_leaf_size: max_leaf_size,
         }
-
     }
 }
 struct BvhNode {
@@ -73,7 +71,6 @@ impl Surface for Bvh {
         unimplemented!()
     }
 }
-
 
 impl Surface for BvhNode {
     fn intersect(&self, ray_: &Ray) -> Option<HitInfo> {
@@ -96,7 +93,7 @@ impl Surface for BvhNode {
     }
 }
 impl BvhNode {
-    pub fn new(surfaces: &mut [Rc<dyn Surface>], depth: i32,max_leaf_size: usize) -> BvhNode {
+    pub fn new(surfaces: &mut [Rc<dyn Surface>], depth: i32, max_leaf_size: usize) -> BvhNode {
         let n_surfaces = surfaces.len();
         if n_surfaces <= max_leaf_size {
             // println!("depth : {}, number of children {}", depth, n_surfaces);
@@ -121,7 +118,6 @@ impl BvhNode {
 
         let (split_axis, _) = (max - min).argmax();
 
-        
         // Equal method
         let center = |a: &Rc<dyn Surface>| a.bounds().center()[split_axis];
         let mid = n_surfaces / 2;

@@ -29,7 +29,7 @@ impl Box3 {
         self.max = glm::max2(&self.max, &other.max);
     }
 
-    pub fn enclose_point(&mut self, point: &Vec3){
+    pub fn enclose_point(&mut self, point: &Vec3) {
         self.min = glm::min2(&self.min, &point);
         self.max = glm::max2(&self.max, &point);
     }

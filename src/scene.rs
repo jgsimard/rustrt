@@ -14,8 +14,8 @@ use crate::surfaces::surface::Surface;
 use crate::box3::Box3;
 use crate::materials::factory::MaterialFactory;
 use crate::surfaces::factory::SurfaceFactory;
-use crate::surfaces::surface_group::SurfaceGroup;
 use crate::surfaces::surface_group::Bvh;
+use crate::surfaces::surface_group::SurfaceGroup;
 use crate::utils::Factory;
 
 pub struct Scene {
@@ -91,7 +91,6 @@ impl Scene {
         //     make_integrator(&json!({}))
         // };
 
-
         //
         // parse scene background
         //
@@ -142,11 +141,13 @@ impl Scene {
         //
         // create the scene-wide acceleration structure so we can put other surfaces into it
         //
-        let surfaces : Box<dyn Surface> = if map_json.contains_key("accelerator") {
+        let surfaces: Box<dyn Surface> = if map_json.contains_key("accelerator") {
             Box::new(Bvh::new(&mut surfaces_vec))
         } else {
             // default to a naive linear accelerator
-            Box::new(SurfaceGroup { surfaces: surfaces_vec })
+            Box::new(SurfaceGroup {
+                surfaces: surfaces_vec,
+            })
         };
 
         let num_samples: i32 = 100;

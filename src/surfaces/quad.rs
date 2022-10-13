@@ -62,7 +62,7 @@ impl Surface for Quad {
 impl Quad {
     fn local_bounds(&self) -> Box3 {
         const EPS: f32 = 1e-4 as f32;
-        let v = glm::vec3(self.size.x + EPS, self.size.y  + EPS, EPS);
-        Box3{ min: -v ,  max: v}
+        let v = glm::vec3(self.size.x + EPS, self.size.y + EPS, EPS);
+        Box3 { min: -v, max: v }
     }
 }
