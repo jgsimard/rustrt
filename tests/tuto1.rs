@@ -11,7 +11,7 @@ use rustrt::ray::Ray;
 use rustrt::surfaces::sphere::Sphere;
 use rustrt::surfaces::surface::HitInfo;
 use rustrt::surfaces::surface::Surface;
-use rustrt::surfaces::surface_group::SurfaceGroup;
+use rustrt::surfaces::accelerators::LinearSurfaceGroup;
 use rustrt::transform::Transform;
 use rustrt::utils::lerp;
 
@@ -703,7 +703,7 @@ fn test_recursive_raytracing() {
     });
 
     // To raytrace more than one object at a time, we can put them into a group
-    let mut scene = SurfaceGroup::new();
+    let mut scene = LinearSurfaceGroup::new();
     scene.add_child(matte_sphere);
     scene.add_child(shiny_sphere);
     scene.add_child(ground_sphere);
@@ -740,7 +740,7 @@ fn test_recursive_raytracing() {
     ray_image.save(filename);
 }
 
-fn recursive_color(ray: &Ray, scene: &SurfaceGroup, depth: u32) -> Vector3<f32> {
+fn recursive_color(ray: &Ray, scene: &LinearSurfaceGroup, depth: u32) -> Vector3<f32> {
     const MAX_DEPTH: u32 = 4;
     const BLACK: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
     const WHITE: Vector3<f32> = Vector3::new(1.0, 1.0, 1.0);

@@ -2,7 +2,6 @@ use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use nalgebra::{Vector2, Vector3};
 use serde_json::{from_value, Value};
 use std::fmt::Write;
-use std::rc::Rc;
 
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
@@ -14,8 +13,7 @@ use crate::surfaces::surface::Surface;
 use crate::aabb::Aabb;
 use crate::materials::factory::MaterialFactory;
 use crate::surfaces::factory::SurfaceFactory;
-use crate::surfaces::surface_group::Bvh;
-use crate::surfaces::surface_group::SurfaceGroup;
+use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::utils::Factory;
 
 pub struct Scene {
@@ -145,12 +143,12 @@ impl Scene {
             Box::new(Bvh::new(&mut surfaces_vec))
         } else {
             // default to a naive linear accelerator
-            Box::new(SurfaceGroup {
+            Box::new(LinearSurfaceGroup {
                 surfaces: surfaces_vec,
             })
         };
 
-        let num_samples: i32 = 4;
+        let num_samples: i32 = 1;
         let max_depth: i32 = 64;
 
         println!("{:?}", camera);
