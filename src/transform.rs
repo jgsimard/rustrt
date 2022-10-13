@@ -1,6 +1,6 @@
+use crate::box3::Box3;
 use crate::ray::Ray;
 use crate::utils::deg2rad;
-use crate::box3::Box3;
 
 extern crate nalgebra_glm as glm;
 
@@ -60,9 +60,9 @@ impl Transform {
     }
 
     /// Transform the axis-aligned Box and return the bounding box of the result
-    pub fn box3(&self, box3: &Box3) -> Box3{
+    pub fn box3(&self, box3: &Box3) -> Box3 {
         // a transformed empty box is still empty
-        if box3.is_empty(){
+        if box3.is_empty() {
             return (*box3).clone();
         }
 
@@ -84,13 +84,13 @@ impl Transform {
         pts[5].x = max.x;
         pts[6].x = max.x;
         pts[7].x = max.x;
-        
+
         // y
         pts[0].y = min.y;
         pts[1].y = min.y;
         pts[4].y = min.y;
         pts[5].y = min.y;
-        
+
         pts[2].y = max.y;
         pts[3].y = max.y;
         pts[6].y = max.y;
@@ -109,12 +109,11 @@ impl Transform {
 
         // create the transformed bounding box
         let mut bb = Box3::new();
-        for p in pts{
+        for p in pts {
             bb.enclose_point(&p);
         }
         return bb;
     }
-
 
     pub fn axis_offset(
         x: &Vector3<f32>,

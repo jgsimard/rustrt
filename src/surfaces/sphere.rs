@@ -21,10 +21,10 @@ impl Sphere {
         }
     }
 
-    pub fn local_bounds(&self) -> Box3{
-        Box3 { 
-            min: Vector3::new(-self.radius, -self.radius, -self.radius), 
-            max: Vector3::new(self.radius, self.radius, self.radius)
+    pub fn local_bounds(&self) -> Box3 {
+        Box3 {
+            min: Vector3::new(-self.radius, -self.radius, -self.radius),
+            max: Vector3::new(self.radius, self.radius, self.radius),
         }
     }
 }
