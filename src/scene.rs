@@ -11,7 +11,7 @@ use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::Surface;
 
-use crate::box3::Box3;
+use crate::aabb::Aabb;
 use crate::materials::factory::MaterialFactory;
 use crate::surfaces::factory::SurfaceFactory;
 use crate::surfaces::surface_group::Bvh;
@@ -150,7 +150,7 @@ impl Scene {
             })
         };
 
-        let num_samples: i32 = 100;
+        let num_samples: i32 = 4;
         let max_depth: i32 = 64;
 
         println!("{:?}", camera);
@@ -228,7 +228,7 @@ impl Surface for Scene {
         self.surfaces.intersect(ray)
     }
 
-    fn bounds(&self) -> Box3 {
+    fn bounds(&self) -> Aabb {
         unimplemented!()
     }
 }

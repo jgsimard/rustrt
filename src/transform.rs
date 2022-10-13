@@ -1,4 +1,4 @@
-use crate::box3::Box3;
+use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::utils::deg2rad;
 
@@ -60,58 +60,17 @@ impl Transform {
     }
 
     /// Transform the axis-aligned Box and return the bounding box of the result
-    pub fn box3(&self, box3: &Box3) -> Box3 {
+    pub fn box3(&self, box3: &Aabb) -> Aabb {
         // a transformed empty box is still empty
         if box3.is_empty() {
             return (*box3).clone();
         }
 
-        // Just in case this is a projection matrix, do things the naive way.
-        let mut pts = vec![Vector3::zeros(); 8];
-
-        // Set up the eight points at the corners of the extent
-
-        let min = self.point(&box3.min);
-        let max = self.point(&box3.max);
-
-        // x
-        pts[0].x = min.x;
-        pts[1].x = min.x;
-        pts[2].x = min.x;
-        pts[3].x = min.x;
-
-        pts[4].x = max.x;
-        pts[5].x = max.x;
-        pts[6].x = max.x;
-        pts[7].x = max.x;
-
-        // y
-        pts[0].y = min.y;
-        pts[1].y = min.y;
-        pts[4].y = min.y;
-        pts[5].y = min.y;
-
-        pts[2].y = max.y;
-        pts[3].y = max.y;
-        pts[6].y = max.y;
-        pts[7].y = max.y;
-
-        // z
-        pts[0].z = min.z;
-        pts[2].z = min.z;
-        pts[4].z = min.z;
-        pts[6].z = min.z;
-
-        pts[1].z = max.z;
-        pts[3].z = max.z;
-        pts[5].z = max.z;
-        pts[7].z = max.z;
-
         // create the transformed bounding box
-        let mut bb = Box3::new();
-        for p in pts {
-            bb.enclose_point(&p);
-        }
+        let mut bb = Aabb::new();
+        bb.enclose_point(&self.point(&box3.min));
+        bb.enclose_point(&self.point(&box3.max));
+  
         return bb;
     }
 

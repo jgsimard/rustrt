@@ -1,6 +1,6 @@
 extern crate nalgebra_glm as glm;
 
-use crate::box3::Box3;
+use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use std::rc::Rc;
@@ -24,7 +24,7 @@ impl Surface for SurfaceGroup {
         option_hit
     }
 
-    fn bounds(&self) -> Box3 {
+    fn bounds(&self) -> Aabb {
         unimplemented!()
     }
 }
@@ -59,7 +59,7 @@ impl Bvh {
     }
 }
 struct BvhNode {
-    bbox: Box3,
+    bbox: Aabb,
     children: Vec<Rc<dyn Surface>>,
 }
 
@@ -67,7 +67,7 @@ impl Surface for Bvh {
     fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
         self.root.intersect(ray)
     }
-    fn bounds(&self) -> Box3 {
+    fn bounds(&self) -> Aabb {
         unimplemented!()
     }
 }
@@ -88,7 +88,7 @@ impl Surface for BvhNode {
         option_hit
     }
 
-    fn bounds(&self) -> Box3 {
+    fn bounds(&self) -> Aabb {
         self.bbox.clone()
     }
 }
@@ -97,7 +97,7 @@ impl BvhNode {
         let n_surfaces = surfaces.len();
         if n_surfaces <= max_leaf_size {
             // println!("depth : {}, number of children {}", depth, n_surfaces);
-            let mut bbox = Box3::new();
+            let mut bbox = Aabb::new();
             for child in surfaces.iter() {
                 bbox.enclose(&child.bounds());
             }
@@ -129,7 +129,7 @@ impl BvhNode {
         children.push(Rc::new(BvhNode::new(left, depth + 1, max_leaf_size)));
         children.push(Rc::new(BvhNode::new(right, depth + 1, max_leaf_size)));
 
-        let mut bbox = Box3::new();
+        let mut bbox = Aabb::new();
         for child in children.iter() {
             bbox.enclose(&child.bounds());
         }

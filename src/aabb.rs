@@ -5,16 +5,16 @@ use std::mem;
 
 /// A 3D axis-aligned bounding box consisting of two 3D points min and max
 #[derive(Debug, Clone)]
-pub struct Box3 {
+pub struct Aabb {
     /// The lower-bound of the interval
     pub min: Vec3,
     /// The upper-bound of the interval
     pub max: Vec3,
 }
 
-impl Box3 {
-    pub fn new() -> Box3 {
-        Box3 {
+impl Aabb {
+    pub fn new() -> Aabb {
+        Aabb {
             max: glm::vec3(f32::MIN, f32::MIN, f32::MIN),
             min: glm::vec3(f32::MAX, f32::MAX, f32::MAX),
         }
@@ -24,7 +24,7 @@ impl Box3 {
         (self.min.x > self.max.x) | (self.min.y > self.max.y) | (self.min.z > self.max.z)
     }
 
-    pub fn enclose(&mut self, other: &Box3) {
+    pub fn enclose(&mut self, other: &Aabb) {
         self.min = glm::min2(&self.min, &other.min);
         self.max = glm::max2(&self.max, &other.max);
     }
