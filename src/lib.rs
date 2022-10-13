@@ -1,3 +1,4 @@
+pub mod box3;
 pub mod camera;
 pub mod image2d;
 pub mod materials;

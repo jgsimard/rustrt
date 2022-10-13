@@ -5,6 +5,16 @@ use serde_json::{self, json};
 
 extern crate nalgebra_glm as glm;
 
+pub fn create_example_scene(scene_number: i32) -> Value {
+    match scene_number {
+        0 => create_sphere_scene(),
+        1 => create_sphere_plane_scene(),
+        2 => create_steinbach_scene(),
+        3 => create_shirley_scene(),
+        _ => unimplemented!(),
+    }
+}
+
 fn create_sphere_scene() -> Value {
     let data = r#"
     {
@@ -33,7 +43,7 @@ fn create_sphere_plane_scene() -> Value {
         "camera":
         {
             "transform": { "o": [0,0,4] },
-            "resolution": [ 512, 512 ],
+            "resolution": [ 51, 51 ],
             "vfov": 45
         },
         "surfaces": [
@@ -52,17 +62,13 @@ fn create_sphere_plane_scene() -> Value {
         "sampler": {"samples": 1},
         "background": [1, 1, 1]
     }"#;
-    return serde_json::from_str(data).unwrap();
-}
 
-pub fn create_example_scene(scene_number: i32) -> Value {
-    match scene_number {
-        0 => create_sphere_scene(),
-        1 => create_sphere_plane_scene(),
-        2 => create_steinbach_scene(),
-        3 => create_shirley_scene(),
-        _ => unimplemented!(),
-    }
+    let mut j : Value = serde_json::from_str(data).unwrap();
+
+    // BVH
+    j["accelerator"] = json!({"type": "bbh"});
+
+    return j;
 }
 
 fn create_steinbach_scene() -> Value {
@@ -148,8 +154,8 @@ fn create_steinbach_scene() -> Value {
 
     j["surfaces"] = serde_json::Value::Array(surfaces);
 
-    // // BVH
-    // j["accelerator"] = {{"type", "bbh"}};
+    // BVH
+    j["accelerator"] = json!({"type": "bbh"});
 
     return j;
 }
@@ -178,8 +184,8 @@ fn create_shirley_scene() -> Value {
     j["sampler"] = json!({"samples": 10});
     j["background"] = serde_json::to_value([1.0, 1.0, 1.0]).unwrap();
 
-    // // BVH
-    // j["accelerator"] = {{"type", "bbh"}};
+    // BVH
+    j["accelerator"] = json!({"type": "bbh"});
 
     let mut surfaces: Vec<Value> = Vec::new();
 

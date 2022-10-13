@@ -1,3 +1,4 @@
+mod box3;
 mod camera;
 mod image2d;
 mod materials;
