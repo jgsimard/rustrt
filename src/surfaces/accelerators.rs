@@ -5,12 +5,12 @@ use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use std::rc::Rc;
 
-pub struct SurfaceGroup {
+
+pub struct LinearSurfaceGroup {
     pub surfaces: Vec<Rc<dyn Surface>>,
-    // bounds: Box3
 }
 
-impl Surface for SurfaceGroup {
+impl Surface for LinearSurfaceGroup {
     fn intersect(&self, ray_: &Ray) -> Option<HitInfo> {
         let mut ray: Ray = (*ray_).clone();
         let mut option_hit: Option<HitInfo> = None;
@@ -23,56 +23,25 @@ impl Surface for SurfaceGroup {
         }
         option_hit
     }
-
-    fn bounds(&self) -> Aabb {
-        unimplemented!()
-    }
 }
 
-impl SurfaceGroup {
-    pub fn new() -> SurfaceGroup {
-        SurfaceGroup {
+impl LinearSurfaceGroup {
+    pub fn new() -> LinearSurfaceGroup {
+        LinearSurfaceGroup {
             surfaces: Vec::new(),
         }
     }
     pub fn add_child(&mut self, surface: Rc<dyn Surface>) {
         self.surfaces.push(surface.clone())
     }
-
-    pub fn add_to_parent(&self) {}
 }
-
 pub struct Bvh {
-    root: BvhNode,
-    max_leaf_size: usize,
-}
-
-impl Bvh {
-    pub fn new(surfaces: &mut Vec<Rc<dyn Surface>>) -> Bvh {
-        let max_leaf_size = 3;
-        let root = BvhNode::new(surfaces.as_mut_slice(), 0, max_leaf_size);
-
-        Bvh {
-            root: root,
-            max_leaf_size: max_leaf_size,
-        }
-    }
-}
-struct BvhNode {
     bbox: Aabb,
     children: Vec<Rc<dyn Surface>>,
 }
 
-impl Surface for Bvh {
-    fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
-        self.root.intersect(ray)
-    }
-    fn bounds(&self) -> Aabb {
-        unimplemented!()
-    }
-}
 
-impl Surface for BvhNode {
+impl Surface for Bvh {
     fn intersect(&self, ray_: &Ray) -> Option<HitInfo> {
         let mut option_hit: Option<HitInfo> = None;
         if self.bbox.intersect(ray_) {
@@ -92,8 +61,13 @@ impl Surface for BvhNode {
         self.bbox.clone()
     }
 }
-impl BvhNode {
-    pub fn new(surfaces: &mut [Rc<dyn Surface>], depth: i32, max_leaf_size: usize) -> BvhNode {
+impl Bvh {
+    pub fn new(surfaces: &mut Vec<Rc<dyn Surface>>) -> Bvh {
+        let max_leaf_size = 3;
+        Bvh::new_node(surfaces.as_mut_slice(), 0, max_leaf_size)
+    }
+
+    pub fn new_node(surfaces: &mut [Rc<dyn Surface>], depth: i32, max_leaf_size: usize) -> Bvh {
         let n_surfaces = surfaces.len();
         if n_surfaces <= max_leaf_size {
             // println!("depth : {}, number of children {}", depth, n_surfaces);
@@ -101,7 +75,7 @@ impl BvhNode {
             for child in surfaces.iter() {
                 bbox.enclose(&child.bounds());
             }
-            return BvhNode {
+            return Bvh {
                 bbox: bbox,
                 children: Vec::from(surfaces),
             };
@@ -126,15 +100,15 @@ impl BvhNode {
 
         // add the two children => recursion
         let mut children: Vec<Rc<dyn Surface>> = Vec::new();
-        children.push(Rc::new(BvhNode::new(left, depth + 1, max_leaf_size)));
-        children.push(Rc::new(BvhNode::new(right, depth + 1, max_leaf_size)));
+        children.push(Rc::new(Bvh::new_node(left, depth + 1, max_leaf_size)));
+        children.push(Rc::new(Bvh::new_node(right, depth + 1, max_leaf_size)));
 
         let mut bbox = Aabb::new();
         for child in children.iter() {
             bbox.enclose(&child.bounds());
         }
 
-        BvhNode {
+        Bvh {
             bbox: bbox,
             children: children,
         }

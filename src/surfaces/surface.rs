@@ -9,7 +9,7 @@ use crate::aabb::Aabb;
 pub trait Surface {
     // fn build_surface();
     fn intersect(&self, ray: &Ray) -> Option<HitInfo>;
-    fn bounds(&self) -> Aabb;
+    fn bounds(&self) -> Aabb {unimplemented!();}
     // fn local_bounds(&self) -> Box3;
     // fn sample(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> Vector3<f32>;
     // fn pdf(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> f32;
