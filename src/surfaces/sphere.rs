@@ -1,8 +1,9 @@
+use crate::box3::Box3;
 use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;
-use nalgebra::Vector2;
+use nalgebra::{Vector2, Vector3};
 use std::rc::Rc;
 
 pub struct Sphere {
@@ -17,6 +18,13 @@ impl Sphere {
             radius: radius,
             transform: Default::default(),
             material: material,
+        }
+    }
+
+    pub fn local_bounds(&self) -> Box3{
+        Box3 { 
+            min: Vector3::new(-self.radius, -self.radius, -self.radius), 
+            max: Vector3::new(self.radius, self.radius, self.radius)
         }
     }
 }
@@ -60,5 +68,9 @@ impl Surface for Sphere {
             mat: Rc::clone(&self.material),
         };
         Some(hit)
+    }
+
+    fn bounds(&self) -> Box3 {
+        self.transform.box3(&self.local_bounds())
     }
 }

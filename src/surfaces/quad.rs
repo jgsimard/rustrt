@@ -5,6 +5,7 @@ use crate::transform::Transform;
 use nalgebra::{Vector2, Vector3};
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
+use crate::box3::Box3;
 
 pub struct Quad {
     pub size: Vector2<f32>,
@@ -51,5 +52,17 @@ impl Surface for Quad {
             mat: Rc::clone(&self.material),
         };
         Some(hit)
+    }
+
+    fn bounds(&self) -> Box3 {
+        self.transform.box3(&self.local_bounds())
+    }
+}
+
+impl Quad {
+    fn local_bounds(&self) -> Box3 {
+        const EPS: f32 = 1e-4 as f32;
+        let v = glm::vec3(self.size.x + EPS, self.size.y  + EPS, EPS);
+        Box3{ min: -v ,  max: v}
     }
 }

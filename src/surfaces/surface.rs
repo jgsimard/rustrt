@@ -4,10 +4,13 @@ use crate::ray::Ray;
 use nalgebra::{Vector2, Vector3};
 use std::rc::Rc;
 
+use crate::box3::Box3;
+
 pub trait Surface {
     // fn build_surface();
     fn intersect(&self, ray: &Ray) -> Option<HitInfo>;
-    // fn bounds();
+    fn bounds(&self) -> Box3;
+    // fn local_bounds(&self) -> Box3;
     // fn sample(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> Vector3<f32>;
     // fn pdf(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> f32;
     // fn is_emissive() -> bool;

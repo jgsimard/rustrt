@@ -11,13 +11,15 @@ use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::Surface;
 
+use crate::box3::Box3;
 use crate::materials::factory::MaterialFactory;
 use crate::surfaces::factory::SurfaceFactory;
 use crate::surfaces::surface_group::SurfaceGroup;
+use crate::surfaces::surface_group::Bvh;
 use crate::utils::Factory;
 
 pub struct Scene {
-    pub surfaces: SurfaceGroup,
+    pub surfaces: Box<dyn Surface>,
     // pub emitters: SurfaceGroup,
     // pub integrator: Rc<dyn Integrator>,
     // pub sampler: Rc<dyn Sampler>,
@@ -83,22 +85,12 @@ impl Scene {
         // //
         // // parse the integrator
         // //
-
         // let integrator = if map_json.contains_key("integrator"){
         //     make_integrator(map_json.get("integrator").unwrap())
         // }else{
         //     make_integrator(&json!({}))
         // };
 
-        // //
-        // // create the scene-wide acceleration structure so we can put other surfaces into it
-        // //
-        // let surfaces = if map_json.contains_key("accelerator") {
-        //     make_accelerator(map_json.get("accelerator").unwrap())
-        // } else {
-        //     // default to a naive linear accelerator
-        //     make_accelerator(&json!({}))
-        // };
 
         //
         // parse scene background
@@ -130,12 +122,12 @@ impl Scene {
         let mut surface_facory = SurfaceFactory {
             material_factory: material_factory,
         };
-        let mut surfaces = Vec::new();
+        let mut surfaces_vec = Vec::new();
         if map_json.contains_key("surfaces") {
             for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
                 // let surface = make_surface(sur);
                 if let Some(surface) = surface_facory.make(surface_json) {
-                    surfaces.push(surface.clone());
+                    surfaces_vec.push(surface.clone());
                 } else {
                     panic!(
                         "surface of type : {} not yet supported",
@@ -148,30 +140,31 @@ impl Scene {
         }
 
         //
-        // parse num_samples and max_depth
+        // create the scene-wide acceleration structure so we can put other surfaces into it
         //
-        // let read_i32 = |s, d| from_value(map_json.get(s).ok_or(d).unwrap().clone() ).unwrap();
-        // let num_samples: i32 = read_i32("num_samples", 8);
-        //     // from_value(map_json.get("num_samples").ok_or(8).unwrap().clone() ).unwrap();
-        // let max_depth: i32 = read_i32("max_depth", 64);
-        //     // from_value(map_json.get("max_depth").ok_or(64).unwrap().clone()).unwrap();
+        let surfaces : Box<dyn Surface> = if map_json.contains_key("accelerator") {
+            Box::new(Bvh::new(&mut surfaces_vec))
+        } else {
+            // default to a naive linear accelerator
+            Box::new(SurfaceGroup { surfaces: surfaces_vec })
+        };
 
-        let num_samples: i32 = 4;
+        let num_samples: i32 = 100;
         let max_depth: i32 = 64;
 
         println!("{:?}", camera);
 
         Scene {
-            surfaces: SurfaceGroup { surfaces: surfaces },
+            surfaces: surfaces,
             camera: camera,
             background: background,
             num_samples: num_samples,
             max_depth: max_depth,
         }
     }
-    pub fn add_child(&mut self, surface: Rc<dyn Surface>) {
-        self.surfaces.add_child(surface);
-    }
+    // pub fn add_child(&mut self, surface: Rc<dyn Surface>) {
+    //     self.surfaces.add_child(surface);
+    // }
 
     pub fn add_to_parent(&self) {}
 
@@ -232,5 +225,9 @@ impl Scene {
 impl Surface for Scene {
     fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
         self.surfaces.intersect(ray)
+    }
+
+    fn bounds(&self) -> Box3 {
+        unimplemented!()
     }
 }
