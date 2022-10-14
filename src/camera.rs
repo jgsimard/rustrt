@@ -6,7 +6,7 @@ use crate::ray::Ray;
 use crate::transform::{parse_transform, Transform};
 use crate::utils::deg2rad;
 
-/// A virtual (pinhole) camera.
+/// A virtual pinhole camera.
 ///
 /// The camera is responsible for generating primary rays. It is positioned
 /// using a Transform and points along the -z axis of the local coordinate
