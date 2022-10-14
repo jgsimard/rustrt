@@ -60,11 +60,6 @@ fn main() {
 
     println!("scene : {}", args.scene.to_string_lossy());
 
-    // let char = 'E';
-    // let b = args.scene.to_string_lossy().parse::<i32>().is_ok();
-
-    // let j = read_scene_from_file(args.scene);
-
     let scene_json = if args.scene.exists() {
         println!("existing file");
         read_scene_from_file(args.scene).unwrap()
