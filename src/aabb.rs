@@ -38,34 +38,34 @@ impl Aabb {
         (self.min + self.max) / 2.0
     }
 
-    fn diagonal(&self) -> Vec3 {
-        self.max - self.min
-    }
+    // fn diagonal(&self) -> Vec3 {
+    //     self.max - self.min
+    // }
 
-    pub fn volume(&self) -> f32 {
-        let d = self.diagonal();
-        d.x * d.y * d.z
-    }
+    // pub fn volume(&self) -> f32 {
+    //     let d = self.diagonal();
+    //     d.x * d.y * d.z
+    // }
 
-    pub fn area(&self) -> f32 {
-        let d = self.diagonal();
-        let mut result = 0.0;
-        for i in 0..3 {
-            let mut term = 1.0;
-            for j in 0..3 {
-                if i == j {
-                    continue;
-                }
-                term *= d[j];
-            }
-            result += term;
-        }
-        result * 2.0
-    }
+    // pub fn area(&self) -> f32 {
+    //     let d = self.diagonal();
+    //     let mut result = 0.0;
+    //     for i in 0..3 {
+    //         let mut term = 1.0;
+    //         for j in 0..3 {
+    //             if i == j {
+    //                 continue;
+    //             }
+    //             term *= d[j];
+    //         }
+    //         result += term;
+    //     }
+    //     result * 2.0
+    // }
 
     pub fn intersect(&self, ray: &Ray) -> bool {
-        let mut minT = ray.mint.clone();
-        let mut maxT = ray.maxt.clone();
+        let mut min_t = ray.mint.clone();
+        let mut max_t = ray.maxt.clone();
         for i in 0..3 {
             let inv_d = 1.0 / ray.direction[i];
             let mut t0 = (self.min[i] - ray.origin[i]) * inv_d;
@@ -73,9 +73,9 @@ impl Aabb {
             if inv_d < 0.0 {
                 mem::swap(&mut t0, &mut t1);
             }
-            minT = if t0 > minT { t0 } else { minT };
-            maxT = if t1 < maxT { t1 } else { maxT };
-            if maxT < minT {
+            min_t = if t0 > min_t { t0 } else { min_t };
+            max_t = if t1 < max_t { t1 } else { max_t };
+            if max_t < min_t {
                 return false;
             }
         }
