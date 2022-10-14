@@ -5,7 +5,6 @@ use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use std::rc::Rc;
 
-
 pub struct LinearSurfaceGroup {
     pub surfaces: Vec<Rc<dyn Surface>>,
 }
@@ -39,7 +38,6 @@ pub struct Bvh {
     bbox: Aabb,
     children: Vec<Rc<dyn Surface>>,
 }
-
 
 impl Surface for Bvh {
     fn intersect(&self, ray_: &Ray) -> Option<HitInfo> {

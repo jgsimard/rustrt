@@ -8,6 +8,11 @@ use nalgebra::{Matrix3x4, Matrix4, Vector3};
 use serde_json::{from_value, Value};
 use std::ops::Mul;
 
+/// Homogeneous coordinate transformation
+///
+/// This class stores a general homogeneous coordinate transformation, such as rotation, translation, uniform or
+/// non-uniform scaling, and perspective transformations. The inverse of this transformation is also recorded here,
+/// since it is required when transforming normal vectors.
 #[derive(Debug)]
 pub struct Transform {
     pub m: Matrix4<f32>,
@@ -22,6 +27,7 @@ impl Transform {
         }
     }
 
+    /// Return the inverse transformation
     pub fn inverse(&self) -> Transform {
         Transform {
             m: self.m_inv,
@@ -31,13 +37,11 @@ impl Transform {
 
     /// Apply the homogeneous transformation to a 3D direction vector
     pub fn vector(&self, v: &Vector3<f32>) -> Vector3<f32> {
-        // (self.m * Vector4::new(v.x, v.y, v.z, 0.0)).xyz()
         (self.m * v.insert_row(3, 0.0)).xyz()
     }
 
     /// Apply the homogeneous transformation to a 3D normal
     pub fn normal(&self, n: &Vector3<f32>) -> Vector3<f32> {
-        // (self.m_inv.transpose() * Vector4::new(n.x, n.y, n.z, 0.0)).xyz().normalize()
         (self.m_inv.transpose() * n.insert_row(3, 0.0))
             .xyz()
             .normalize()
@@ -45,7 +49,6 @@ impl Transform {
 
     /// Transform a point by an arbitrary matrix in homogeneous coordinates
     pub fn point(&self, p: &Vector3<f32>) -> Vector3<f32> {
-        // (self.m * Vector4::new(p.x, p.y, p.z, 1.0)).xyz()
         (self.m * p.insert_row(3, 1.0)).xyz()
     }
 
@@ -60,7 +63,7 @@ impl Transform {
     }
 
     /// Transform the axis-aligned Box and return the bounding box of the result
-    pub fn box3(&self, box3: &Aabb) -> Aabb {
+    pub fn aabb(&self, box3: &Aabb) -> Aabb {
         // a transformed empty box is still empty
         if box3.is_empty() {
             return (*box3).clone();
@@ -70,7 +73,7 @@ impl Transform {
         let mut bb = Aabb::new();
         bb.enclose_point(&self.point(&box3.min));
         bb.enclose_point(&self.point(&box3.max));
-  
+
         return bb;
     }
 
@@ -122,7 +125,6 @@ pub fn parse_transform(json: &Value) -> Transform {
     }
     // single transform
     let kv = json.as_object().unwrap();
-    // let kv: HashMap<String, serde_json::Value> = serde_json::from_value(t_json).unwrap();
 
     let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
     let read = |s: &str, default| kv.get(s).map_or(default, read_vector3);
@@ -155,7 +157,7 @@ pub fn parse_transform(json: &Value) -> Transform {
         return Transform::axis_offset(&x, &y, &z, &o);
     } else if kv.contains_key("translate") {
         let t = read("translate", Vector3::zeros());
-        return Transform::new(Matrix4::new_translation(&t));
+        return Transform::translate(&t);
     } else if kv.contains_key("scale") {
         let scale = kv.get("scale").unwrap().clone();
         if scale.is_number() {
@@ -171,7 +173,6 @@ pub fn parse_transform(json: &Value) -> Transform {
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
 
         let angle = deg2rad(angle);
-        // return Transform::new(Matrix4::new)
         return Transform::new(Matrix4::from_scaled_axis(axis * angle));
     } else if kv.contains_key("matrix") {
         unimplemented!();
