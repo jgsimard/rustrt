@@ -1,5 +1,6 @@
 /target
 *.ppm
-/scenes
+# /scenes
+*.png
 /assets
 test.png

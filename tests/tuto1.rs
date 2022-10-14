@@ -8,12 +8,20 @@ use rustrt::materials::factory::create_material;
 use rustrt::materials::lambertian::Lambertian;
 use rustrt::materials::material::Material;
 use rustrt::ray::Ray;
+use rustrt::surfaces::accelerators::LinearSurfaceGroup;
 use rustrt::surfaces::sphere::Sphere;
 use rustrt::surfaces::surface::HitInfo;
 use rustrt::surfaces::surface::Surface;
-use rustrt::surfaces::accelerators::LinearSurfaceGroup;
 use rustrt::transform::Transform;
-use rustrt::utils::lerp;
+
+use std::ops::{Add, Mul, Sub};
+
+pub fn lerp<T, F>(a: T, b: T, f: F) -> T
+where
+    T: Clone + Add<T, Output = T> + Sub<T, Output = T> + Mul<F, Output = T>,
+{
+    a.clone() + (b - a) * f
+}
 
 fn vec2color(dir: &Vector3<f32>) -> Vector3<f32> {
     0.5 * (dir.add_scalar(1.0))
