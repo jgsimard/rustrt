@@ -1,4 +1,3 @@
-use crate::materials::lambertian::Lambertian;
 use crate::materials::material::Material;
 use crate::ray::Ray;
 use nalgebra::{Vector2, Vector3};
@@ -6,16 +5,33 @@ use std::rc::Rc;
 
 use crate::aabb::Aabb;
 
+/// This is the abstract superclass for all surfaces.
+///
+/// Surfaces represent the geometry of the scene. A Surface could be an individual primitive like a #Sphere, or it could
+/// be composed of many smaller primitives, e.g. the triangles composing a #Mesh.
 pub trait Surface {
     // fn build_surface();
+
+    /// Ray-Surface intersection test.
+    ///
+    /// Intersect a ray against this surface and return detailed intersection information.
     fn intersect(&self, ray: &Ray) -> Option<HitInfo>;
-    fn bounds(&self) -> Aabb {unimplemented!();}
-    // fn local_bounds(&self) -> Box3;
+
+    /// Return the surface's world-space AABB.
+    fn bounds(&self) -> Aabb {
+        unimplemented!();
+    }
+
     // fn sample(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> Vector3<f32>;
     // fn pdf(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> f32;
     // fn is_emissive() -> bool;
 }
 
+/// Contains information about a ray intersection hit point.
+///
+/// Used by surface intersection routines to return more than just a single value. Includes the position, traveled ray
+/// distance, uv coordinates, the geometric and interpolated shading normals, and a pointer to the intersected surface
+/// and underlying material.
 pub struct HitInfo {
     /// Ray parameter for the hit
     pub t: f32,
@@ -29,22 +45,6 @@ pub struct HitInfo {
     pub uv: Vector2<f32>,
     /// Material at the hit point
     pub mat: Rc<dyn Material>,
-}
-
-// TODO : CHANGE THIS< THIS IS HORRIBLE
-impl HitInfo {
-    pub fn empty() -> HitInfo {
-        HitInfo {
-            t: -1.,
-            p: Default::default(),
-            gn: Default::default(),
-            sn: Default::default(),
-            uv: Default::default(),
-            mat: Rc::new(Lambertian {
-                albedo: Vector3::x(),
-            }),
-        }
-    }
 }
 
 // /// Data record for conveniently querying and sampling emitters

@@ -12,8 +12,8 @@ use crate::surfaces::surface::Surface;
 
 use crate::aabb::Aabb;
 use crate::materials::factory::MaterialFactory;
-use crate::surfaces::factory::SurfaceFactory;
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
+use crate::surfaces::factory::SurfaceFactory;
 use crate::utils::Factory;
 
 pub struct Scene {
@@ -165,7 +165,7 @@ impl Scene {
     //     self.surfaces.add_child(surface);
     // }
 
-    pub fn add_to_parent(&self) {}
+    // pub fn add_to_parent(&self) {}
 
     fn recursive_color(&self, ray: &Ray, depth: i32) -> Vector3<f32> {
         const BLACK: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);

@@ -3,7 +3,6 @@ use serde_json::Value;
 extern crate nalgebra_glm as glm;
 
 use rand::Rng;
-use std::ops::{Add, Mul, Sub};
 
 pub trait Factory<T> {
     fn make(&mut self, v: &Value) -> Option<T>;
@@ -21,13 +20,6 @@ pub fn luminance(c: &Vector3<f32>) -> f32 {
     glm::dot(c, &Vector3::new(0.212671, 0.715160, 0.072169))
 }
 
-pub fn lerp<T, F>(a: T, b: T, f: F) -> T
-where
-    T: Clone + Add<T, Output = T> + Sub<T, Output = T> + Mul<F, Output = T>,
-{
-    a.clone() + (b - a) * f
-}
-
 pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vector3<f32> {
     let ones = Vector3::new(1.0, 1.0, 1.0);
     loop {
@@ -38,23 +30,23 @@ pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vector3<f32> {
     }
 }
 
-pub fn random_in_hemishere(rng: &mut impl Rng, normal: &Vector3<f32>) -> Vector3<f32> {
-    let in_unit_sphere = random_in_unit_sphere(rng);
-    if glm::dot(&in_unit_sphere, normal) > 0.0 {
-        in_unit_sphere
-    } else {
-        -1.0 * in_unit_sphere
-    }
-}
+// pub fn random_in_hemishere(rng: &mut impl Rng, normal: &Vector3<f32>) -> Vector3<f32> {
+//     let in_unit_sphere = random_in_unit_sphere(rng);
+//     if glm::dot(&in_unit_sphere, normal) > 0.0 {
+//         in_unit_sphere
+//     } else {
+//         -1.0 * in_unit_sphere
+//     }
+// }
 
-pub fn random_in_unit_disk(rng: &mut impl Rng) -> Vector3<f32> {
-    loop {
-        let p = Vector3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
-        if p.norm_squared() < 1.0 {
-            return p;
-        }
-    }
-}
+// pub fn random_in_unit_disk(rng: &mut impl Rng) -> Vector3<f32> {
+//     loop {
+//         let p = Vector3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+//         if p.norm_squared() < 1.0 {
+//             return p;
+//         }
+//     }
+// }
 
 pub fn reflect(direction: &Vector3<f32>, normal: &Vector3<f32>) -> Vector3<f32> {
     direction - 2.0 * direction.dot(normal) * normal

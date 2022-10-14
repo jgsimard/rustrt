@@ -71,6 +71,6 @@ impl Surface for Sphere {
     }
 
     fn bounds(&self) -> Aabb {
-        self.transform.box3(&self.local_bounds())
+        self.transform.aabb(&self.local_bounds())
     }
 }
