@@ -180,3 +180,116 @@ pub fn parse_transform(json: &Value) -> Transform {
         panic!("Unrecognized 'transform' command:")
     }
 }
+
+#[cfg(test)]
+mod tests{
+
+    use nalgebra::{Matrix4, Vector3};
+    use crate::ray::Ray;
+    use crate::transform::Transform;
+
+    #[test]
+    fn test_transforms() {
+        println!(
+            "\n{}{}{}",
+            "--------------------------------------------------------\n",
+            "PROGRAMMING ASSIGNMENT, PART4: Transforms              \n",
+            "--------------------------------------------------------\n"
+        );
+
+        // Darts also provides you with a Transform class.
+        // Transform is a helper class that helps you transform geometric primitives
+        // correctly Internally, it keeps track of a transformation matrix and its
+        // inverse
+
+        // Let's create a random transformation matrix
+        let transformation_matrix = Matrix4::new(
+            -0.846852, 0.107965, -0.520755, 0.0, -0.492958, -0.526819, 0.692427, 0.0, -0.199586,
+            0.843093, 0.499359, 0.0, -0.997497, 0.127171, -0.613392, 1.0,
+        )
+        .transpose();
+
+        // Now that we have a matrix, we can create a transform from it:
+        let transform = Transform::new(transformation_matrix);
+
+        // Go to transform.h and implement all required methods there. If you
+        // implement them correctly, the code below will work:
+
+        // Let's create some random geometric objects...
+
+        let vector = Vector3::new(-0.997497, 0.127171, -0.6133920);
+        let point = Vector3::new(0.617481, 0.170019, -0.0402539);
+        let normal = Vector3::new(-0.281208, 0.743764, 0.6064130);
+        let ray = Ray::new(
+            Vector3::new(-0.997497, 0.127171, -0.613392),
+            Vector3::new(0.962222, 0.264941, -0.0627278),
+        );
+
+        println!("vector = {}.", vector);
+        println!("point  = {}.", point);
+        println!("normal = {}.", normal);
+        println!("ray.o  = {};\nray.d  = {}.", ray.origin, ray.direction);
+
+        // ...and let's transform them!
+        // We can transform things simply by multiplying it with the transform.
+        // Let's check if you did it correctly:
+        let transformed_vector = transform.vector(&vector);
+        let transformed_point = transform.point(&point);
+        let transformed_normal = transform.normal(&normal);
+        let transformed_ray = transform.ray(&ray);
+
+        let correct_transformed_vector = Vector3::new(0.904467, -0.6918370, 0.301205);
+        let correct_transformed_point = Vector3::new(-1.596190, 0.0703303, -0.837324);
+        let correct_transformed_normal = Vector3::new(-0.249534, 0.0890737, 0.96426);
+        let correct_transformed_ray_position = Vector3::new(-0.0930302, -0.564666, -0.312187);
+        let correct_transformed_ray_direction = Vector3::new(-0.932945, -0.088575, -0.348953);
+
+        let vector_error = (correct_transformed_vector - transformed_vector)
+            .abs()
+            .max();
+        let point_error = (correct_transformed_point - transformed_point).abs().max();
+        let normal_error = (correct_transformed_normal - transformed_normal)
+            .abs()
+            .max();
+        let ray_error = (correct_transformed_ray_position - transformed_ray.origin)
+            .abs()
+            .max()
+            .max(
+                (correct_transformed_ray_direction - transformed_ray.direction)
+                    .abs()
+                    .max(),
+            );
+
+        println!("The forward transform matrix is\n{}.", transform.m);
+        println!("The inverse transform matrix is\n{}.", transform.m_inv);
+
+        println!(
+            "Result of transform*vector is:\n{}, and it should be:\n{}.",
+            transformed_vector, correct_transformed_vector
+        );
+        assert!(vector_error < 1e-5);
+
+        println!(
+            "Result of transform*point is:\n{}, and it should be:\n{}.",
+            transformed_point, correct_transformed_point
+        );
+        assert!(point_error < 1e-5);
+
+        println!(
+            "Result of transform*normal is:\n{}, and it should be:\n{}.",
+            transformed_normal, correct_transformed_normal
+        );
+        assert!(normal_error < 1e-5);
+
+        println!(
+            "transform*ray: transformed_ray.o is:\n{}, and it should be:\n{}.",
+            transformed_ray.origin, correct_transformed_ray_position
+        );
+        println!(
+            "transform*ray: transformed_ray.d is:\n{}, and it should be:\n{}.",
+            transformed_ray.direction, correct_transformed_ray_direction
+        );
+        assert!(ray_error < 1e-5);
+    }
+
+}

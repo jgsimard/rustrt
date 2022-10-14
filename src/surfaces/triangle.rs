@@ -64,9 +64,19 @@ pub struct Triangle {
 /// Ray-Triangle intersection
 ///
 /// I use the Moller-Trumbore algorithm
-/// p0, p1, p2 - Triangle vertices
-/// n0, n1, n2 - optional per vertex normal data
-/// t0, t1, t2 - optional per vertex texture coordinates
+/// 
+/// # Arguments
+/// * `ray` - Input Ray
+/// * `v0` - Triangle vertices
+/// * `v1` - Triangle vertices
+/// * `v2` - Triangle vertices
+/// * `n0` - Optional per vertex normal
+/// * `n1` - Optional per vertex normal
+/// * `n2` - Optional per vertex normal
+/// * `t0` - Optional per vertex texture coordinates
+/// * `t1` - Optional per vertex texture coordinates
+/// * `t2` - Optional per vertex texture coordinates
+/// * `material` - Triangle Materisl
 pub fn single_triangle_intersect(
     ray: &Ray,
     v0: &Vec3,
@@ -106,9 +116,8 @@ pub fn single_triangle_intersect(
         return None;
     }
 
+    // hit time
     let t = inv_det * glm::dot(&edge2, &q);
-
-    // check if the distance t lies  within the ray's mint/maxt
     if t < ray.mint || t > ray.maxt {
         return None;
     }

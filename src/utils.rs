@@ -8,17 +8,17 @@ pub trait Factory<T> {
     fn make(&mut self, v: &Value) -> Option<T>;
 }
 
-pub fn rad2deg(rad: f32) -> f32 {
-    180.0 / std::f32::consts::PI * rad
-}
+// pub fn rad2deg(rad: f32) -> f32 {
+//     180.0 / std::f32::consts::PI * rad
+// }
 
 pub fn deg2rad(rad: f32) -> f32 {
     std::f32::consts::PI / 180.0 * rad
 }
 
-pub fn luminance(c: &Vector3<f32>) -> f32 {
-    glm::dot(c, &Vector3::new(0.212671, 0.715160, 0.072169))
-}
+// pub fn luminance(c: &Vector3<f32>) -> f32 {
+//     glm::dot(c, &Vector3::new(0.212671, 0.715160, 0.072169))
+// }
 
 pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vector3<f32> {
     let ones = Vector3::new(1.0, 1.0, 1.0);
