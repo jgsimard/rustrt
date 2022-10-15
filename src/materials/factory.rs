@@ -25,7 +25,7 @@ impl MaterialFactory {
 }
 
 impl Factory<Rc<dyn Material>> for MaterialFactory {
-    fn make(&mut self, v: &Value) -> Option<Rc<dyn Material>> {
+    fn make(&mut self, v: &Value) -> Option<Vec<Rc<dyn Material>>> {
         let m = v.as_object().unwrap();
         let name = m
             .get("name")
@@ -35,7 +35,7 @@ impl Factory<Rc<dyn Material>> for MaterialFactory {
             .to_string();
         let material = create_material((*v).clone());
         self.materials.insert(name, material.clone());
-        Some(material)
+        Some(vec![material])
     }
 }
 

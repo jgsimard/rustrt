@@ -9,9 +9,9 @@ use crate::surfaces::triangle::{Mesh, Triangle};
 use crate::transform::parse_transform;
 use crate::utils::read_vector2_f32;
 use crate::utils::Factory;
+use nalgebra::{Vector2, Vector3};
 use serde_json::{from_value, Map, Value};
 use std::rc::Rc;
-use nalgebra::{Vector2, Vector3};
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use tobj;
@@ -21,7 +21,7 @@ pub struct SurfaceFactory {
 }
 
 impl Factory<Rc<dyn Surface>> for SurfaceFactory {
-    fn make(&mut self, v: &Value) -> Option<Rc<dyn Surface>> {
+    fn make(&mut self, v: &Value) -> Option<Vec<Rc<dyn Surface>>> {
         let m = v.as_object().unwrap();
         let t = m.get("type").unwrap();
 
@@ -38,11 +38,11 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
             };
             let material = self.get_material(m);
 
-            return Some(Rc::new(Sphere {
+            return Some(vec![Rc::new(Sphere {
                 radius,
                 transform,
                 material,
-            }));
+            })]);
         } else if t == "quad" {
             let size = if m.get("size").unwrap().is_number() {
                 let s = m.get("size").unwrap().as_f64().unwrap() as f32;
@@ -52,7 +52,6 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
             };
             let size = size / 2.0;
 
-            // let transform = parse_transform(&v["transform"]);
             let transform = if m.contains_key("transform") {
                 parse_transform(&v["transform"])
             } else {
@@ -60,13 +59,12 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
             };
             let material = self.get_material(m);
 
-            return Some(Rc::new(Quad {
+            return Some(vec![Rc::new(Quad {
                 size,
                 transform,
                 material,
-            }));
+            })]);
         } else if t == "mesh" {
-
             let transform = if v.as_object().unwrap().contains_key("transform") {
                 parse_transform(&v["transform"])
             } else {
@@ -88,7 +86,7 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
                 .collect();
 
             let mut aabb = Aabb::new();
-            for vertex in vs.iter(){
+            for vertex in vs.iter() {
                 aabb.enclose_point(&vertex);
             }
 
@@ -124,11 +122,10 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
 
             assert!(mesh.positions.len() % 3 == 0);
 
-            
             let material = self.get_material(m);
-            
+
             let n_triangles = Fv.len();
-            let my_mesh = Mesh{
+            let my_mesh = Mesh {
                 vs: vs,
                 ns: ns,
                 uvs: uvs,
@@ -138,24 +135,23 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
                 Fm: Vec::new(),
                 materials: material,
                 transform: transform,
-                bbox: aabb
+                bbox: aabb,
             };
 
             let rc_mesh = Rc::new(my_mesh);
-            return Some(rc_mesh);
-            // let mut triangles = Vec::new();
-            // for i in 0..n_triangles{
-            //     triangles.push(Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i}));
-            // }
-            // return Some(triangles);
+            // return Some(vec![rc_mesh]);
+            let mut triangles: Vec<Rc<dyn Surface>> = Vec::new();
+            for i in 0..n_triangles {
+                triangles.push(Rc::new(Triangle {
+                    mesh: rc_mesh.clone(),
+                    face_idx: i,
+                }));
+            }
+            return Some(triangles);
 
-            // let triangles : Vec<Rc<dyn Surface>> = (0..n_triangles).into_iter().map(|i| Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i})).;
+            // let triangles : Vec<Rc<dyn Surface>> = (0..n_triangles).into_iter().map(|i| Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i})).collect();
             // return Some(triangles);
-            // for i in 0..n_triangles{
-            //     let triangle = Triangle{mesh : rc_mesh.clone(), face_idx: i};
-            // }
-
-            // return None;
+            // return None
 
             // return Some(Rc::new(Sphere::new(1.0, material)));
         }

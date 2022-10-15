@@ -29,7 +29,7 @@ pub fn read_v_or_f(j: &Value, thing_name: &str, default: Vector3<f32>) -> Vector
 }
 
 pub trait Factory<T> {
-    fn make(&mut self, v: &Value) -> Option<T>;
+    fn make(&mut self, v: &Value) -> Option<Vec<T>>;
 }
 
 // pub fn rad2deg(rad: f32) -> f32 {

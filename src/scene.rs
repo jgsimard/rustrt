@@ -127,14 +127,15 @@ impl Scene {
         if map_json.contains_key("surfaces") {
             for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
                 if let Some(mut surface) = surface_facory.make(surface_json) {
-                    surface.add_to_vec(surface, &mut surfaces_vec);
+                    // surface.add_to_vec(surface, &mut surfaces_vec);
                     // if surface.type_id() == TypeId::of::<Mesh>(){
                     //     let n_triangles = (surface as Rc<Mesh>).Fv.len();
                     //     for i in 0..n_triangles{
                     //         triangles.push(Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i}));
                     //     }
                     // }else{
-                    //     surfaces_vec.push(surface);
+                    // surfaces_vec.push(surface);
+                    surfaces_vec.append(&mut surface);
                     // }
                 } else {
                     panic!(
