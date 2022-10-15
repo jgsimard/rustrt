@@ -182,11 +182,13 @@ pub fn parse_transform(json: &Value) -> Transform {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
 
-    use nalgebra::{Matrix4, Vector3};
     use crate::ray::Ray;
     use crate::transform::Transform;
+    use nalgebra::{Matrix4, Vector3};
+
+    extern crate approx;
 
     #[test]
     fn test_transforms() {
@@ -244,52 +246,30 @@ mod tests{
         let correct_transformed_ray_position = Vector3::new(-0.0930302, -0.564666, -0.312187);
         let correct_transformed_ray_direction = Vector3::new(-0.932945, -0.088575, -0.348953);
 
-        let vector_error = (correct_transformed_vector - transformed_vector)
-            .abs()
-            .max();
-        let point_error = (correct_transformed_point - transformed_point).abs().max();
-        let normal_error = (correct_transformed_normal - transformed_normal)
-            .abs()
-            .max();
-        let ray_error = (correct_transformed_ray_position - transformed_ray.origin)
-            .abs()
-            .max()
-            .max(
-                (correct_transformed_ray_direction - transformed_ray.direction)
-                    .abs()
-                    .max(),
-            );
+        approx::assert_abs_diff_eq!(
+            correct_transformed_vector,
+            transformed_vector,
+            epsilon = 1e-5
+        );
+        approx::assert_abs_diff_eq!(correct_transformed_point, transformed_point, epsilon = 1e-5);
+        approx::assert_abs_diff_eq!(
+            correct_transformed_normal,
+            transformed_normal,
+            epsilon = 1e-5
+        );
+
+        approx::assert_abs_diff_eq!(
+            correct_transformed_ray_position,
+            transformed_ray.origin,
+            epsilon = 1e-5
+        );
+        approx::assert_abs_diff_eq!(
+            correct_transformed_ray_direction,
+            transformed_ray.direction,
+            epsilon = 1e-5
+        );
 
         println!("The forward transform matrix is\n{}.", transform.m);
         println!("The inverse transform matrix is\n{}.", transform.m_inv);
-
-        println!(
-            "Result of transform*vector is:\n{}, and it should be:\n{}.",
-            transformed_vector, correct_transformed_vector
-        );
-        assert!(vector_error < 1e-5);
-
-        println!(
-            "Result of transform*point is:\n{}, and it should be:\n{}.",
-            transformed_point, correct_transformed_point
-        );
-        assert!(point_error < 1e-5);
-
-        println!(
-            "Result of transform*normal is:\n{}, and it should be:\n{}.",
-            transformed_normal, correct_transformed_normal
-        );
-        assert!(normal_error < 1e-5);
-
-        println!(
-            "transform*ray: transformed_ray.o is:\n{}, and it should be:\n{}.",
-            transformed_ray.origin, correct_transformed_ray_position
-        );
-        println!(
-            "transform*ray: transformed_ray.d is:\n{}, and it should be:\n{}.",
-            transformed_ray.direction, correct_transformed_ray_direction
-        );
-        assert!(ray_error < 1e-5);
     }
-
 }

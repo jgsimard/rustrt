@@ -38,21 +38,19 @@ impl Material for Metal {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use nalgebra::{Vector2, Vector3};
     use serde_json::json;
     use std::rc::Rc;
 
+    use crate::materials::factory::create_material;
     use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
-    use crate::materials::factory::create_material;
-
-
 
     #[test]
     fn test_metal() {
         let surface_color = Vector3::new(1.0, 0.25, 0.25);
-    
+
         // And now let's create a slightly shiny metal surface
         let metal_json = json!({
             "type": "metal",
@@ -60,7 +58,7 @@ mod tests{
             "roughness": 0.3
         });
         let metal_material = create_material(metal_json);
-    
+
         // Let's create a fictitious hitpoint
         let surface_point = Vector3::new(1.0, 2.0, 0.0);
         let normal = Vector3::new(1.0, 2.0, -1.0).normalize();
@@ -72,42 +70,21 @@ mod tests{
             sn: normal,
             mat: Rc::clone(&metal_material),
         };
-    
+
         // And a fictitious ray
         let ray = Ray::new(Vector3::new(2.0, 3.0, -1.0), Vector3::new(-1.0, -1.0, 1.0));
-    
+
         println!("Testing metal scatter");
         if let Some((metal_attenuation, metal_scattered)) = metal_material.scatter(&ray, &hit) {
             let correct_origin = surface_point.clone();
             let correct_attenuation = surface_color.clone();
-            let correct_direction = Vector3::new(2.697650e-01, 9.322242e-01, -2.421507e-01);
-    
-            println!(
-                "Scattered! Ray origin is:\n{}, and it should be:\n{}.",
-                metal_scattered.origin, correct_origin
-            );
-            println!(
-                "Attenuation is:\n{}, and it should be:\n{}.",
-                metal_attenuation, correct_attenuation
-            );
-            println!(
-                "Ray direction is:\n{}, and it should be:\n{}.",
-                metal_scattered.direction, correct_direction
-            );
-    
-            // , (correct_direction - metal_scattered.direction).abs().max()
-    
-            let metal_error = [
-                (correct_origin - metal_scattered.origin).abs().max(),
-                (metal_attenuation - correct_attenuation).abs().max(),
-            ]
-            .into_iter()
-            .reduce(f32::max)
-            .unwrap();
-            assert!(metal_error < 1e-5, "lambert error is too big");
+            // let correct_direction = Vector3::new(2.697650e-01, 9.322242e-01, -2.421507e-01);
+
+            approx::assert_abs_diff_eq!(correct_origin, metal_scattered.origin, epsilon = 1e-5);
+            approx::assert_abs_diff_eq!(correct_attenuation, metal_attenuation, epsilon = 1e-5);
+            // approx::assert_abs_diff_eq!(correct_direction, metal_scattered.direction, epsilon = 1e-5);
         } else {
             println!("Metal scatter incorrect! Scattering should have been successful\n");
         }
     }
-    
 }

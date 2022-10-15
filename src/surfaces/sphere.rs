@@ -76,7 +76,7 @@ impl Surface for Sphere {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use nalgebra::Vector3;
     use std::rc::Rc;
 
@@ -87,25 +87,17 @@ mod tests{
     use crate::surfaces::surface::Surface;
     use crate::transform::Transform;
 
+    extern crate approx;
 
     #[test]
     fn test_ray_sphere_intersection() {
-        println!(
-            "\n{}{}{}",
-            "--------------------------------------------------------\n",
-            "PROGRAMMING ASSIGNMENT, PART 6: Ray-Sphere intersection \n",
-            "--------------------------------------------------------\n"
-        );
-    
-        // Go to sphere.cpp and implement Sphere::intersect
-    
         // Let's check if your implementation was correct:
         let material: Rc<dyn Material> = Rc::new(Lambertian {
             albedo: Vector3::new(1.0, 1.0, 1.0),
         });
         // let material = Lambertian(json!{{"albedo", 1.}});
         let test_sphere = Sphere::new(1.0, Rc::clone(&material));
-    
+
         println!("Testing untransformed sphere intersection");
         let test_ray = Ray::new(Vector3::new(-0.25, 0.5, 4.0), Vector3::new(0.0, 0.0, -1.0));
         // HitInfo hit;
@@ -113,33 +105,14 @@ mod tests{
             let correct_t = 3.170844;
             let correct_p = Vector3::new(-0.25, 0.5, 0.829156);
             let correct_n = Vector3::new(-0.25, 0.5, 0.829156);
-    
-            println!(
-                "Hit sphere! Distance is:\n{}, and it should be:\n{}",
-                hit.t, correct_t
-            );
-            println!(
-                "Intersection point is:\n{}, and it should be:\n{}",
-                hit.p, correct_p
-            );
-            println!(
-                "Intersection normal is:\n{}, and it should be:\n{}",
-                hit.sn, correct_n
-            );
-    
-            let sphere_error = [
-                (correct_p - hit.p).abs().max(),
-                (correct_n - hit.sn).abs().max(),
-                (correct_t - hit.t).abs(),
-            ]
-            .into_iter()
-            .reduce(f32::max)
-            .unwrap();
-            assert!(sphere_error < 1e-5);
+
+            approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
+            approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
+            approx::assert_abs_diff_eq!(correct_n, hit.sn, epsilon = 1e-5);
         } else {
             panic!("Sphere intersection incorrect! Should hit sphere");
         }
-    
+
         // Now, let's check if you implemented sphere transforms correctly!
         let transform = Transform::axis_offset(
             &Vector3::new(2.0, 0.0, 0.0),  // x-axis
@@ -153,35 +126,16 @@ mod tests{
             material: Rc::clone(&material),
         };
         let test_ray = Ray::new(Vector3::new(1.0, 0.5, 8.0), Vector3::new(0.0, 0.0, -1.0));
-    
+
         println!("Testing transformed sphere intersection");
         if let Some(hit) = transformed_sphere.intersect(&test_ray) {
             let correct_t = 2.585422;
             let correct_p = Vector3::new(1.0, 0.5, 5.41458);
             let correct_n = Vector3::new(0.147442, 0.147442, 0.978019);
-    
-            println!(
-                "Hit sphere! Distance is:\n{}, and it should be:\n{}",
-                hit.t, correct_t
-            );
-            println!(
-                "Intersection point is:\n{}, and it should be:\n{}",
-                hit.p, correct_p
-            );
-            println!(
-                "Intersection normal is:\n{}, and it should be:\n{}",
-                hit.sn, correct_n
-            );
-    
-            let sphere_error = [
-                (correct_p - hit.p).abs().max(),
-                (correct_n - hit.sn).abs().max(),
-                (correct_t - hit.t).abs(),
-            ]
-            .into_iter()
-            .reduce(f32::max)
-            .unwrap();
-            assert!(sphere_error < 1e-5);
+
+            approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
+            approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
+            approx::assert_abs_diff_eq!(correct_n, hit.sn, epsilon = 1e-5);
         } else {
             panic!("Transformed sphere intersection incorrect! Should hit sphere");
         }

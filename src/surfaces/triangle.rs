@@ -64,7 +64,7 @@ pub struct Triangle {
 /// Ray-Triangle intersection
 ///
 /// I use the Moller-Trumbore algorithm
-/// 
+///
 /// # Arguments
 /// * `ray` - Input Ray
 /// * `v0` - Triangle vertices
@@ -162,8 +162,9 @@ mod tests {
 
     use crate::surfaces::triangle::single_triangle_intersect;
     use crate::{materials::factory::create_material, ray::Ray};
-    use assert_approx_eq::assert_approx_eq;
     use serde_json::json;
+
+    extern crate approx;
 
     #[test]
     fn triangle_intersection() {
@@ -195,12 +196,10 @@ mod tests {
             let correct_gn = Vector3::new(0.744073, -0.114473, -0.658218);
             let correct_sn = Vector3::new(0.762482, 0.317441, 0.563784);
 
-            assert_approx_eq!(correct_t, hit.t, 1e-4);
-            for i in 0..3 {
-                assert_approx_eq!(correct_p[i], hit.p[i], 1e-4);
-                assert_approx_eq!(correct_gn[i], hit.gn[i], 1e-4);
-                assert_approx_eq!(correct_sn[i], hit.sn[i], 1e-4);
-            }
+            approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
+            approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
+            approx::assert_abs_diff_eq!(correct_gn, hit.gn, epsilon = 1e-5);
+            approx::assert_abs_diff_eq!(correct_sn, hit.sn, epsilon = 1e-5);
         } else {
             assert!(false, "did not hit")
         }
