@@ -60,7 +60,7 @@
         {
             "type": "mesh",
             "name": "mybunny",
-            "filename": "../assets/bunny-fine.obj",
+            "filename": "assets/bunny-fine.obj",
             "material": "green",
             "transform": [
                 {
@@ -70,7 +70,7 @@
         },
         {
             "type": "mesh",
-            "filename": "../assets/bunny-fine.obj",
+            "filename": "assets/bunny-fine.obj",
             "transform": [
                 {
                     "axis": [
@@ -85,7 +85,7 @@
         },
         {
             "type": "mesh",
-            "filename": "../assets/bunny-fine.obj",
+            "filename": "assets/bunny-fine.obj",
             "transform": [
                 {
                     "axis": [
@@ -99,7 +99,7 @@
             "material": "white"
         }, {
             "type": "mesh",
-            "filename": "../assets/bunny-fine.obj",
+            "filename": "assets/bunny-fine.obj",
             "transform": [
                 {
                     "axis": [
@@ -113,7 +113,7 @@
             "material": "white"
         }, {
             "type": "mesh",
-            "filename": "../assets/bunny-fine.obj",
+            "filename": "assets/bunny-fine.obj",
             "transform": [
                 {
                     "axis": [
@@ -127,7 +127,7 @@
             "material": "white"
         }, {
             "type": "mesh",
-            "filename": "../assets/bunny-fine.obj",
+            "filename": "assets/bunny-fine.obj",
             "transform": [
                 {
                     "axis": [
@@ -141,7 +141,7 @@
             "material": "white"
         }, {
             "type": "mesh",
-            "filename": "../assets/bunny-fine.obj",
+            "filename": "assets/bunny-fine.obj",
             "transform": [
                 {
                     "axis": [
@@ -156,7 +156,7 @@
         }, {
             "type": "mesh",
             "name": "mydragon",
-            "filename": "../assets/dragon.obj",
+            "filename": "assets/dragon.obj",
             "material": "red",
             "transform": [
                 {
@@ -172,7 +172,7 @@
             ]
         }, {
             "type": "mesh",
-            "filename": "../assets/dragon.obj",
+            "filename": "assets/dragon.obj",
             "material": "red",
             "transform": [
                 {
@@ -198,7 +198,7 @@
             ]
         }, {
             "type": "mesh",
-            "filename": "../assets/dragon.obj",
+            "filename": "assets/dragon.obj",
             "material": "white",
             "transform": [
                 {
@@ -224,7 +224,7 @@
             ]
         }, {
             "type": "mesh",
-            "filename": "../assets/dragon.obj",
+            "filename": "assets/dragon.obj",
             "material": "green",
             "transform": [
                 {
@@ -250,7 +250,7 @@
             ]
         }, {
             "type": "mesh",
-            "filename": "../assets/dragon.obj",
+            "filename": "assets/dragon.obj",
             "material": "green",
             "transform": [
                 {
@@ -276,7 +276,7 @@
             ]
         }, {
             "type": "mesh",
-            "filename": "../assets/dragon.obj",
+            "filename": "assets/dragon.obj",
             "material": "green",
             "transform": [
                 {
