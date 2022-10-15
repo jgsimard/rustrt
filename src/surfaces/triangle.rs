@@ -1,65 +1,263 @@
+use crate::aabb::Aabb;
 use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
-use crate::transform::Transform;
+use crate::transform::{parse_transform, Transform};
+
 use nalgebra::{Vector2, Vector3};
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
-use crate::aabb::Aabb;
 use glm::{Vec2, Vec3};
+use serde_json::{from_value, Value};
+use tobj;
 
-pub struct Mesh {}
+pub struct Mesh {
+    /// Vertex positions
+    pub vs: Vec<Vec3>,
+
+    /// Vertex normals
+    pub ns: Vec<Vec3>,
+
+    /// Vertex texture coordinates
+    pub uvs: Vec<Vec2>,
+
+    /// Vertex indices per face (triangle)
+    pub Fv: Vec<Vector3<usize>>,
+
+    /// Normal indices per face (triangle)
+    pub Fn: Vec<Vector3<usize>>,
+
+    /// Texture indices per face (triangle)
+    pub Ft: Vec<Vector3<usize>>,
+
+    /// One material index per face (triangle)
+    pub Fm: Vec<usize>,
+
+    /// All materials in the mesh
+    // materials: Vec<Rc<dyn Material>>,
+    pub materials: Rc<dyn Material>,
+    
+    /// Transformation that the data has already been transformed by
+    pub transform: Transform,
+
+    /// The bounds, after transformation
+    pub bbox: Aabb,
+}
+
+impl Surface for Mesh {
+    fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+        unimplemented!()
+    }
+
+    fn bounds(&self) -> Aabb {
+        self.bbox.clone()
+    }
+}
+
+impl Mesh {
+    fn add_to_vec(&self, sur: Rc<dyn Surface>, surfaces_vec: &mut Vec<Rc<dyn Surface>>){
+        // surfaces_vec.push(sur);
+        let n_triangles = self.Fv.len();
+        let rc_mesh = Rc::new(*self);
+        for i in 0..n_triangles{
+            surfaces_vec.push(Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i}));
+        }
+    }
+    // pub fn new(json: &Value) {
+    //     let filename: String = from_value(json["filename"].clone()).expect("no filename");
+
+    //     let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
+    //     // let obj = tobj::load_obj(filename, &tobj::GPU_LOAD_OPTIONS);
+    //     // let load_options = tobj::LoadOptions {
+    //     //     // single_index: true,
+    //     //     ..Default::default()
+    //     // };
+    //     // let obj = tobj::load_obj(filename, &load_options);
+
+    //     assert!(obj.is_ok());
+    //     let (models, _) = obj.expect("Failed to load OBJ file");
+    //     println!("# of models: {}", models.len());
+
+    //     let mesh = &models[0].mesh;
+
+    //     // for (i, m) in models.iter().enumerate() {
+    //     //     let mesh = &m.mesh;
+
+    //     println!("model.name = \'{}\'", models[0].name);
+    //     println!("model.mesh.material_id = {:?}", mesh.material_id);
+
+    //     println!("Size of model.face_arities: {}", mesh.face_arities.len());
+
+    //     let mut next_face = 0;
+    //     for f in 0..mesh.face_arities.len() {
+    //         let end = next_face + mesh.face_arities[f] as usize;
+    //         let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
+    //         println!("    face[{}] = {:?}", f, face_indices);
+    //         next_face = end;
+    //     }
+
+    //     println!("model.vertices: {}", mesh.positions.len() / 3);
+    //     println!("model.vertex_color: {}", mesh.vertex_color.len() / 3);
+    //     println!("model.normals: {}", mesh.normals.len() / 3);
+    //     println!("model.texcoords: {}", mesh.texcoords.len() / 3);
+    //     println!("model.indices: {}", mesh.indices.len() / 3);
+    //     println!("model.face_arities: {}", mesh.face_arities.len() / 3);
+    //     println!("model.texcoord_indices: {}", mesh.texcoord_indices.len() / 3);
+    //     println!("model.material_id: {}", mesh.material_id.unwrap_or_default());
+
+    //     let vs: Vec<Vec3> = mesh
+    //         .positions
+    //         .chunks(3)
+    //         .map(|p| Vec3::new(p[0], p[1], p[2]))
+    //         .collect();
+
+    //     let ns: Vec<Vec3> = mesh
+    //         .normals
+    //         .chunks(3)
+    //         .map(|p| Vec3::new(p[0], p[1], p[2]))
+    //         .collect();
+
+    //     let uvs: Vec<Vec2> = mesh
+    //         .texcoords
+    //         .chunks(2)
+    //         .map(|p| Vec2::new(p[0], p[1]))
+    //         .collect();
+
+    //     let Fv: Vec<Vector3<usize>> = mesh
+    //         .indices
+    //         .chunks(3)
+    //         .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+    //         .collect();
+
+    //     let Fn: Vec<Vector3<usize>> = mesh
+    //         .normal_indices
+    //         .chunks(3)
+    //         .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+    //         .collect();
+
+    //     let Ft: Vec<Vector3<usize>> = mesh
+    //         .texcoord_indices
+    //         .chunks(3)
+    //         .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+    //         .collect();
+
+    //     assert!(mesh.positions.len() % 3 == 0);
+
+    //     let transform = if json.as_object().unwrap().contains_key("transform") {
+    //         parse_transform(&json["transform"])
+    //     } else {
+    //         Default::default()
+    //     };
+    //     let n_triangles = Fv.len();
+
+    //     let my_mesh = Mesh{
+    //         vs: vs,
+    //         ns: ns,
+    //         uvs: uvs,
+    //         Fv: Fv,
+    //         Fn: Fn,
+    //         Ft: Ft,
+    //         Fm: Vec::new(),
+    //         materials: Vec::new(),
+    //         transform: transform,
+    //         bbox: Aabb::new()
+    //     };
+
+    //     let rc_mesh = Rc::new(my_mesh);
+
+    //     for i in 0..n_triangles{
+    //         let triangle = Triangle{mesh : rc_mesh.clone(), face_idx: i};
+    //     }
+    // }
+
+    pub fn empty(&self) -> bool {
+        self.Fv.is_empty() | self.vs.is_empty()
+    }
+}
 
 pub struct Triangle {
-    pub mesh: Mesh,
+    pub mesh: Rc<Mesh>,
     pub face_idx: usize,
 }
 
-// impl Surface for Triangle {
-//     fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
-//         // compute ray intersection (and ray parameter), continue if not hit
-//         // put ray into sphere frame
-//         let ray_transformed = self.transform.inverse().ray(ray);
+impl Triangle {
+    /// convenience function to access the i-th vertex (i must be 0, 1, or 2)
+    pub fn vertex(&self, i: usize) -> Vec3{
+        self.mesh.vs[self.mesh.Fv[self.face_idx][i]]
+    }
+}
 
-//         if ray_transformed.direction.z == 0.0 {
-//             return None;
-//         };
+impl Surface for Triangle {
+    fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+        // vertices
+        let iv0 = self.mesh.Fv[self.face_idx].x;
+        let iv1 = self.mesh.Fv[self.face_idx].y;
+        let iv2 = self.mesh.Fv[self.face_idx].z;
 
-//         let t = -ray_transformed.origin.z / ray_transformed.direction.z;
-//         let mut p = ray_transformed.at(t);
+        let p0 = self.mesh.vs[iv0];
+        let p1 = self.mesh.vs[iv1];
+        let p2 = self.mesh.vs[iv2];
 
-//         if self.size.x < p.x.abs() || self.size.y < p.y.abs() {
-//             return None;
-//         }
+        // shading normals
+        // const Vec3f *n0 = nullptr, *n1 = nullptr, *n2 = nullptr;
+        let mut n0: Option<Vector3<f32>> = None;
+        let mut n1: Option<Vector3<f32>> = None;
+        let mut n2: Option<Vector3<f32>> = None;
+        if self.mesh.Fn.len() > self.face_idx
+        {
+            let in0 = self.mesh.Fn[self.face_idx].x;
+            let in1 = self.mesh.Fn[self.face_idx].y;
+            let in2 = self.mesh.Fn[self.face_idx].z;
+            if in0 >= 0 && in1 >= 0 && in2 >= 0
+            {
+                // spdlog::info("shading normals");
+                n0.replace(self.mesh.ns[in0]);
+                n1.replace(self.mesh.ns[in1]);
+                n2.replace(self.mesh.ns[in2]);
+            }
+        }
+        // texture coordinates
+        let mut t0: Option<Vector2<f32>> = None;
+        let mut t1: Option<Vector2<f32>> = None;
+        let mut t2: Option<Vector2<f32>> = None;
+        if self.mesh.Ft.len() > self.face_idx
+        {
+            let it0 = self.mesh.Ft[self.face_idx].x;
+            let it1 = self.mesh.Ft[self.face_idx].y;
+            let it2 = self.mesh.Ft[self.face_idx].z;
+            if it0 >= 0 && it1 >= 0 && it2 >= 0
+            {
+                t0.replace(self.mesh.uvs[it0]);
+                t1.replace(self.mesh.uvs[it1]);
+                t2.replace(self.mesh.uvs[it2]);
+            }
+        }
+        let material = self.mesh.materials.clone();
+        return single_triangle_intersect(ray, &p0, &p1, &p2, &n0, &n1, &n2, &t0, &t1, &t2, material);
 
-//         // check if computed param is within ray.mint and ray.maxt
-//         if t < ray_transformed.mint || t > ray_transformed.maxt {
-//             return None;
-//         }
+    }
 
-//         // project hitpoint onto plane to reduce floating-point error
-//         p.z = 0.0;
+    fn bounds(&self) -> Aabb {
+        // all mesh vertices have already been transformed to world space,
+        // so just bound the triangle vertices
+        let mut aabb = Aabb::new();
+        aabb.enclose_point(&self.vertex(0));
+        aabb.enclose_point(&self.vertex(1));
+        aabb.enclose_point(&self.vertex(2));
 
-//         let n = glm::normalize(&self.transform.normal(&Vector3::z()));
-//         let uv = 0.5 * p.xy().component_div(&self.size).add_scalar(1.0);
-//         let uv = glm::clamp(&uv, 0.000001, 0.999999);
+        // if the triangle lies in an axis-aligned plane, expand the box a bit
+        let diag = aabb.diagonal();
+        for i in 0..3{
+            if diag[i] < 1e-4{
+                aabb.min[i] -= 5e-5;
+                aabb.max[i] += 5e-5;
+            }
+        }
+        aabb
+    }
+    
+}
 
-//         // if hit, set intersection record values
-//         let hit = HitInfo {
-//             t: t,
-//             p: self.transform.point(&p),
-//             gn: n,
-//             sn: n,
-//             uv: uv,
-//             mat: Rc::clone(&self.material),
-//         };
-//         Some(hit)
-//     }
-
-//     fn bounds(&self) -> Aabb {
-//         self.transform.aabb(&self.local_bounds())
-//     }
-// }
 
 /// Ray-Triangle intersection
 ///

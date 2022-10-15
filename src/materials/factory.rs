@@ -3,8 +3,8 @@ use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::material::Material;
 use crate::materials::metal::Metal;
-use crate::utils::Factory;
-use nalgebra::Vector2;
+use crate::utils::{read_v_or_f, Factory};
+
 use nalgebra::Vector3;
 use serde_json::from_value;
 use std::collections::HashMap;
@@ -39,34 +39,10 @@ impl Factory<Rc<dyn Material>> for MaterialFactory {
     }
 }
 
-pub fn read_vector2_f32(v: &Value, name: &str, default: Vector2<f32>) -> Vector2<f32> {
-    v.get(name).map_or(default, |v: &Value| {
-        from_value::<Vector2<f32>>(v.clone()).unwrap()
-    })
-}
-
-pub fn read_vector3_f32(v: &Value, name: &str, default: Vector3<f32>) -> Vector3<f32> {
-    v.get(name).map_or(default, |v: &Value| {
-        from_value::<Vector3<f32>>(v.clone()).unwrap()
-    })
-}
-
 pub fn create_material(material_json: Value) -> Rc<dyn Material> {
     let type_material = material_json
         .get("type")
         .expect("material should have a type");
-
-    fn read_v_or_f(j: &Value, thing_name: &str, default: Vector3<f32>) -> Vector3<f32> {
-        let v = j.get(thing_name).unwrap().clone();
-        let thing: Vector3<f32>;
-        if v.is_number() {
-            let thing_number: f32 = from_value(v).unwrap();
-            thing = Vector3::new(thing_number, thing_number, thing_number);
-        } else {
-            thing = read_vector3_f32(j, thing_name, default);
-        }
-        thing
-    }
     if type_material == "lambertian" {
         let albedo = read_v_or_f(&material_json, "albedo", Vector3::zeros());
         Rc::new(Lambertian { albedo: albedo })

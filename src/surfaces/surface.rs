@@ -22,6 +22,10 @@ pub trait Surface {
         unimplemented!();
     }
 
+    fn add_to_vec(&self, sur: Rc<dyn Surface>, surfaces_vec: &mut Vec<Rc<dyn Surface>>){
+        surfaces_vec.push(sur);
+    }
+
     // fn sample(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> Vector3<f32>;
     // fn pdf(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> f32;
     // fn is_emissive() -> bool;

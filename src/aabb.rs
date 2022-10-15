@@ -38,9 +38,9 @@ impl Aabb {
         (self.min + self.max) / 2.0
     }
 
-    // fn diagonal(&self) -> Vec3 {
-    //     self.max - self.min
-    // }
+    pub fn diagonal(&self) -> Vec3 {
+        self.max - self.min
+    }
 
     // pub fn volume(&self) -> f32 {
     //     let d = self.diagonal();

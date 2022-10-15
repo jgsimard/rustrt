@@ -14,7 +14,10 @@ use crate::aabb::Aabb;
 use crate::materials::factory::MaterialFactory;
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::surfaces::factory::SurfaceFactory;
-use crate::utils::Factory;
+use crate::surfaces::triangle::Mesh;
+use crate::utils::{read_v_or_f, Factory};
+// use std::any::{Any, TypeId};
+use std::rc::Rc;
 
 pub struct Scene {
     pub surfaces: Box<dyn Surface>,
@@ -52,8 +55,8 @@ impl Scene {
             }
         }
 
-        // Utility function
-        let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
+        // // Utility function
+        // let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
 
         //
         // parse the camera
@@ -92,9 +95,10 @@ impl Scene {
         //
         // parse scene background
         //
-        let background = map_json
-            .get("background")
-            .map_or(Vector3::zeros(), read_vector3);
+        let background = read_v_or_f(&scene_json, "background", Vector3::new(1.0, 1.0, 1.0));
+        // let background = map_json
+        //     .get("background")
+        //     .map_or(Vector3::zeros(), read_vector3);
 
         //
         // parse materials
@@ -122,9 +126,16 @@ impl Scene {
         let mut surfaces_vec = Vec::new();
         if map_json.contains_key("surfaces") {
             for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
-                // let surface = make_surface(sur);
-                if let Some(surface) = surface_facory.make(surface_json) {
-                    surfaces_vec.push(surface.clone());
+                if let Some(mut surface) = surface_facory.make(surface_json) {
+                    surface.add_to_vec(surface, &mut surfaces_vec);
+                    // if surface.type_id() == TypeId::of::<Mesh>(){
+                    //     let n_triangles = (surface as Rc<Mesh>).Fv.len();
+                    //     for i in 0..n_triangles{
+                    //         triangles.push(Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i}));
+                    //     }
+                    // }else{
+                    //     surfaces_vec.push(surface);
+                    // }
                 } else {
                     panic!(
                         "surface of type : {} not yet supported",

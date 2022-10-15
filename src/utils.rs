@@ -1,8 +1,32 @@
-use nalgebra::Vector3;
-use serde_json::Value;
+use nalgebra::{Vector2, Vector3};
+use serde_json::{from_value, Value};
 extern crate nalgebra_glm as glm;
 
 use rand::Rng;
+
+pub fn read_vector2_f32(v: &Value, name: &str, default: Vector2<f32>) -> Vector2<f32> {
+    v.get(name).map_or(default, |v: &Value| {
+        from_value::<Vector2<f32>>(v.clone()).unwrap()
+    })
+}
+
+pub fn read_vector3_f32(v: &Value, name: &str, default: Vector3<f32>) -> Vector3<f32> {
+    v.get(name).map_or(default, |v: &Value| {
+        from_value::<Vector3<f32>>(v.clone()).unwrap()
+    })
+}
+
+pub fn read_v_or_f(j: &Value, thing_name: &str, default: Vector3<f32>) -> Vector3<f32> {
+    let v = j.get(thing_name).unwrap().clone();
+    let thing: Vector3<f32>;
+    if v.is_number() {
+        let thing_number: f32 = from_value(v).unwrap();
+        thing = Vector3::new(thing_number, thing_number, thing_number);
+    } else {
+        thing = read_vector3_f32(j, thing_name, default);
+    }
+    thing
+}
 
 pub trait Factory<T> {
     fn make(&mut self, v: &Value) -> Option<T>;

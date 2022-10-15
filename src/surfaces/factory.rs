@@ -1,14 +1,20 @@
+use crate::aabb::Aabb;
 use crate::materials::factory::create_material;
-use crate::materials::factory::read_vector2_f32;
 use crate::materials::factory::MaterialFactory;
+use crate::materials::material::Material;
 use crate::surfaces::quad::Quad;
 use crate::surfaces::sphere::Sphere;
 use crate::surfaces::surface::Surface;
+use crate::surfaces::triangle::{Mesh, Triangle};
 use crate::transform::parse_transform;
+use crate::utils::read_vector2_f32;
 use crate::utils::Factory;
-use nalgebra::Vector2;
-use serde_json::{from_value, Value};
+use serde_json::{from_value, Map, Value};
 use std::rc::Rc;
+use nalgebra::{Vector2, Vector3};
+extern crate nalgebra_glm as glm;
+use glm::{Vec2, Vec3};
+use tobj;
 
 pub struct SurfaceFactory {
     pub material_factory: MaterialFactory,
@@ -30,20 +36,7 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
             } else {
                 Default::default()
             };
-            let material = if let Some(mat) = m.get("material") {
-                if mat.is_string() {
-                    (*self
-                        .material_factory
-                        .materials
-                        .get(mat.as_str().unwrap())
-                        .unwrap())
-                    .clone()
-                } else {
-                    create_material((*mat).clone())
-                }
-            } else {
-                panic!("Invalid material");
-            };
+            let material = self.get_material(m);
 
             return Some(Rc::new(Sphere {
                 radius,
@@ -65,27 +58,127 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
             } else {
                 Default::default()
             };
-            let material = if let Some(mat) = m.get("material") {
-                if mat.is_string() {
-                    (*self
-                        .material_factory
-                        .materials
-                        .get(mat.as_str().unwrap())
-                        .unwrap())
-                    .clone()
-                } else {
-                    create_material((*mat).clone())
-                }
-            } else {
-                panic!("Invalid material");
-            };
+            let material = self.get_material(m);
 
             return Some(Rc::new(Quad {
                 size,
                 transform,
                 material,
             }));
+        } else if t == "mesh" {
+
+            let transform = if v.as_object().unwrap().contains_key("transform") {
+                parse_transform(&v["transform"])
+            } else {
+                Default::default()
+            };
+
+            let filename: String = from_value(v["filename"].clone()).expect("no filename");
+
+            let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
+
+            assert!(obj.is_ok());
+            let (models, _) = obj.expect("Failed to load OBJ file");
+
+            let mesh = &models[0].mesh;
+            let vs: Vec<Vec3> = mesh
+                .positions
+                .chunks(3)
+                .map(|p| transform.point(&Vec3::new(p[0], p[1], p[2])))
+                .collect();
+
+            let mut aabb = Aabb::new();
+            for vertex in vs.iter(){
+                aabb.enclose_point(&vertex);
+            }
+
+            let ns: Vec<Vec3> = mesh
+                .normals
+                .chunks(3)
+                .map(|p| Vec3::new(p[0], p[1], p[2]))
+                .collect();
+
+            let uvs: Vec<Vec2> = mesh
+                .texcoords
+                .chunks(2)
+                .map(|p| Vec2::new(p[0], p[1]))
+                .collect();
+
+            let Fv: Vec<Vector3<usize>> = mesh
+                .indices
+                .chunks(3)
+                .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+                .collect();
+
+            let Fn: Vec<Vector3<usize>> = mesh
+                .normal_indices
+                .chunks(3)
+                .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+                .collect();
+
+            let Ft: Vec<Vector3<usize>> = mesh
+                .texcoord_indices
+                .chunks(3)
+                .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+                .collect();
+
+            assert!(mesh.positions.len() % 3 == 0);
+
+            
+            let material = self.get_material(m);
+            
+            let n_triangles = Fv.len();
+            let my_mesh = Mesh{
+                vs: vs,
+                ns: ns,
+                uvs: uvs,
+                Fv: Fv,
+                Fn: Fn,
+                Ft: Ft,
+                Fm: Vec::new(),
+                materials: material,
+                transform: transform,
+                bbox: aabb
+            };
+
+            let rc_mesh = Rc::new(my_mesh);
+            return Some(rc_mesh);
+            // let mut triangles = Vec::new();
+            // for i in 0..n_triangles{
+            //     triangles.push(Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i}));
+            // }
+            // return Some(triangles);
+
+            // let triangles : Vec<Rc<dyn Surface>> = (0..n_triangles).into_iter().map(|i| Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i})).;
+            // return Some(triangles);
+            // for i in 0..n_triangles{
+            //     let triangle = Triangle{mesh : rc_mesh.clone(), face_idx: i};
+            // }
+
+            // return None;
+
+            // return Some(Rc::new(Sphere::new(1.0, material)));
         }
         None
+    }
+}
+
+impl SurfaceFactory {
+    fn get_material(&self, m: &Map<String, Value>) -> Rc<dyn Material> {
+        let material = if let Some(mat) = m.get("material") {
+            if mat.is_string() {
+                (*self
+                    .material_factory
+                    .materials
+                    .get(mat.as_str().unwrap())
+                    .unwrap())
+                .clone()
+            } else {
+                create_material((*mat).clone())
+            }
+        } else {
+            panic!("Invalid material");
+        };
+        return material;
     }
 }
