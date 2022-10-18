@@ -3,8 +3,7 @@ use crate::ray::Ray;
 use crate::utils::deg2rad;
 
 extern crate nalgebra_glm as glm;
-
-use nalgebra::{Matrix3x4, Matrix4, Vector3};
+use glm::{Mat3x4, Mat4, Vec3};
 use serde_json::{from_value, Value};
 use std::ops::Mul;
 
@@ -15,12 +14,12 @@ use std::ops::Mul;
 /// since it is required when transforming normal vectors.
 #[derive(Debug)]
 pub struct Transform {
-    pub m: Matrix4<f32>,
-    pub m_inv: Matrix4<f32>,
+    pub m: Mat4,
+    pub m_inv: Mat4,
 }
 
 impl Transform {
-    pub fn new(m: Matrix4<f32>) -> Transform {
+    pub fn new(m: Mat4) -> Transform {
         Transform {
             m: m,
             m_inv: m.try_inverse().expect("Matrix not invertible"),
@@ -36,19 +35,19 @@ impl Transform {
     }
 
     /// Apply the homogeneous transformation to a 3D direction vector
-    pub fn vector(&self, v: &Vector3<f32>) -> Vector3<f32> {
+    pub fn vector(&self, v: &Vec3) -> Vec3 {
         (self.m * v.insert_row(3, 0.0)).xyz()
     }
 
     /// Apply the homogeneous transformation to a 3D normal
-    pub fn normal(&self, n: &Vector3<f32>) -> Vector3<f32> {
+    pub fn normal(&self, n: &Vec3) -> Vec3 {
         (self.m_inv.transpose() * n.insert_row(3, 0.0))
             .xyz()
             .normalize()
     }
 
     /// Transform a point by an arbitrary matrix in homogeneous coordinates
-    pub fn point(&self, p: &Vector3<f32>) -> Vector3<f32> {
+    pub fn point(&self, p: &Vec3) -> Vec3 {
         (self.m * p.insert_row(3, 1.0)).xyz()
     }
 
@@ -77,20 +76,15 @@ impl Transform {
         return bb;
     }
 
-    pub fn axis_offset(
-        x: &Vector3<f32>,
-        y: &Vector3<f32>,
-        z: &Vector3<f32>,
-        o: &Vector3<f32>,
-    ) -> Transform {
-        let m = Matrix3x4::from_columns(&[*x, *y, *z, *o]);
+    pub fn axis_offset(x: &Vec3, y: &Vec3, z: &Vec3, o: &Vec3) -> Transform {
+        let m = Mat3x4::from_columns(&[*x, *y, *z, *o]);
         let mut m = m.insert_row(3, 0.);
         m[(3, 3)] = 1.0;
         Transform::new(m)
     }
 
-    pub fn translate(t: &Vector3<f32>) -> Transform {
-        Transform::new(Matrix4::new_translation(&t))
+    pub fn translate(t: &Vec3) -> Transform {
+        Transform::new(Mat4::new_translation(&t))
     }
 }
 
@@ -108,8 +102,8 @@ impl Mul<Transform> for Transform {
 impl Default for Transform {
     fn default() -> Transform {
         Transform {
-            m: Matrix4::identity(),
-            m_inv: Matrix4::identity(),
+            m: Mat4::identity(),
+            m_inv: Mat4::identity(),
         }
     }
 }
@@ -126,7 +120,7 @@ pub fn parse_transform(json: &Value) -> Transform {
     // single transform
     let kv = json.as_object().unwrap();
 
-    let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
+    let read_vector3 = |v: &Value| from_value::<Vec3>(v.clone()).unwrap();
     let read = |s: &str, default| kv.get(s).map_or(default, read_vector3);
 
     if kv.contains_key("from")
@@ -134,10 +128,10 @@ pub fn parse_transform(json: &Value) -> Transform {
         || kv.contains_key("to")
         || kv.contains_key("up")
     {
-        let from = read("from", Vector3::z());
-        let to = read("to", Vector3::zeros());
-        let at = read("at", Vector3::zeros()) + to;
-        let up = read("up", Vector3::y());
+        let from = read("from", Vec3::z());
+        let to = read("to", Vec3::zeros());
+        let at = read("at", Vec3::zeros()) + to;
+        let up = read("up", Vec3::y());
 
         let dir = glm::normalize(&(from - at));
         let left = glm::normalize(&glm::cross(&up, &dir));
@@ -149,31 +143,31 @@ pub fn parse_transform(json: &Value) -> Transform {
         || kv.contains_key("y")
         || kv.contains_key("z")
     {
-        let o = read("o", Vector3::zeros());
-        let x = read("x", Vector3::x());
-        let y = read("y", Vector3::y());
-        let z = read("z", Vector3::z());
+        let o = read("o", Vec3::zeros());
+        let x = read("x", Vec3::x());
+        let y = read("y", Vec3::y());
+        let z = read("z", Vec3::z());
 
         return Transform::axis_offset(&x, &y, &z, &o);
     } else if kv.contains_key("translate") {
-        let t = read("translate", Vector3::zeros());
+        let t = read("translate", Vec3::zeros());
         return Transform::translate(&t);
     } else if kv.contains_key("scale") {
         let scale = kv.get("scale").unwrap().clone();
         if scale.is_number() {
             let sn: f32 = from_value(scale).expect("could not load 'scale' number Transform");
-            return Transform::new(Matrix4::new_scaling(sn));
+            return Transform::new(Mat4::new_scaling(sn));
         }
-        let sv: Vector3<f32> = from_value(scale).expect("could not load 'scale' vector Transform");
-        return Transform::new(Matrix4::new_nonuniform_scaling(&sv));
+        let sv: Vec3 = from_value(scale).expect("could not load 'scale' vector Transform");
+        return Transform::new(Mat4::new_nonuniform_scaling(&sv));
     } else if kv.contains_key("axis") || kv.contains_key("angle") {
-        let axis = read("axis", Vector3::x());
+        let axis = read("axis", Vec3::x());
         let angle = kv
             .get("angle")
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
 
         let angle = deg2rad(angle);
-        return Transform::new(Matrix4::from_scaled_axis(axis * angle));
+        return Transform::new(Mat4::from_scaled_axis(axis * angle));
     } else if kv.contains_key("matrix") {
         unimplemented!();
     } else {

@@ -83,9 +83,9 @@ impl Surface for Triangle {
 
         // shading normals
         // const Vec3f *n0 = nullptr, *n1 = nullptr, *n2 = nullptr;
-        let mut n0: Option<Vector3<f32>> = None;
-        let mut n1: Option<Vector3<f32>> = None;
-        let mut n2: Option<Vector3<f32>> = None;
+        let mut n0: Option<Vec3> = None;
+        let mut n1: Option<Vec3> = None;
+        let mut n2: Option<Vec3> = None;
         if self.mesh.normal_indices.len() > self.face_idx {
             let in0 = self.mesh.normal_indices[self.face_idx].x;
             let in1 = self.mesh.normal_indices[self.face_idx].y;
@@ -234,7 +234,8 @@ pub fn single_triangle_intersect(
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{Vector2, Vector3};
+    extern crate nalgebra_glm as glm;
+    use glm::{Vec2, Vec3};
 
     use crate::surfaces::triangle::single_triangle_intersect;
     use crate::{materials::factory::create_material, ray::Ray};
@@ -245,19 +246,19 @@ mod tests {
     #[test]
     fn triangle_intersection() {
         // Setup test data
-        let v0 = Vector3::new(-2.0, -5.0, -1.0);
-        let v1 = Vector3::new(1.0, 3.0, 1.0);
-        let v2 = Vector3::new(2.0, -2.0, 3.0);
+        let v0 = Vec3::new(-2.0, -5.0, -1.0);
+        let v1 = Vec3::new(1.0, 3.0, 1.0);
+        let v2 = Vec3::new(2.0, -2.0, 3.0);
 
-        let n0 = Some(Vector3::new(0.0, 0.707106, 0.707106));
-        let n1 = Some(Vector3::new(0.666666, 0.333333, 0.666666));
-        let n2 = Some(Vector3::new(0.0, -0.447213, -0.894427));
+        let n0 = Some(Vec3::new(0.0, 0.707106, 0.707106));
+        let n1 = Some(Vec3::new(0.666666, 0.333333, 0.666666));
+        let n2 = Some(Vec3::new(0.0, -0.447213, -0.894427));
 
-        let t0: Option<Vector2<f32>> = None;
-        let t1: Option<Vector2<f32>> = None;
-        let t2: Option<Vector2<f32>> = None;
+        let t0: Option<Vec2> = None;
+        let t1: Option<Vec2> = None;
+        let t2: Option<Vec2> = None;
 
-        let ray = Ray::new(Vector3::new(1.0, -1.0, -5.0), Vector3::new(0.0, 0.20, 0.50));
+        let ray = Ray::new(Vec3::new(1.0, -1.0, -5.0), Vec3::new(0.0, 0.20, 0.50));
 
         let material_json = json!({"type": "lambertian", "albedo": 1.0});
         let material = create_material(material_json);
@@ -268,9 +269,9 @@ mod tests {
         {
             // verify computed results
             let correct_t = 12.520326;
-            let correct_p = Vector3::new(1.0, 1.504065, 1.260162);
-            let correct_gn = Vector3::new(0.744073, -0.114473, -0.658218);
-            let correct_sn = Vector3::new(0.762482, 0.317441, 0.563784);
+            let correct_p = Vec3::new(1.0, 1.504065, 1.260162);
+            let correct_gn = Vec3::new(0.744073, -0.114473, -0.658218);
+            let correct_sn = Vec3::new(0.762482, 0.317441, 0.563784);
 
             approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
             approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);

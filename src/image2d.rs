@@ -1,14 +1,14 @@
 extern crate nalgebra_glm as glm;
+use glm::Vec3;
 
 use image::Rgb32FImage;
 
-use nalgebra::Vector3;
 use std::ops::{Index, IndexMut};
 
 use image::Rgb;
 
 pub struct Image2d {
-    data: Vec<Vector3<f32>>,
+    data: Vec<Vec3>,
     pub size_x: usize,
     pub size_y: usize,
 }
@@ -24,7 +24,7 @@ impl Image2d {
 
     pub fn new(size_x: usize, size_y: usize) -> Image2d {
         Image2d {
-            data: vec![Vector3::zeros(); size_x * size_y],
+            data: vec![Vec3::zeros(); size_x * size_y],
             size_x: size_x,
             size_y: size_y,
         }
@@ -39,13 +39,12 @@ impl Image2d {
                 let v = self[(x, y)];
                 let max_ = glm::comp_max(&v);
                 let min_ = glm::comp_min(&v);
-                if max_ > max{
+                if max_ > max {
                     max = max_;
                 }
                 if min_ < min {
-                    min = min_;   
+                    min = min_;
                 }
-
 
                 let v = glm::sqrt(&self[(x, y)]);
                 // let v = self[(x, y)];
@@ -60,7 +59,7 @@ impl Image2d {
 }
 
 impl Index<(usize, usize)> for Image2d {
-    type Output = Vector3<f32>;
+    type Output = Vec3;
 
     fn index(&self, pos: (usize, usize)) -> &Self::Output {
         let index = self.index_1d(pos.0, pos.1);

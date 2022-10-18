@@ -9,7 +9,7 @@ use crate::surfaces::triangle::{Mesh, Triangle};
 use crate::transform::parse_transform;
 use crate::utils::read_vector2_f32;
 use crate::utils::Factory;
-use nalgebra::{Vector2, Vector3};
+use nalgebra::Vector3;
 use serde_json::{from_value, Map, Value};
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
@@ -46,9 +46,9 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
         } else if t == "quad" {
             let size = if m.get("size").unwrap().is_number() {
                 let s = m.get("size").unwrap().as_f64().unwrap() as f32;
-                Vector2::new(s, s)
+                Vec2::new(s, s)
             } else {
-                read_vector2_f32(v, "size", Vector2::new(1.0, 1.0))
+                read_vector2_f32(v, "size", Vec2::new(1.0, 1.0))
             };
             let size = size / 2.0;
 

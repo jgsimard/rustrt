@@ -20,13 +20,13 @@ impl Aabb {
         }
     }
 
-    fn is_finite(&self) -> bool{
-        const INF : Vec3 = Vec3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY);
-        const NEG_INF : Vec3 = Vec3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
-        ! glm::any(&glm::equal(&self.min, &INF)) 
-        || glm::any(&glm::equal(&self.min, &NEG_INF))
-        || glm::any(&glm::equal(&self.max, &INF)) 
-        || glm::any(&glm::equal(&self.max, &NEG_INF)) 
+    fn is_finite(&self) -> bool {
+        const INF: Vec3 = Vec3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY);
+        const NEG_INF: Vec3 = Vec3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
+        !glm::any(&glm::equal(&self.min, &INF))
+            || glm::any(&glm::equal(&self.min, &NEG_INF))
+            || glm::any(&glm::equal(&self.max, &INF))
+            || glm::any(&glm::equal(&self.max, &NEG_INF))
     }
 
     pub fn is_empty(&self) -> bool {
@@ -44,7 +44,7 @@ impl Aabb {
     }
 
     pub fn center(&self) -> Vec3 {
-        if ! self.is_finite(){
+        if !self.is_finite() {
             println!("min : {} max : {}", self.min, self.max);
             panic!("is not finite");
         }

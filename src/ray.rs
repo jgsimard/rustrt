@@ -1,27 +1,20 @@
-use nalgebra::Vector3;
+extern crate nalgebra_glm as glm;
+use glm::Vec3;
+
 // use nalgebra::Unit;
 
 // TODO : Use Unit for direction
 
 #[derive(Debug, Clone)]
 pub struct Ray {
-    pub origin: Vector3<f32>,
-    pub direction: Vector3<f32>,
+    pub origin: Vec3,
+    pub direction: Vec3,
     pub mint: f32,
     pub maxt: f32,
 }
 
 impl Ray {
-    // pub fn new(origin: Vector3<f32>, direction: Vector3<f32>, mint: f32, maxt: f32) -> Ray {
-    //     Ray {
-    //         origin: origin,
-    //         direction: direction,
-    //         mint: mint,
-    //         maxt: maxt
-    //     }
-    // }
-
-    pub fn new(origin: Vector3<f32>, direction: Vector3<f32>) -> Ray {
+    pub fn new(origin: Vec3, direction: Vec3) -> Ray {
         Ray {
             origin: origin,
             direction: direction,
@@ -30,7 +23,7 @@ impl Ray {
         }
     }
 
-    pub fn at(&self, t: f32) -> Vector3<f32> {
+    pub fn at(&self, t: f32) -> Vec3 {
         self.origin + t * self.direction
     }
 }

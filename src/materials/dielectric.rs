@@ -1,9 +1,9 @@
 use crate::materials::material::Material;
 use crate::surfaces::surface::HitInfo;
-use nalgebra::Vector3;
 extern crate nalgebra_glm as glm;
 use crate::ray::Ray;
 use crate::utils::{reflect, reflectance, refract};
+use glm::Vec3;
 use rand::Rng;
 
 pub struct Dielectric {
@@ -11,7 +11,7 @@ pub struct Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vector3<f32>, Ray)> {
+    fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
         let front_face = glm::dot(&hit.gn, &r_in.direction) < 0.0;
 
         let (normal, ratio_index_of_refraction) = if front_face {
@@ -38,10 +38,10 @@ impl Material for Dielectric {
 
         let scattered = Ray::new(hit.p, direction);
 
-        Some((Vector3::new(1.0, 1.0, 1.0), scattered))
+        Some((Vec3::new(1.0, 1.0, 1.0), scattered))
     }
 
-    fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vector3<f32>> {
+    fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vec3> {
         None
     }
 

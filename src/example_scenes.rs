@@ -1,9 +1,8 @@
-use nalgebra::Vector3;
 use rand::Rng;
 use serde_json::Value;
 use serde_json::{self, json};
-
 extern crate nalgebra_glm as glm;
+use glm::Vec3;
 
 pub fn create_example_scene(scene_number: i32) -> Value {
     match scene_number {
@@ -89,7 +88,7 @@ fn create_steinbach_scene() -> Value {
     j["sampler"] = json!({"samples": 10});
     j["background"] = serde_json::to_value([1.0, 1.0, 1.0]).unwrap(); // json!({[1.0, 1.0 , 1.0]});
 
-    let object_center = Vector3::new(0.0, 0.0, 0.0);
+    let object_center = Vec3::new(0.0, 0.0, 0.0);
     let radius = 0.5;
     let num_s = 40;
     let num_t = 40;
@@ -102,19 +101,11 @@ fn create_steinbach_scene() -> Value {
             let u = s * 8.0 - 4.0;
             let v = t * 6.25;
 
-            let center = Vector3::new(-u * v.cos(), v * u.cos() * 0.75, u * v.sin());
+            let center = Vec3::new(-u * v.cos(), v * u.cos() * 0.75, u * v.sin());
             let kd = 0.35
                 * glm::lerp(
-                    &glm::lerp(
-                        &Vector3::new(0.9, 0.0, 0.0),
-                        &Vector3::new(0.0, 0.9, 0.0),
-                        t,
-                    ),
-                    &glm::lerp(
-                        &Vector3::new(0.0, 0.0, 0.9),
-                        &Vector3::new(0.0, 0.0, 0.0),
-                        t,
-                    ),
+                    &glm::lerp(&Vec3::new(0.9, 0.0, 0.0), &Vec3::new(0.0, 0.9, 0.0), t),
+                    &glm::lerp(&Vec3::new(0.0, 0.0, 0.9), &Vec3::new(0.0, 0.0, 0.0), t),
                     s,
                 );
 
@@ -210,8 +201,8 @@ fn create_shirley_scene() -> Value {
             let choose_mat = rng.gen::<f32>();
             let r1 = rng.gen::<f32>();
             let r2 = rng.gen::<f32>();
-            let center = Vector3::new(a as f32 + 0.9 * r1, 0.2, b as f32 + 0.9 * r2);
-            if glm::length(&(center - Vector3::new(4.0, 0.2, 0.0))) > 0.9 {
+            let center = Vec3::new(a as f32 + 0.9 * r1, 0.2, b as f32 + 0.9 * r2);
+            if glm::length(&(center - Vec3::new(4.0, 0.2, 0.0))) > 0.9 {
                 let mut sphere =
                     json!({"type": "sphere", "radius": 0.2, "transform": {"translate": center}});
 
@@ -223,7 +214,7 @@ fn create_shirley_scene() -> Value {
                     let r4 = rng.gen::<f32>();
                     let r5 = rng.gen::<f32>();
                     let r6 = rng.gen::<f32>();
-                    let albedo = Vector3::new(r1 * r2, r3 * r4, r5 * r6);
+                    let albedo = Vec3::new(r1 * r2, r3 * r4, r5 * r6);
                     sphere["material"] = json!({"type": "lambertian", "albedo": albedo});
                 } else if choose_mat < 0.95 {
                     // metal
@@ -231,7 +222,7 @@ fn create_shirley_scene() -> Value {
                     let r2 = rng.gen::<f32>();
                     let r3 = rng.gen::<f32>();
                     let r4 = rng.gen::<f32>();
-                    let albedo = Vector3::new(0.5 * (1.0 + r1), 0.5 * (1.0 + r2), 0.5 * (1.0 + r3));
+                    let albedo = Vec3::new(0.5 * (1.0 + r1), 0.5 * (1.0 + r2), 0.5 * (1.0 + r3));
                     let rough = 0.5 * r4;
                     sphere["material"] =
                         json!({"type": "metal", "albedo": albedo, "roughness": rough});

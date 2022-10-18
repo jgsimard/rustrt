@@ -3,7 +3,8 @@ use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;
-use nalgebra::{Vector2, Vector3};
+extern crate nalgebra_glm as glm;
+use glm::{Vec2, Vec3};
 use std::rc::Rc;
 
 pub struct Sphere {
@@ -23,8 +24,8 @@ impl Sphere {
 
     pub fn local_bounds(&self) -> Aabb {
         Aabb {
-            min: Vector3::new(-self.radius, -self.radius, -self.radius),
-            max: Vector3::new(self.radius, self.radius, self.radius),
+            min: Vec3::new(-self.radius, -self.radius, -self.radius),
+            max: Vec3::new(self.radius, self.radius, self.radius),
         }
     }
 }
@@ -64,7 +65,7 @@ impl Surface for Sphere {
             p: p,
             gn: n,
             sn: n,
-            uv: Vector2::new(0.0, 0.0),
+            uv: Vec2::new(0.0, 0.0),
             mat: Rc::clone(&self.material),
         };
         Some(hit)
@@ -77,7 +78,8 @@ impl Surface for Sphere {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::Vector3;
+    extern crate nalgebra_glm as glm;
+    use glm::Vec3;
     use std::rc::Rc;
 
     use crate::materials::lambertian::Lambertian;
@@ -93,18 +95,17 @@ mod tests {
     fn test_ray_sphere_intersection() {
         // Let's check if your implementation was correct:
         let material: Rc<dyn Material> = Rc::new(Lambertian {
-            albedo: Vector3::new(1.0, 1.0, 1.0),
+            albedo: Vec3::new(1.0, 1.0, 1.0),
         });
-        // let material = Lambertian(json!{{"albedo", 1.}});
         let test_sphere = Sphere::new(1.0, Rc::clone(&material));
 
         println!("Testing untransformed sphere intersection");
-        let test_ray = Ray::new(Vector3::new(-0.25, 0.5, 4.0), Vector3::new(0.0, 0.0, -1.0));
+        let test_ray = Ray::new(Vec3::new(-0.25, 0.5, 4.0), Vec3::new(0.0, 0.0, -1.0));
         // HitInfo hit;
         if let Some(hit) = test_sphere.intersect(&test_ray) {
             let correct_t = 3.170844;
-            let correct_p = Vector3::new(-0.25, 0.5, 0.829156);
-            let correct_n = Vector3::new(-0.25, 0.5, 0.829156);
+            let correct_p = Vec3::new(-0.25, 0.5, 0.829156);
+            let correct_n = Vec3::new(-0.25, 0.5, 0.829156);
 
             approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
             approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
@@ -115,23 +116,23 @@ mod tests {
 
         // Now, let's check if you implemented sphere transforms correctly!
         let transform = Transform::axis_offset(
-            &Vector3::new(2.0, 0.0, 0.0),  // x-axis
-            &Vector3::new(0.0, 1.0, 0.0),  // y-axis
-            &Vector3::new(0.0, 0.0, 0.5),  // z-axis
-            &Vector3::new(0.0, 0.25, 5.0), // translation
+            &Vec3::new(2.0, 0.0, 0.0),  // x-axis
+            &Vec3::new(0.0, 1.0, 0.0),  // y-axis
+            &Vec3::new(0.0, 0.0, 0.5),  // z-axis
+            &Vec3::new(0.0, 0.25, 5.0), // translation
         );
         let transformed_sphere = Sphere {
             radius: 1.0,
             transform: transform,
             material: Rc::clone(&material),
         };
-        let test_ray = Ray::new(Vector3::new(1.0, 0.5, 8.0), Vector3::new(0.0, 0.0, -1.0));
+        let test_ray = Ray::new(Vec3::new(1.0, 0.5, 8.0), Vec3::new(0.0, 0.0, -1.0));
 
         println!("Testing transformed sphere intersection");
         if let Some(hit) = transformed_sphere.intersect(&test_ray) {
             let correct_t = 2.585422;
-            let correct_p = Vector3::new(1.0, 0.5, 5.41458);
-            let correct_n = Vector3::new(0.147442, 0.147442, 0.978019);
+            let correct_p = Vec3::new(1.0, 0.5, 5.41458);
+            let correct_n = Vec3::new(0.147442, 0.147442, 0.978019);
 
             approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
             approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);

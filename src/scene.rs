@@ -1,7 +1,9 @@
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use nalgebra::{Vector2, Vector3};
+use nalgebra::Vector2;
 use serde_json::Value;
 use std::fmt::Write;
+extern crate nalgebra_glm as glm;
+use glm::Vec3;
 
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
@@ -22,7 +24,7 @@ pub struct Scene {
     // pub integrator: Rc<dyn Integrator>,
     // pub sampler: Rc<dyn Sampler>,
     pub camera: PinholeCamera,
-    pub background: Vector3<f32>,
+    pub background: Vec3,
     pub num_samples: i32,
     pub max_depth: i32,
 }
@@ -89,7 +91,7 @@ impl Scene {
         //
         // parse scene background
         //
-        let background = read_v_or_f(&scene_json, "background", Vector3::new(1.0, 1.0, 1.0));
+        let background = read_v_or_f(&scene_json, "background", Vec3::new(1.0, 1.0, 1.0));
         println!("background: {}", background);
 
         //
@@ -160,8 +162,8 @@ impl Scene {
 
     // pub fn add_to_parent(&self) {}
 
-    fn recursive_color(&self, ray: &Ray, depth: i32) -> Vector3<f32> {
-        const BLACK: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
+    fn recursive_color(&self, ray: &Ray, depth: i32) -> Vec3 {
+        const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 
         if let Some(hit) = self.intersect(ray) {
             let emitted = hit.mat.emmitted(ray, &hit).unwrap_or(BLACK);
@@ -196,7 +198,7 @@ impl Scene {
             // Generate a ray for each pixel in the ray image
             for y in 0..image.size_y {
                 for x in 0..image.size_x {
-                    let mut color = Vector3::new(0.0, 0.0, 0.0);
+                    let mut color = Vec3::new(0.0, 0.0, 0.0);
                     for _ in 0..sample_count {
                         // rays_traced.inc(1);
                         let ray = self

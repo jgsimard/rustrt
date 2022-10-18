@@ -2,13 +2,13 @@ use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;
-use nalgebra::{Vector2, Vector3};
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use crate::aabb::Aabb;
+use glm::{Vec2, Vec3};
 
 pub struct Quad {
-    pub size: Vector2<f32>,
+    pub size: Vec2,
     pub transform: Transform,
     pub material: Rc<dyn Material>,
 }
@@ -38,7 +38,7 @@ impl Surface for Quad {
         // project hitpoint onto plane to reduce floating-point error
         p.z = 0.0;
 
-        let n = glm::normalize(&self.transform.normal(&Vector3::z()));
+        let n = glm::normalize(&self.transform.normal(&Vec3::z()));
         let uv = 0.5 * p.xy().component_div(&self.size).add_scalar(1.0);
         let uv = glm::clamp(&uv, 0.000001, 0.999999);
 

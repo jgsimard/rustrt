@@ -5,7 +5,8 @@ use crate::materials::material::Material;
 use crate::materials::metal::Metal;
 use crate::utils::{read_v_or_f, Factory};
 
-use nalgebra::Vector3;
+extern crate nalgebra_glm as glm;
+use glm::Vec3;
 use serde_json::from_value;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -44,10 +45,10 @@ pub fn create_material(material_json: Value) -> Rc<dyn Material> {
         .get("type")
         .expect("material should have a type");
     if type_material == "lambertian" {
-        let albedo = read_v_or_f(&material_json, "albedo", Vector3::zeros());
+        let albedo = read_v_or_f(&material_json, "albedo", Vec3::zeros());
         Rc::new(Lambertian { albedo: albedo })
     } else if type_material == "metal" {
-        let albedo = read_v_or_f(&material_json, "albedo", Vector3::zeros());
+        let albedo = read_v_or_f(&material_json, "albedo", Vec3::zeros());
         let roughness = material_json
             .get("roughness")
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
@@ -61,7 +62,7 @@ pub fn create_material(material_json: Value) -> Rc<dyn Material> {
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
         Rc::new(Dielectric { ior: ior })
     } else if type_material == "diffuse_light" {
-        let emit = read_v_or_f(&material_json, "emit", Vector3::new(1.0, 1.0, 1.0));
+        let emit = read_v_or_f(&material_json, "emit", Vec3::new(1.0, 1.0, 1.0));
         Rc::new(DiffuseLight { emit: emit })
     } else {
         panic!(

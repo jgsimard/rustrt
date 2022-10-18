@@ -1,4 +1,5 @@
-use nalgebra::{Vector2, Vector3};
+extern crate nalgebra_glm as glm;
+use glm::{Vec2, Vec3};
 
 use serde_json::{from_value, Value};
 
@@ -40,19 +41,18 @@ pub struct PinholeCamera {
     /// Local coordinate system
     pub transform: Transform,
     /// Physical size of the image plane
-    pub size: Vector2<f32>,
+    pub size: Vec2,
     /// Distance to image plane along local z axis
     pub focal_distance: f32,
     /// Image resolution
-    pub resolution: Vector2<f32>,
+    pub resolution: Vec2,
     /// The size of the aperture for depth of field
     pub aperture_radius: f32,
 }
 
 impl PinholeCamera {
     pub fn new(json: &Value) -> PinholeCamera {
-        let resolution: Vector2<f32> =
-            from_value(json["resolution"].clone()).unwrap_or(Vector2::new(512., 512.));
+        let resolution = from_value(json["resolution"].clone()).unwrap_or(Vec2::new(512., 512.));
         let aperture_radius: f32 = from_value(json["aperture"].clone()).unwrap_or(0.);
         let focal_distance: f32 = from_value(json["fdist"].clone()).unwrap_or(1.);
         let vfov: f32 = from_value(json["vfov"].clone()).unwrap_or(90.);
@@ -69,7 +69,7 @@ impl PinholeCamera {
         // from one to the other
         let height = 2.0 * focal_distance * deg2rad(vfov / 2.0).tan();
         let width = resolution[0] / resolution[1] * height;
-        let size = Vector2::new(width, -height); // FIXME : might need to change this
+        let size = Vec2::new(width, -height); // FIXME : might need to change this
 
         PinholeCamera {
             transform: transform,
@@ -81,14 +81,14 @@ impl PinholeCamera {
     }
 
     /// Generate a ray inside a given pixel
-    pub fn generate_ray(&self, pixel: &Vector2<f32>) -> Ray {
-        let origin = Vector3::zeros();
+    pub fn generate_ray(&self, pixel: &Vec2) -> Ray {
+        let origin = Vec3::zeros();
         let xy = self
             .size
             .component_mul(&pixel)
             .component_div(&self.resolution)
             - self.size / 2.0;
-        let direction = Vector3::new(xy.x, xy.y, -self.focal_distance);
+        let direction = Vec3::new(xy.x, xy.y, -self.focal_distance);
         self.transform.ray(&Ray::new(origin, direction))
     }
 }

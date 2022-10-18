@@ -1,18 +1,18 @@
 extern crate nalgebra_glm as glm;
+use glm::Vec3;
 
 use crate::surfaces::surface::HitInfo;
 
 use crate::ray::Ray;
-use nalgebra::Vector3;
 
 pub trait Material {
     ///Compute the scattered direction scattered at a surface hitpoint.
     ///The base Material does not scatter any light, so it simply returns false.
-    fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vector3<f32>, Ray)>;
+    fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)>;
 
     /// Compute the amount of emitted light at the surface hitpoint.
     /// The base Material class does not emit light, so it simply returns black.
-    fn emmitted(&self, ray: &Ray, hit: &HitInfo) -> Option<Vector3<f32>>;
+    fn emmitted(&self, ray: &Ray, hit: &HitInfo) -> Option<Vec3>;
 
     /// Return whether or not this Material is emissive.
     ///
@@ -24,7 +24,7 @@ pub trait Material {
     // /// For non-specular materials, this should be the BSDF multiplied by the
     // /// cosine foreshortening term.
     // /// Specular contributions should be excluded.
-    // fn eval(&self, wi: &Vector3<f32>, scattered: &Vector3<f32>, hit: &HitInfo) -> Vector2<f32>;
+    // fn eval(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> Vec2;
 
     // /// Sample a scattered direction at the surface hitpoint \p hit.
     // ///
@@ -39,5 +39,5 @@ pub trait Material {
     // fn sample(&self) -> bool;
 
     // /// Compute the probability density that #sample() will generate \c scattered (given \c wi).
-    // fn pdf(&self, wi: &Vector3<f32>, scattered: &Vector3<f32>, hit: &HitInfo) -> f32;
+    // fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32;
 }

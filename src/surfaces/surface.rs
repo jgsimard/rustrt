@@ -1,6 +1,7 @@
 use crate::materials::material::Material;
 use crate::ray::Ray;
-use nalgebra::{Vector2, Vector3};
+extern crate nalgebra_glm as glm;
+use glm::{Vec2, Vec3};
 use std::rc::Rc;
 
 use crate::aabb::Aabb;
@@ -22,8 +23,8 @@ pub trait Surface {
         unimplemented!();
     }
 
-    // fn sample(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> Vector3<f32>;
-    // fn pdf(emit_rec: &EmitterRecord, rv: &Vector2<f32>) -> f32;
+    // fn sample(emit_rec: &EmitterRecord, rv: &Vec2) -> Vec3;
+    // fn pdf(emit_rec: &EmitterRecord, rv: &Vec2) -> f32;
     // fn is_emissive() -> bool;
 }
 
@@ -36,13 +37,13 @@ pub struct HitInfo {
     /// Ray parameter for the hit
     pub t: f32,
     /// Hit position            
-    pub p: Vector3<f32>,
+    pub p: Vec3,
     /// Geometric normal   
-    pub gn: Vector3<f32>,
+    pub gn: Vec3,
     /// Interpolated shading normal
-    pub sn: Vector3<f32>,
+    pub sn: Vec3,
     /// UV texture coordinates
-    pub uv: Vector2<f32>,
+    pub uv: Vec2,
     /// Material at the hit point
     pub mat: Rc<dyn Material>,
 }
@@ -51,9 +52,9 @@ pub struct HitInfo {
 // pub struct EmitterRecord
 // {
 //     /// Origin point from which we sample the emitter
-//     o: Vector3<f32>,
+//     o: Vec3,
 //     /// Direction vector from 'o' to 'hit.p
-//     wi: Vector3<f32>,
+//     wi: Vec3,
 //     /// Solid angle density wrt. 'o'
 //     pdf: f32,
 //     /// Hit information at the sampled point
