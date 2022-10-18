@@ -14,14 +14,6 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(radius: f32, material: Rc<dyn Material>) -> Sphere {
-        Sphere {
-            radius: radius,
-            transform: Default::default(),
-            material: material,
-        }
-    }
-
     pub fn local_bounds(&self) -> Aabb {
         Aabb {
             min: Vec3::new(-self.radius, -self.radius, -self.radius),
@@ -97,7 +89,11 @@ mod tests {
         let material: Rc<dyn Material> = Rc::new(Lambertian {
             albedo: Vec3::new(1.0, 1.0, 1.0),
         });
-        let test_sphere = Sphere::new(1.0, Rc::clone(&material));
+        let test_sphere = Sphere {
+            radius: 1.0,
+            transform: Default::default(),
+            material: Rc::clone(&material),
+        };
 
         println!("Testing untransformed sphere intersection");
         let test_ray = Ray::new(Vec3::new(-0.25, 0.5, 4.0), Vec3::new(0.0, 0.0, -1.0));

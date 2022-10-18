@@ -42,15 +42,6 @@ pub struct Mesh {
     pub bbox: Aabb,
 }
 
-impl Surface for Mesh {
-    fn intersect(&self, _ray: &Ray) -> Option<HitInfo> {
-        unimplemented!()
-    }
-
-    fn bounds(&self) -> Aabb {
-        self.bbox.clone()
-    }
-}
 
 impl Mesh {
     pub fn empty(&self) -> bool {

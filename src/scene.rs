@@ -143,10 +143,8 @@ impl Scene {
             })
         };
 
-        let num_samples: i32 = 5;
+        let num_samples: i32 = 1;
         let max_depth: i32 = 64;
-
-        println!("{:?}", camera);
 
         Scene {
             surfaces: surfaces,
@@ -156,11 +154,6 @@ impl Scene {
             max_depth: max_depth,
         }
     }
-    // pub fn add_child(&mut self, surface: Rc<dyn Surface>) {
-    //     self.surfaces.add_child(surface);
-    // }
-
-    // pub fn add_to_parent(&self) {}
 
     fn recursive_color(&self, ray: &Ray, depth: i32) -> Vec3 {
         const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
