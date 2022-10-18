@@ -45,10 +45,11 @@ pub fn deg2rad(rad: f32) -> f32 {
 // }
 
 pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vector3<f32> {
-    let ones = Vector3::new(1.0, 1.0, 1.0);
+    const ONES: Vector3<f32> = Vector3::new(1.0, 1.0, 1.0);
     loop {
-        let p = 2.0 * Vector3::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>()) - ones;
-        if p.norm_squared() < 1.0_ {
+        let rand_vec = Vector3::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>());
+        let p = 2.0 * rand_vec - ONES;
+        if p.norm_squared() < 1.0 {
             return p;
         }
     }

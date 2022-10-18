@@ -32,13 +32,27 @@ impl Image2d {
 
     pub fn save(&self, path: String) {
         let mut img_buffer = Rgb32FImage::new(self.size_x as u32, self.size_y as u32);
-
+        let mut max = f32::MIN;
+        let mut min = f32::MAX;
         for x in 0..self.size_x {
             for y in 0..self.size_y {
+                let v = self[(x, y)];
+                let max_ = glm::comp_max(&v);
+                let min_ = glm::comp_min(&v);
+                if max_ > max{
+                    max = max_;
+                }
+                if min_ < min {
+                    min = min_;   
+                }
+
+
                 let v = glm::sqrt(&self[(x, y)]);
+                // let v = self[(x, y)];
                 img_buffer.put_pixel(x as u32, y as u32, Rgb([v.x, v.y, v.z]));
             }
         }
+        println!("raw image : min {}, max {}", min, max);
         let img = image::DynamicImage::ImageRgb32F(img_buffer);
         let img = img.into_rgb8();
         img.save(path).unwrap();

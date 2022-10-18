@@ -2,36 +2,34 @@ use crate::aabb::Aabb;
 use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
-use crate::transform::{parse_transform, Transform};
+use crate::transform::Transform;
 
 use nalgebra::{Vector2, Vector3};
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
-use serde_json::{from_value, Value};
-use tobj;
 
 pub struct Mesh {
     /// Vertex positions
-    pub vs: Vec<Vec3>,
+    pub vertex_positions: Vec<Vec3>,
 
     /// Vertex normals
-    pub ns: Vec<Vec3>,
+    pub vertex_normals: Vec<Vec3>,
 
     /// Vertex texture coordinates
     pub uvs: Vec<Vec2>,
 
     /// Vertex indices per face (triangle)
-    pub Fv: Vec<Vector3<usize>>,
+    pub vertex_indices: Vec<Vector3<usize>>,
 
     /// Normal indices per face (triangle)
-    pub Fn: Vec<Vector3<usize>>,
+    pub normal_indices: Vec<Vector3<usize>>,
 
     /// Texture indices per face (triangle)
-    pub Ft: Vec<Vector3<usize>>,
+    pub texture_indices: Vec<Vector3<usize>>,
 
     /// One material index per face (triangle)
-    pub Fm: Vec<usize>,
+    pub material_indices: Vec<usize>,
 
     /// All materials in the mesh
     // materials: Vec<Rc<dyn Material>>,
@@ -45,7 +43,7 @@ pub struct Mesh {
 }
 
 impl Surface for Mesh {
-    fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+    fn intersect(&self, _ray: &Ray) -> Option<HitInfo> {
         unimplemented!()
     }
 
@@ -56,7 +54,7 @@ impl Surface for Mesh {
 
 impl Mesh {
     pub fn empty(&self) -> bool {
-        self.Fv.is_empty() | self.vs.is_empty()
+        self.vertex_indices.is_empty() | self.vertex_positions.is_empty()
     }
 }
 
@@ -68,50 +66,50 @@ pub struct Triangle {
 impl Triangle {
     /// convenience function to access the i-th vertex (i must be 0, 1, or 2)
     pub fn vertex(&self, i: usize) -> Vec3 {
-        self.mesh.vs[self.mesh.Fv[self.face_idx][i]]
+        self.mesh.vertex_positions[self.mesh.vertex_indices[self.face_idx][i]]
     }
 }
 
 impl Surface for Triangle {
     fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
         // vertices
-        let iv0 = self.mesh.Fv[self.face_idx].x;
-        let iv1 = self.mesh.Fv[self.face_idx].y;
-        let iv2 = self.mesh.Fv[self.face_idx].z;
+        let iv0 = self.mesh.vertex_indices[self.face_idx].x;
+        let iv1 = self.mesh.vertex_indices[self.face_idx].y;
+        let iv2 = self.mesh.vertex_indices[self.face_idx].z;
 
-        let p0 = self.mesh.vs[iv0];
-        let p1 = self.mesh.vs[iv1];
-        let p2 = self.mesh.vs[iv2];
+        let p0 = self.mesh.vertex_positions[iv0];
+        let p1 = self.mesh.vertex_positions[iv1];
+        let p2 = self.mesh.vertex_positions[iv2];
 
         // shading normals
         // const Vec3f *n0 = nullptr, *n1 = nullptr, *n2 = nullptr;
         let mut n0: Option<Vector3<f32>> = None;
         let mut n1: Option<Vector3<f32>> = None;
         let mut n2: Option<Vector3<f32>> = None;
-        if self.mesh.Fn.len() > self.face_idx {
-            let in0 = self.mesh.Fn[self.face_idx].x;
-            let in1 = self.mesh.Fn[self.face_idx].y;
-            let in2 = self.mesh.Fn[self.face_idx].z;
-            if in0 >= 0 && in1 >= 0 && in2 >= 0 {
-                // spdlog::info("shading normals");
-                n0.replace(self.mesh.ns[in0]);
-                n1.replace(self.mesh.ns[in1]);
-                n2.replace(self.mesh.ns[in2]);
-            }
+        if self.mesh.normal_indices.len() > self.face_idx {
+            let in0 = self.mesh.normal_indices[self.face_idx].x;
+            let in1 = self.mesh.normal_indices[self.face_idx].y;
+            let in2 = self.mesh.normal_indices[self.face_idx].z;
+            // if in0 >= 0 && in1 >= 0 && in2 >= 0 {
+            // spdlog::info("shading normals");
+            n0.replace(self.mesh.vertex_normals[in0]);
+            n1.replace(self.mesh.vertex_normals[in1]);
+            n2.replace(self.mesh.vertex_normals[in2]);
+            // }
         }
         // texture coordinates
         let mut t0: Option<Vector2<f32>> = None;
         let mut t1: Option<Vector2<f32>> = None;
         let mut t2: Option<Vector2<f32>> = None;
-        if self.mesh.Ft.len() > self.face_idx {
-            let it0 = self.mesh.Ft[self.face_idx].x;
-            let it1 = self.mesh.Ft[self.face_idx].y;
-            let it2 = self.mesh.Ft[self.face_idx].z;
-            if it0 >= 0 && it1 >= 0 && it2 >= 0 {
-                t0.replace(self.mesh.uvs[it0]);
-                t1.replace(self.mesh.uvs[it1]);
-                t2.replace(self.mesh.uvs[it2]);
-            }
+        if self.mesh.texture_indices.len() > self.face_idx {
+            let it0 = self.mesh.texture_indices[self.face_idx].x;
+            let it1 = self.mesh.texture_indices[self.face_idx].y;
+            let it2 = self.mesh.texture_indices[self.face_idx].z;
+            // if it0 >= 0 && it1 >= 0 && it2 >= 0 {
+            t0.replace(self.mesh.uvs[it0]);
+            t1.replace(self.mesh.uvs[it1]);
+            t2.replace(self.mesh.uvs[it2]);
+            // }
         }
         let material = self.mesh.materials.clone();
         return single_triangle_intersect(

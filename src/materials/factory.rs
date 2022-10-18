@@ -29,7 +29,7 @@ impl Factory<Rc<dyn Material>> for MaterialFactory {
         let m = v.as_object().unwrap();
         let name = m
             .get("name")
-            .unwrap()
+            .expect("Feature doesnt have name")
             .to_string()
             .trim_matches('"')
             .to_string();

@@ -1,6 +1,6 @@
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use nalgebra::{Vector2, Vector3};
-use serde_json::{from_value, Value};
+use serde_json::Value;
 use std::fmt::Write;
 
 use crate::camera::PinholeCamera;
@@ -14,10 +14,7 @@ use crate::aabb::Aabb;
 use crate::materials::factory::MaterialFactory;
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::surfaces::factory::SurfaceFactory;
-use crate::surfaces::triangle::Mesh;
 use crate::utils::{read_v_or_f, Factory};
-// use std::any::{Any, TypeId};
-use std::rc::Rc;
 
 pub struct Scene {
     pub surfaces: Box<dyn Surface>,
@@ -54,9 +51,6 @@ impl Scene {
                 panic!("Unsupported field '{key}' here:\n");
             }
         }
-
-        // // Utility function
-        // let read_vector3 = |v: &Value| from_value::<Vector3<f32>>(v.clone()).unwrap();
 
         //
         // parse the camera
@@ -96,9 +90,7 @@ impl Scene {
         // parse scene background
         //
         let background = read_v_or_f(&scene_json, "background", Vector3::new(1.0, 1.0, 1.0));
-        // let background = map_json
-        //     .get("background")
-        //     .map_or(Vector3::zeros(), read_vector3);
+        println!("background: {}", background);
 
         //
         // parse materials
@@ -127,24 +119,13 @@ impl Scene {
         if map_json.contains_key("surfaces") {
             for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
                 if let Some(mut surface) = surface_facory.make(surface_json) {
-                    // surface.add_to_vec(surface, &mut surfaces_vec);
-                    // if surface.type_id() == TypeId::of::<Mesh>(){
-                    //     let n_triangles = (surface as Rc<Mesh>).Fv.len();
-                    //     for i in 0..n_triangles{
-                    //         triangles.push(Rc::new(Triangle{mesh : rc_mesh.clone(), face_idx: i}));
-                    //     }
-                    // }else{
-                    // surfaces_vec.push(surface);
                     surfaces_vec.append(&mut surface);
-                    // }
                 } else {
                     panic!(
                         "surface of type : {} not yet supported",
                         surface_json["type"]
                     );
                 }
-                // DartsFactory<Surface>::create(s);
-                // surface->add_to_parent(this, surface, j);
             }
         }
 
@@ -160,7 +141,7 @@ impl Scene {
             })
         };
 
-        let num_samples: i32 = 1;
+        let num_samples: i32 = 5;
         let max_depth: i32 = 64;
 
         println!("{:?}", camera);

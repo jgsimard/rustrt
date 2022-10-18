@@ -2,6 +2,8 @@ use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
 use crate::utils::random_in_unit_sphere;
+extern crate nalgebra_glm as glm;
+
 use nalgebra::Vector3;
 
 pub struct Lambertian {
@@ -11,7 +13,7 @@ pub struct Lambertian {
 impl Material for Lambertian {
     fn scatter(&self, _r_in: &Ray, hit: &HitInfo) -> Option<(Vector3<f32>, Ray)> {
         let mut rng = rand::thread_rng();
-        let mut scatter_direction = hit.sn + random_in_unit_sphere(&mut rng).normalize();
+        let mut scatter_direction = hit.sn + glm::normalize(&random_in_unit_sphere(&mut rng));
 
         // Catch degenerate scatter direction
         const EPSILON: f32 = 1.0e-6;
@@ -20,7 +22,7 @@ impl Material for Lambertian {
         }
 
         let attenuation = self.albedo;
-        let ray_out = Ray::new(hit.p, scatter_direction.normalize());
+        let ray_out = Ray::new(hit.p, glm::normalize(&scatter_direction));
 
         Some((attenuation, ray_out))
     }

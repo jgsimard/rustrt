@@ -24,16 +24,6 @@ impl Surface for LinearSurfaceGroup {
     }
 }
 
-impl LinearSurfaceGroup {
-    pub fn new() -> LinearSurfaceGroup {
-        LinearSurfaceGroup {
-            surfaces: Vec::new(),
-        }
-    }
-    pub fn add_child(&mut self, surface: Rc<dyn Surface>) {
-        self.surfaces.push(surface.clone())
-    }
-}
 pub struct Bvh {
     bbox: Aabb,
     children: Vec<Rc<dyn Surface>>,

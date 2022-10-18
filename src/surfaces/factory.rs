@@ -102,19 +102,19 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
                 .map(|p| Vec2::new(p[0], p[1]))
                 .collect();
 
-            let Fv: Vec<Vector3<usize>> = mesh
+            let vertex_indices: Vec<Vector3<usize>> = mesh
                 .indices
                 .chunks(3)
                 .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
                 .collect();
 
-            let Fn: Vec<Vector3<usize>> = mesh
+            let normal_indices: Vec<Vector3<usize>> = mesh
                 .normal_indices
                 .chunks(3)
                 .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
                 .collect();
 
-            let Ft: Vec<Vector3<usize>> = mesh
+            let texture_indices: Vec<Vector3<usize>> = mesh
                 .texcoord_indices
                 .chunks(3)
                 .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
@@ -124,15 +124,15 @@ impl Factory<Rc<dyn Surface>> for SurfaceFactory {
 
             let material = self.get_material(m);
 
-            let n_triangles = Fv.len();
+            let n_triangles = vertex_indices.len();
             let my_mesh = Mesh {
-                vs: vs,
-                ns: ns,
+                vertex_positions: vs,
+                vertex_normals: ns,
                 uvs: uvs,
-                Fv: Fv,
-                Fn: Fn,
-                Ft: Ft,
-                Fm: Vec::new(),
+                vertex_indices: vertex_indices,
+                normal_indices: normal_indices,
+                texture_indices: texture_indices,
+                material_indices: Vec::new(),
                 materials: material,
                 transform: transform,
                 bbox: aabb,
