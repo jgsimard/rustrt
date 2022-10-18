@@ -17,10 +17,11 @@ use crate::aabb::Aabb;
 use crate::materials::factory::MaterialFactory;
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::surfaces::factory::SurfaceFactory;
+use crate::surfaces::surface::SurfaceGroupType;
 use crate::utils::{read_v_or_f, Factory};
 
 pub struct Scene {
-    pub surfaces: Box<dyn Surface>,
+    pub surfaces: SurfaceGroupType,
     // pub emitters: SurfaceGroup,
     // pub integrator: Rc<dyn Integrator>,
     // pub sampler: Rc<dyn Sampler>,
@@ -135,14 +136,13 @@ impl Scene {
         //
         // create the scene-wide acceleration structure so we can put other surfaces into it
         //
-        let surfaces: Box<dyn Surface> = if map_json.contains_key("accelerator") {
-            Box::new(Bvh::new(&mut surfaces_vec))
+        let surfaces = if map_json.contains_key("accelerator") {
+            SurfaceGroupType::from(Bvh::new(&mut surfaces_vec))
         } else {
-            panic!("oops");
-            // // default to a naive linear accelerator
-            // Box::new(LinearSurfaceGroup {
-            //     surfaces: surfaces_vec,
-            // })
+            // default to a naive linear accelerator
+            SurfaceGroupType::from(LinearSurfaceGroup {
+                surfaces: surfaces_vec,
+            })
         };
 
         let num_samples: i32 = 1;

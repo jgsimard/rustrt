@@ -5,10 +5,10 @@ use std::fmt::Write;
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface, SurfaceType};
-use std::rc::Rc;
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct LinearSurfaceGroup {
-    pub surfaces: Vec<Rc<SurfaceType>>,
+    pub surfaces: Vec<SurfaceType>,
 }
 
 impl Surface for LinearSurfaceGroup {

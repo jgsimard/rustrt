@@ -44,6 +44,15 @@ pub enum SurfaceType {
     Bvh,
 }
 
+use crate::surfaces::accelerators::LinearSurfaceGroup;
+
+#[enum_dispatch(Surface)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum SurfaceGroupType {
+    LinearSurfaceGroup,
+    Bvh,
+}
+
 /// Contains information about a ray intersection hit point.
 ///
 /// Used by surface intersection routines to return more than just a single value. Includes the position, traveled ray
