@@ -1,5 +1,5 @@
 use crate::aabb::Aabb;
-use crate::materials::material::Material;
+use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;
@@ -9,6 +9,7 @@ use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Mesh {
     /// Vertex positions
     pub vertex_positions: Vec<Vec3>,
@@ -33,7 +34,7 @@ pub struct Mesh {
 
     /// All materials in the mesh
     // materials: Vec<Rc<dyn Material>>,
-    pub materials: Rc<dyn Material>,
+    pub materials: Rc<MaterialType>,
 
     /// Transformation that the data has already been transformed by
     pub transform: Transform,
@@ -42,13 +43,13 @@ pub struct Mesh {
     pub bbox: Aabb,
 }
 
-
 impl Mesh {
     pub fn empty(&self) -> bool {
         self.vertex_indices.is_empty() | self.vertex_positions.is_empty()
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Triangle {
     pub mesh: Rc<Mesh>,
     pub face_idx: usize,
@@ -85,7 +86,7 @@ impl Surface for Triangle {
             n1.replace(self.mesh.vertex_normals[in1]);
             n2.replace(self.mesh.vertex_normals[in2]);
         }
-        
+
         // texture coordinates
         let mut t0: Option<Vector2<f32>> = None;
         let mut t1: Option<Vector2<f32>> = None;
@@ -152,7 +153,7 @@ pub fn single_triangle_intersect(
     t0: &Option<Vec2>,
     t1: &Option<Vec2>,
     t2: &Option<Vec2>,
-    material: Rc<dyn Material>,
+    material: Rc<MaterialType>,
 ) -> Option<HitInfo> {
     let edge1 = v1 - v0;
     let edge2 = v2 - v0;

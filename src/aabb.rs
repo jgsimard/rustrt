@@ -4,7 +4,7 @@ use crate::ray::Ray;
 use std::mem;
 
 /// A 3D axis-aligned bounding box consisting of two 3D points min and max
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Aabb {
     /// The lower-bound of the interval
     pub min: Vec3,

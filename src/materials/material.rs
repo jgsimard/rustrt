@@ -1,10 +1,13 @@
 extern crate nalgebra_glm as glm;
+use enum_dispatch::enum_dispatch;
 use glm::Vec3;
+use serde::{Deserialize, Serialize};
 
 use crate::surfaces::surface::HitInfo;
 
 use crate::ray::Ray;
 
+#[enum_dispatch]
 pub trait Material {
     ///Compute the scattered direction scattered at a surface hitpoint.
     ///The base Material does not scatter any light, so it simply returns false.
@@ -40,4 +43,20 @@ pub trait Material {
 
     // /// Compute the probability density that #sample() will generate \c scattered (given \c wi).
     // fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32;
+}
+
+use crate::materials::dielectric::Dielectric;
+use crate::materials::diffuse_light::DiffuseLight;
+use crate::materials::lambertian::Lambertian;
+use crate::materials::metal::Metal;
+
+// #[derive(Debug, PartialEq, Serialize, Deserialize)]
+
+#[enum_dispatch(Material)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum MaterialType {
+    Lambertian,
+    Dielectric,
+    Metal,
+    DiffuseLight,
 }

@@ -5,6 +5,7 @@ use crate::utils::random_in_unit_sphere;
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Lambertian {
     pub albedo: Vec3,
 }

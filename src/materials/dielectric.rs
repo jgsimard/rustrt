@@ -6,6 +6,7 @@ use crate::utils::{reflect, reflectance, refract};
 use glm::Vec3;
 use rand::Rng;
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Dielectric {
     pub ior: f32,
 }

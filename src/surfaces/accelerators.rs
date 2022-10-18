@@ -2,14 +2,13 @@ extern crate nalgebra_glm as glm;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use std::fmt::Write;
 
-
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::surfaces::surface::{HitInfo, Surface};
+use crate::surfaces::surface::{HitInfo, Surface, SurfaceType};
 use std::rc::Rc;
 
 pub struct LinearSurfaceGroup {
-    pub surfaces: Vec<Rc<dyn Surface>>,
+    pub surfaces: Vec<Rc<SurfaceType>>,
 }
 
 impl Surface for LinearSurfaceGroup {
@@ -27,9 +26,10 @@ impl Surface for LinearSurfaceGroup {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Bvh {
     bbox: Aabb,
-    children: Vec<Rc<dyn Surface>>,
+    children: Vec<SurfaceType>,
 }
 
 impl Surface for Bvh {
@@ -53,7 +53,7 @@ impl Surface for Bvh {
     }
 }
 impl Bvh {
-    pub fn new(surfaces: &mut Vec<Rc<dyn Surface>>) -> Bvh {
+    pub fn new(surfaces: &mut Vec<SurfaceType>) -> Bvh {
         let max_leaf_size = 3;
         println!("Building BVH...");
         let progress_bar = ProgressBar::new(surfaces.len() as u64);
@@ -61,13 +61,18 @@ impl Bvh {
             .unwrap()
             .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
             .progress_chars("#>-"));
-            
+
         let bvh = Bvh::new_node(surfaces.as_mut_slice(), 0, max_leaf_size, &progress_bar);
         println!("Building BVH... Done in {:?}", progress_bar.elapsed());
         return bvh;
     }
 
-    pub fn new_node(surfaces: &mut [Rc<dyn Surface>], depth: i32, max_leaf_size: usize, pb: &ProgressBar) -> Bvh {
+    fn new_node(
+        surfaces: &mut [SurfaceType],
+        depth: i32,
+        max_leaf_size: usize,
+        pb: &ProgressBar,
+    ) -> Bvh {
         let n_surfaces = surfaces.len();
         if n_surfaces <= max_leaf_size {
             // println!("depth : {}, number of children {}", depth, n_surfaces);
@@ -94,15 +99,25 @@ impl Bvh {
         let (split_axis, _) = (max - min).argmax();
 
         // Equal method
-        let center = |a: &Rc<dyn Surface>| a.bounds().center()[split_axis];
+        let center = |a: &SurfaceType| a.bounds().center()[split_axis];
         let mid = n_surfaces / 2;
         surfaces.select_nth_unstable_by(mid, |a, b| center(a).total_cmp(&center(b)));
         let (left, right) = surfaces.split_at_mut(mid);
 
         // add the two children => recursion
-        let mut children: Vec<Rc<dyn Surface>> = Vec::new();
-        children.push(Rc::new(Bvh::new_node(left, depth + 1, max_leaf_size, pb)));
-        children.push(Rc::new(Bvh::new_node(right, depth + 1, max_leaf_size, pb)));
+        let mut children: Vec<SurfaceType> = Vec::new();
+        children.push(SurfaceType::from(Bvh::new_node(
+            left,
+            depth + 1,
+            max_leaf_size,
+            pb,
+        )));
+        children.push(SurfaceType::from(Bvh::new_node(
+            right,
+            depth + 1,
+            max_leaf_size,
+            pb,
+        )));
 
         let mut bbox = Aabb::new();
         for child in children.iter() {

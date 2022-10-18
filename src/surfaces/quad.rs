@@ -1,4 +1,4 @@
-use crate::materials::material::Material;
+use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;
@@ -7,10 +7,11 @@ extern crate nalgebra_glm as glm;
 use crate::aabb::Aabb;
 use glm::{Vec2, Vec3};
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Quad {
     pub size: Vec2,
     pub transform: Transform,
-    pub material: Rc<dyn Material>,
+    pub material: Rc<MaterialType>,
 }
 
 impl Surface for Quad {

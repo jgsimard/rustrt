@@ -5,6 +5,7 @@ mod materials;
 mod ray;
 mod scene;
 mod surfaces;
+mod textures;
 mod transform;
 mod utils;
 

@@ -6,6 +6,7 @@ use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
 use crate::utils::{random_in_unit_sphere, reflect};
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Metal {
     pub albedo: Vec3,
     pub roughness: f32,

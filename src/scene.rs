@@ -7,6 +7,7 @@ use glm::Vec3;
 
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
+use crate::materials::material::Material;
 use crate::ray::Ray;
 
 use crate::surfaces::surface::HitInfo;
@@ -137,10 +138,11 @@ impl Scene {
         let surfaces: Box<dyn Surface> = if map_json.contains_key("accelerator") {
             Box::new(Bvh::new(&mut surfaces_vec))
         } else {
-            // default to a naive linear accelerator
-            Box::new(LinearSurfaceGroup {
-                surfaces: surfaces_vec,
-            })
+            panic!("oops");
+            // // default to a naive linear accelerator
+            // Box::new(LinearSurfaceGroup {
+            //     surfaces: surfaces_vec,
+            // })
         };
 
         let num_samples: i32 = 1;

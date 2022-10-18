@@ -12,7 +12,8 @@ use std::ops::Mul;
 /// This class stores a general homogeneous coordinate transformation, such as rotation, translation, uniform or
 /// non-uniform scaling, and perspective transformations. The inverse of this transformation is also recorded here,
 /// since it is required when transforming normal vectors.
-#[derive(Debug)]
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct Transform {
     pub m: Mat4,
     pub m_inv: Mat4,

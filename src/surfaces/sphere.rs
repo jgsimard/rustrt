@@ -1,5 +1,5 @@
 use crate::aabb::Aabb;
-use crate::materials::material::Material;
+use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;
@@ -7,10 +7,11 @@ extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use std::rc::Rc;
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Sphere {
     pub radius: f32,
     pub transform: Transform,
-    pub material: Rc<dyn Material>,
+    pub material: Rc<MaterialType>,
 }
 
 impl Sphere {

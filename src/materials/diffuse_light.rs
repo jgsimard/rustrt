@@ -4,6 +4,7 @@ use crate::surfaces::surface::HitInfo;
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct DiffuseLight {
     pub emit: Vec3,
 }

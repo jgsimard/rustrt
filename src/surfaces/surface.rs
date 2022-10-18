@@ -1,6 +1,7 @@
-use crate::materials::material::Material;
+use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
 extern crate nalgebra_glm as glm;
+use enum_dispatch::enum_dispatch;
 use glm::{Vec2, Vec3};
 use std::rc::Rc;
 
@@ -10,6 +11,7 @@ use crate::aabb::Aabb;
 ///
 /// Surfaces represent the geometry of the scene. A Surface could be an individual primitive like a #Sphere, or it could
 /// be composed of many smaller primitives, e.g. the triangles composing a #Mesh.
+#[enum_dispatch]
 pub trait Surface {
     // fn build_surface();
 
@@ -26,6 +28,20 @@ pub trait Surface {
     // fn sample(emit_rec: &EmitterRecord, rv: &Vec2) -> Vec3;
     // fn pdf(emit_rec: &EmitterRecord, rv: &Vec2) -> f32;
     // fn is_emissive() -> bool;
+}
+
+use crate::surfaces::accelerators::Bvh;
+use crate::surfaces::quad::Quad;
+use crate::surfaces::sphere::Sphere;
+use crate::surfaces::triangle::Triangle;
+
+#[enum_dispatch(Surface)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum SurfaceType {
+    Sphere,
+    Quad,
+    Triangle,
+    Bvh,
 }
 
 /// Contains information about a ray intersection hit point.
@@ -45,7 +61,7 @@ pub struct HitInfo {
     /// UV texture coordinates
     pub uv: Vec2,
     /// Material at the hit point
-    pub mat: Rc<dyn Material>,
+    pub mat: Rc<MaterialType>,
 }
 
 // /// Data record for conveniently querying and sampling emitters
