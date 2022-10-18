@@ -68,12 +68,11 @@ impl Surface for Triangle {
         let iv1 = self.mesh.vertex_indices[self.face_idx].y;
         let iv2 = self.mesh.vertex_indices[self.face_idx].z;
 
-        let p0 = self.mesh.vertex_positions[iv0];
-        let p1 = self.mesh.vertex_positions[iv1];
-        let p2 = self.mesh.vertex_positions[iv2];
+        let v0 = self.mesh.vertex_positions[iv0];
+        let v1 = self.mesh.vertex_positions[iv1];
+        let v2 = self.mesh.vertex_positions[iv2];
 
         // shading normals
-        // const Vec3f *n0 = nullptr, *n1 = nullptr, *n2 = nullptr;
         let mut n0: Option<Vec3> = None;
         let mut n1: Option<Vec3> = None;
         let mut n2: Option<Vec3> = None;
@@ -81,13 +80,12 @@ impl Surface for Triangle {
             let in0 = self.mesh.normal_indices[self.face_idx].x;
             let in1 = self.mesh.normal_indices[self.face_idx].y;
             let in2 = self.mesh.normal_indices[self.face_idx].z;
-            // if in0 >= 0 && in1 >= 0 && in2 >= 0 {
-            // spdlog::info("shading normals");
+
             n0.replace(self.mesh.vertex_normals[in0]);
             n1.replace(self.mesh.vertex_normals[in1]);
             n2.replace(self.mesh.vertex_normals[in2]);
-            // }
         }
+        
         // texture coordinates
         let mut t0: Option<Vector2<f32>> = None;
         let mut t1: Option<Vector2<f32>> = None;
@@ -96,15 +94,14 @@ impl Surface for Triangle {
             let it0 = self.mesh.texture_indices[self.face_idx].x;
             let it1 = self.mesh.texture_indices[self.face_idx].y;
             let it2 = self.mesh.texture_indices[self.face_idx].z;
-            // if it0 >= 0 && it1 >= 0 && it2 >= 0 {
+
             t0.replace(self.mesh.uvs[it0]);
             t1.replace(self.mesh.uvs[it1]);
             t2.replace(self.mesh.uvs[it2]);
-            // }
         }
         let material = self.mesh.materials.clone();
         return single_triangle_intersect(
-            ray, &p0, &p1, &p2, &n0, &n1, &n2, &t0, &t1, &t2, material,
+            ray, &v0, &v1, &v2, &n0, &n1, &n2, &t0, &t1, &t2, material,
         );
     }
 
@@ -202,7 +199,6 @@ pub fn single_triangle_intersect(
     };
 
     // vertex texture coordinates
-    // Vec2f interpolated_uv;
     let uv = if t0.is_some() && t1.is_some() && t2.is_some() {
         // Do we have per-vertex texture coordinates available?
         //  barycentric interpolation of the per-vertex texture coordinates
