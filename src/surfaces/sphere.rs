@@ -76,7 +76,7 @@ mod tests {
     use std::rc::Rc;
 
     use crate::materials::lambertian::Lambertian;
-    use crate::materials::material::Material;
+    use crate::materials::material::MaterialType;
     use crate::ray::Ray;
     use crate::surfaces::sphere::Sphere;
     use crate::surfaces::surface::Surface;
@@ -87,9 +87,9 @@ mod tests {
     #[test]
     fn test_ray_sphere_intersection() {
         // Let's check if your implementation was correct:
-        let material: Rc<dyn Material> = Rc::new(Lambertian {
+        let material: Rc<MaterialType> = Rc::new(MaterialType::from(Lambertian {
             albedo: Vec3::new(1.0, 1.0, 1.0),
-        });
+        }));
         let test_sphere = Sphere {
             radius: 1.0,
             transform: Default::default(),

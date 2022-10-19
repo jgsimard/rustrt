@@ -47,6 +47,7 @@ mod tests {
     use std::rc::Rc;
 
     use crate::materials::factory::create_material;
+    use crate::materials::material::Material;
     use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
 
