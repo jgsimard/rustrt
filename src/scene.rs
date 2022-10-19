@@ -4,6 +4,7 @@ use serde_json::Value;
 use std::fmt::Write;
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
+use rand::Rng;
 
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
@@ -145,7 +146,7 @@ impl Scene {
             })
         };
 
-        let num_samples: i32 = 1;
+        let num_samples: i32 = 50;
         let max_depth: i32 = 64;
 
         Scene {
@@ -189,14 +190,16 @@ impl Scene {
                 .progress_chars("#>-"));
             println!("Rendering ...");
             // Generate a ray for each pixel in the ray image
+            let mut rng = rand::thread_rng();
             for y in 0..image.size_y {
                 for x in 0..image.size_x {
                     let mut color = Vec3::new(0.0, 0.0, 0.0);
                     for _ in 0..sample_count {
                         // rays_traced.inc(1);
-                        let ray = self
-                            .camera
-                            .generate_ray(&Vector2::new((x as f32) + 0.5, (y as f32) + 0.5));
+                        let ray = self.camera.generate_ray(&Vector2::new(
+                            (x as f32) + 0.5 + rng.gen::<f32>() / 2.0,
+                            (y as f32) + 0.5 + rng.gen::<f32>() / 2.0,
+                        ));
                         color += self.recursive_color(&ray, 0) / (sample_count as f32);
                     }
                     image[(x, y)] = color;

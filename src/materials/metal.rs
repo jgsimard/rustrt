@@ -4,12 +4,13 @@ use glm::Vec3;
 use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
-use crate::utils::{random_in_unit_sphere, reflect};
+use crate::textures::texture::{Texture, TextureType};
+use crate::utils::{luminance, random_in_unit_sphere, reflect};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Metal {
-    pub albedo: Vec3,
-    pub roughness: f32,
+    pub albedo: TextureType,
+    pub roughness: TextureType,
 }
 
 impl Material for Metal {
@@ -17,14 +18,14 @@ impl Material for Metal {
         let mut rng = rand::thread_rng();
 
         let reflected = reflect(&r_in.direction, &hit.sn);
-
-        let scatter_direction =
-            reflected + self.roughness * random_in_unit_sphere(&mut rng).normalize();
+        let roughness = luminance(&self.roughness.value(hit).unwrap());
+        let rand_vec = random_in_unit_sphere(&mut rng).normalize();
+        let scatter_direction = reflected + roughness * rand_vec;
 
         if scatter_direction.dot(&hit.sn) < 0.0 {
             return None;
         }
-        let attenuation = self.albedo;
+        let attenuation = self.albedo.value(hit).unwrap();
         let ray_out = Ray::new(hit.p, scatter_direction.normalize());
 
         Some((attenuation, ray_out))

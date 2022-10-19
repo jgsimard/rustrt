@@ -729,6 +729,7 @@ dependencies = [
  "enum_dispatch",
  "image",
  "indicatif",
+ "lazy_static",
  "nalgebra",
  "nalgebra-glm",
  "partition",

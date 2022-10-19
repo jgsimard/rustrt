@@ -1,13 +1,14 @@
 use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
+use crate::textures::texture::{Texture, TextureType};
 use crate::utils::random_in_unit_sphere;
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Lambertian {
-    pub albedo: Vec3,
+    pub albedo: TextureType,
 }
 
 impl Material for Lambertian {
@@ -21,7 +22,7 @@ impl Material for Lambertian {
             scatter_direction = hit.sn;
         }
 
-        let attenuation = self.albedo;
+        let attenuation = self.albedo.value(hit).unwrap();
         let ray_out = Ray::new(hit.p, glm::normalize(&scatter_direction));
 
         Some((attenuation, ray_out))

@@ -65,26 +65,21 @@ impl Triangle {
 impl Surface for Triangle {
     fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
         // vertices
-        let iv0 = self.mesh.vertex_indices[self.face_idx].x;
-        let iv1 = self.mesh.vertex_indices[self.face_idx].y;
-        let iv2 = self.mesh.vertex_indices[self.face_idx].z;
+        let iv = self.mesh.vertex_indices[self.face_idx];
 
-        let v0 = self.mesh.vertex_positions[iv0];
-        let v1 = self.mesh.vertex_positions[iv1];
-        let v2 = self.mesh.vertex_positions[iv2];
+        let v0 = self.mesh.vertex_positions[iv.x];
+        let v1 = self.mesh.vertex_positions[iv.y];
+        let v2 = self.mesh.vertex_positions[iv.z];
 
         // shading normals
         let mut n0: Option<Vec3> = None;
         let mut n1: Option<Vec3> = None;
         let mut n2: Option<Vec3> = None;
         if self.mesh.normal_indices.len() > self.face_idx {
-            let in0 = self.mesh.normal_indices[self.face_idx].x;
-            let in1 = self.mesh.normal_indices[self.face_idx].y;
-            let in2 = self.mesh.normal_indices[self.face_idx].z;
-
-            n0.replace(self.mesh.vertex_normals[in0]);
-            n1.replace(self.mesh.vertex_normals[in1]);
-            n2.replace(self.mesh.vertex_normals[in2]);
+            let in_ = self.mesh.normal_indices[self.face_idx];
+            n0.replace(self.mesh.vertex_normals[in_.x]);
+            n1.replace(self.mesh.vertex_normals[in_.y]);
+            n2.replace(self.mesh.vertex_normals[in_.z]);
         }
 
         // texture coordinates
@@ -92,13 +87,11 @@ impl Surface for Triangle {
         let mut t1: Option<Vector2<f32>> = None;
         let mut t2: Option<Vector2<f32>> = None;
         if self.mesh.texture_indices.len() > self.face_idx {
-            let it0 = self.mesh.texture_indices[self.face_idx].x;
-            let it1 = self.mesh.texture_indices[self.face_idx].y;
-            let it2 = self.mesh.texture_indices[self.face_idx].z;
+            let it = self.mesh.texture_indices[self.face_idx];
 
-            t0.replace(self.mesh.uvs[it0]);
-            t1.replace(self.mesh.uvs[it1]);
-            t2.replace(self.mesh.uvs[it2]);
+            t0.replace(self.mesh.uvs[it.x]);
+            t1.replace(self.mesh.uvs[it.y]);
+            t2.replace(self.mesh.uvs[it.z]);
         }
         let material = self.mesh.materials.clone();
         return single_triangle_intersect(
@@ -161,7 +154,7 @@ pub fn single_triangle_intersect(
     let det = glm::dot(&edge1, &h);
 
     // check if the ray is parallel
-    if det.abs() < 0.0000001 {
+    if det.abs() < 1e-10 {
         return None;
     }
 

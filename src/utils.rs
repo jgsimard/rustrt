@@ -38,9 +38,9 @@ pub fn deg2rad(rad: f32) -> f32 {
     std::f32::consts::PI / 180.0 * rad
 }
 
-// pub fn luminance(c: &Vec3) -> f32 {
-//     glm::dot(c, &Vector3::new(0.212671, 0.715160, 0.072169))
-// }
+pub fn luminance(c: &Vec3) -> f32 {
+    glm::dot(c, &Vec3::new(0.212671, 0.715160, 0.072169))
+}
 
 pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vec3 {
     const ONES: Vec3 = Vec3::new(1.0, 1.0, 1.0);

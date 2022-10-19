@@ -3,6 +3,8 @@ use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::material::MaterialType;
 use crate::materials::metal::Metal;
+use crate::textures::texture::{CheckerTexture, ConstantTexture, TextureType, MarbleTexture};
+use crate::transform::{parse_transform, Transform};
 use crate::utils::{read_v_or_f, Factory};
 
 extern crate nalgebra_glm as glm;
@@ -40,6 +42,95 @@ impl Factory<Rc<MaterialType>> for MaterialFactory {
     }
 }
 
+use crate::utils::read_vector3_f32;
+
+pub fn read_f32(v: &Value, name: &str) -> f32 {
+    v.get(name)
+        .map(|v: &Value| from_value::<f32>(v.clone()).expect("unable to read f32"))
+        .unwrap()
+}
+
+pub fn read_vec3(v: &Value, name: &str) -> Vec3 {
+    v.get(name)
+        .map(|v: &Value| from_value::<Vec3>(v.clone()).expect("unable to read Vec3"))
+        .unwrap()
+}
+
+pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
+    let v = j.get(thing_name).unwrap().clone();
+    let texture = if v.is_number() {
+        let thing_number: f32 = from_value(v).unwrap();
+        let color = Vec3::new(thing_number, thing_number, thing_number);
+        TextureType::from(ConstantTexture { color: color })
+    } else if v.is_array() {
+        let color = read_vector3_f32(j, thing_name, Vec3::zeros());
+        TextureType::from(ConstantTexture { color: color })
+    } else if v.is_object() {
+        let texture_type = v.get("type").unwrap().as_str().expect("lolz");
+
+        match texture_type {
+            "constant" => {
+                let color = read_vec3(&v, "color");
+                TextureType::from(ConstantTexture { color: color })
+            }
+            "checker" => {
+                let even = Box::new(create_texture(&v, "even"));
+                let odd = Box::new(create_texture(&v, "odd"));
+                let scale = read_f32(&v, "scale");
+                let transform = if v.as_object().unwrap().contains_key("transform") {
+                    parse_transform(&v["transform"])
+                } else {
+                    Default::default()
+                };
+                TextureType::from(CheckerTexture {
+                    odd_texture: odd,
+                    even_texture: even,
+                    scale: scale,
+                    transform: transform,
+                })
+            }
+            "marble" => {
+                let veins = Box::new(create_texture(&v, "veins"));
+                let base = Box::new(create_texture(&v, "base"));
+                let scale = read_f32(&v, "scale");
+                let transform = if v.as_object().unwrap().contains_key("transform") {
+                    parse_transform(&v["transform"])
+                } else {
+                    Default::default()
+                };
+                TextureType::from(MarbleTexture {
+                    base: base,
+                    veins: veins,
+                    scale: scale,
+                    transform: transform,
+                })
+            }
+            "image" => {
+                let veins = Box::new(create_texture(&v, "veins"));
+                let base = Box::new(create_texture(&v, "base"));
+                let scale = read_f32(&v, "scale");
+                let transform = if v.as_object().unwrap().contains_key("transform") {
+                    parse_transform(&v["transform"])
+                } else {
+                    Default::default()
+                };
+                TextureType::from(MarbleTexture {
+                    base: base,
+                    veins: veins,
+                    scale: scale,
+                    transform: transform,
+                })
+            }
+            _ => {
+                unimplemented!("Texture type {}", texture_type);
+            }
+        }
+    } else {
+        panic!("unable to read texture {:?}", v);
+    };
+    texture
+}
+
 pub fn create_material(material_json: Value) -> Rc<MaterialType> {
     let type_material = material_json
         .get("type")
@@ -49,14 +140,12 @@ pub fn create_material(material_json: Value) -> Rc<MaterialType> {
 
     match type_material {
         "lambertian" => {
-            let albedo = read_v_or_f(&material_json, "albedo", Vec3::zeros());
+            let albedo = create_texture(&material_json, "albedo");
             Rc::new(MaterialType::from(Lambertian { albedo }))
         }
         "metal" => {
-            let albedo = read_v_or_f(&material_json, "albedo", Vec3::zeros());
-            let roughness = material_json
-                .get("roughness")
-                .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
+            let albedo = create_texture(&material_json, "albedo");
+            let roughness = create_texture(&material_json, "roughness");
             Rc::new(MaterialType::from(Metal { albedo, roughness }))
         }
         "dielectric" => {

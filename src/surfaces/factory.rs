@@ -80,7 +80,7 @@ impl Factory<SurfaceType> for SurfaceFactory {
 
                 assert!(obj.is_ok());
                 let (models, _) = obj.expect("Failed to load OBJ file");
-
+                println!("len models {}", models.len());
                 let mesh = &models[0].mesh;
                 let vs: Vec<Vec3> = mesh
                     .positions
