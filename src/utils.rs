@@ -4,6 +4,35 @@ use serde_json::{from_value, Value};
 
 use rand::Rng;
 
+const INV_TWOPI: f32 = 1.0 / std::f32::consts::TAU;
+/// Always-positive modulo operation
+// template <typename T>
+fn modulo(a_: f32, b: f32) -> f32 {
+    let mut a = a_;
+    let n = (a / b).floor();
+    a -= n * b;
+    if a < 0.0 {
+        a += b;
+    }
+
+    return a;
+}
+
+fn direction_to_spherical_coordinates(v: &Vec3) -> Vec2 {
+    Vec2::new(
+        f32::atan2(-v.y, -v.x) + std::f32::consts::PI,
+        f32::acos(v.z),
+    )
+}
+
+pub fn direction_to_spherical_uv(p: &Vec3) -> Vec2 {
+    let sph = direction_to_spherical_coordinates(p);
+    Vec2::new(
+        modulo(sph.x * INV_TWOPI - 0.5, 1.0),
+        1.0 - sph.y * std::f32::consts::FRAC_1_PI,
+    )
+}
+
 pub fn read_vector2_f32(v: &Value, name: &str, default: Vec2) -> Vec2 {
     v.get(name)
         .map_or(default, |v: &Value| from_value::<Vec2>(v.clone()).unwrap())

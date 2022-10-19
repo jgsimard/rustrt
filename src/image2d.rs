@@ -1,6 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
-
+use image::{io::Reader as ImageReader, GenericImageView, Pixel};
 use std::ops::{Index, IndexMut};
 
 use image::Rgb;
@@ -74,6 +74,23 @@ impl Image2d {
         // let img = img.into_rgb8();
         let img = image::DynamicImage::ImageRgb8(img_buffer);
         img.save(path).unwrap();
+    }
+
+    pub fn load(path: String) -> Image2d {
+        let img = ImageReader::open(path).unwrap().decode().unwrap();
+        let mut image2d = Image2d::new(img.width() as usize, img.height() as usize);
+
+        for x in 0..image2d.size_x {
+            for y in 0..image2d.size_y {
+                let pixel = img.get_pixel(x as u32, y as u32);
+                let pixel = pixel.to_rgb();
+                let r = (pixel[0] as f32) / 255.0;
+                let g = (pixel[1] as f32) / 255.0;
+                let b = (pixel[2] as f32) / 255.0;
+                image2d[(x, y)] = Vec3::new(r, g, b);
+            }
+        }
+        return image2d;
     }
 }
 

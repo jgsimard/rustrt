@@ -1,10 +1,13 @@
+use crate::image2d::Image2d;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::material::MaterialType;
 use crate::materials::metal::Metal;
-use crate::textures::texture::{CheckerTexture, ConstantTexture, TextureType, MarbleTexture};
-use crate::transform::{parse_transform, Transform};
+use crate::textures::texture::{
+    CheckerTexture, ConstantTexture, ImageTexture, MarbleTexture, TextureType,
+};
+use crate::transform::parse_transform;
 use crate::utils::{read_v_or_f, Factory};
 
 extern crate nalgebra_glm as glm;
@@ -66,7 +69,11 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
         let color = read_vector3_f32(j, thing_name, Vec3::zeros());
         TextureType::from(ConstantTexture { color: color })
     } else if v.is_object() {
-        let texture_type = v.get("type").unwrap().as_str().expect("lolz");
+        let texture_type = v
+            .get("type")
+            .expect("no texture type")
+            .as_str()
+            .expect("lolz");
 
         match texture_type {
             "constant" => {
@@ -106,20 +113,10 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
                 })
             }
             "image" => {
-                let veins = Box::new(create_texture(&v, "veins"));
-                let base = Box::new(create_texture(&v, "base"));
-                let scale = read_f32(&v, "scale");
-                let transform = if v.as_object().unwrap().contains_key("transform") {
-                    parse_transform(&v["transform"])
-                } else {
-                    Default::default()
-                };
-                TextureType::from(MarbleTexture {
-                    base: base,
-                    veins: veins,
-                    scale: scale,
-                    transform: transform,
-                })
+                let filename: String = from_value(v["filename"].clone()).expect("no filename");
+                let image = Image2d::load(filename);
+
+                TextureType::from(ImageTexture { image: image })
             }
             _ => {
                 unimplemented!("Texture type {}", texture_type);

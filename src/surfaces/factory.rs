@@ -15,6 +15,7 @@ use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use tobj;
+use tobj::LoadOptions;
 
 pub struct SurfaceFactory {
     pub material_factory: MaterialFactory,
@@ -76,9 +77,30 @@ impl Factory<SurfaceType> for SurfaceFactory {
 
                 let filename: String = from_value(v["filename"].clone()).expect("no filename");
 
-                let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
+                // pub const OFFLINE_RENDERING_LOAD_OPTIONS: LoadOptions = LoadOptions {
+                //     #[cfg(feature = "merging")]
+                //     merge_identical_points: true,
+                //     #[cfg(feature = "reordering")]
+                //     reorder_data: true,
+                //     single_index: false,
+                //     triangulate: false,
+                //     ignore_points: true,
+                //     ignore_lines: true,
+                // }
 
-                assert!(obj.is_ok());
+                const LOAD_OPTIONS: LoadOptions = LoadOptions {
+                    #[cfg(feature = "merging")]
+                    merge_identical_points: true,
+                    #[cfg(feature = "reordering")]
+                    reorder_data: true,
+                    single_index: false,
+                    triangulate: true,
+                    ignore_points: true,
+                    ignore_lines: true,
+                };
+                let obj = tobj::load_obj(filename, &LOAD_OPTIONS);
+                
+                // assert!(obj.is_ok());
                 let (models, _) = obj.expect("Failed to load OBJ file");
                 println!("len models {}", models.len());
                 let mesh = &models[0].mesh;
@@ -104,6 +126,8 @@ impl Factory<SurfaceType> for SurfaceFactory {
                     .chunks(2)
                     .map(|p| Vec2::new(p[0], p[1]))
                     .collect();
+
+                println!("len {}", mesh.indices.len());
 
                 let vertex_indices: Vec<Vector3<usize>> = mesh
                     .indices

@@ -3,8 +3,9 @@ use crate::materials::material::MaterialType;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;
+use crate::utils::direction_to_spherical_uv;
 extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
+use glm::Vec3;
 use std::rc::Rc;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -52,13 +53,14 @@ impl Surface for Sphere {
         // put point and normal back into the world frame
         let p = self.transform.point(&p_sphere_frame);
         let n = self.transform.normal(&(p_sphere_frame / self.radius));
+        let uv = direction_to_spherical_uv(&p_sphere_frame);
 
         let hit = HitInfo {
             t: root,
             p: p,
             gn: n,
             sn: n,
-            uv: Vec2::new(0.0, 0.0),
+            uv: uv,
             mat: Rc::clone(&self.material),
         };
         Some(hit)

@@ -1,2 +1,2 @@
-pub mod texture;
 pub mod perlin;
+pub mod texture;
