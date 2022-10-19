@@ -1,6 +1,7 @@
 extern crate nalgebra_glm as glm;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use std::fmt::Write;
+use partition::partition;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
@@ -97,12 +98,16 @@ impl Bvh {
         }
 
         let (split_axis, _) = (max - min).argmax();
+        let center = |a: &SurfaceType| a.bounds().center()[split_axis];
 
         // Equal method
-        let center = |a: &SurfaceType| a.bounds().center()[split_axis];
-        let mid = n_surfaces / 2;
-        surfaces.select_nth_unstable_by(mid, |a, b| center(a).total_cmp(&center(b)));
-        let (left, right) = surfaces.split_at_mut(mid);
+        // let mid = n_surfaces / 2;
+        // surfaces.select_nth_unstable_by(mid, |a, b| center(a).total_cmp(&center(b)));
+        // let (left, right) = surfaces.split_at_mut(mid);
+
+        // Middle Method
+        let middle = (max + min)[split_axis] / 2.0;
+        let (left, right) = partition(surfaces, |x| center(x) >= middle);
 
         // add the two children => recursion
         let mut children: Vec<SurfaceType> = Vec::new();
