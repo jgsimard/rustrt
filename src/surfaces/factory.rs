@@ -154,7 +154,7 @@ impl Factory<SurfaceType> for SurfaceFactory {
                         .collect(),
                 );
             }
-            _ => panic!("surface type {} not supported", surface_type),
+            _ => unimplemented!("surface type {} not supported", surface_type),
         }
     }
 }

@@ -69,9 +69,6 @@ pub fn create_material(material_json: Value) -> Rc<MaterialType> {
             let emit = read_v_or_f(&material_json, "emit", Vec3::new(1.0, 1.0, 1.0));
             Rc::new(MaterialType::from(DiffuseLight { emit }))
         }
-        _ => panic!(
-            "The material type '{}' is not yet implemented",
-            type_material
-        ),
+        _ => unimplemented!("The material type '{}' ", type_material),
     }
 }

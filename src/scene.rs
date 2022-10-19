@@ -167,10 +167,8 @@ impl Scene {
                     return emitted
                         + attenuation.component_mul(&self.recursive_color(&scattered, depth + 1));
                 }
-                return emitted;
-            } else {
-                return emitted;
             }
+            return emitted;
         } else {
             return self.background;
         }
