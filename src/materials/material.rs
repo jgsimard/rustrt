@@ -1,7 +1,6 @@
 extern crate nalgebra_glm as glm;
 use enum_dispatch::enum_dispatch;
 use glm::Vec3;
-use serde::{Deserialize, Serialize};
 
 use crate::surfaces::surface::HitInfo;
 

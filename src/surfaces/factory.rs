@@ -1,11 +1,9 @@
 use crate::aabb::Aabb;
 use crate::materials::factory::create_material;
 use crate::materials::factory::MaterialFactory;
-use crate::materials::material::Material;
 use crate::materials::material::MaterialType;
 use crate::surfaces::quad::Quad;
 use crate::surfaces::sphere::Sphere;
-use crate::surfaces::surface::Surface;
 use crate::surfaces::surface::SurfaceType;
 use crate::surfaces::triangle::{Mesh, Triangle};
 use crate::transform::parse_transform;

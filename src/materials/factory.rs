@@ -1,7 +1,6 @@
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
-use crate::materials::material::Material;
 use crate::materials::material::MaterialType;
 use crate::materials::metal::Metal;
 use crate::utils::{read_v_or_f, Factory};

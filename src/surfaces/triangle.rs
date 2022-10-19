@@ -1,5 +1,5 @@
 use crate::aabb::Aabb;
-use crate::materials::material::{Material, MaterialType};
+use crate::materials::material::MaterialType;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;
@@ -43,11 +43,11 @@ pub struct Mesh {
     pub bbox: Aabb,
 }
 
-impl Mesh {
-    pub fn empty(&self) -> bool {
-        self.vertex_indices.is_empty() | self.vertex_positions.is_empty()
-    }
-}
+// impl Mesh {
+//     pub fn empty(&self) -> bool {
+//         self.vertex_indices.is_empty() | self.vertex_positions.is_empty()
+//     }
+// }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Triangle {

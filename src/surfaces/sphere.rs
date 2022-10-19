@@ -1,5 +1,5 @@
 use crate::aabb::Aabb;
-use crate::materials::material::{Material, MaterialType};
+use crate::materials::material::MaterialType;
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, Surface};
 use crate::transform::Transform;

@@ -1,4 +1,4 @@
-use crate::materials::material::{Material, MaterialType};
+use crate::materials::material::MaterialType;
 use crate::ray::Ray;
 extern crate nalgebra_glm as glm;
 use enum_dispatch::enum_dispatch;

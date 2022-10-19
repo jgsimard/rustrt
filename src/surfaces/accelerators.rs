@@ -1,7 +1,7 @@
 extern crate nalgebra_glm as glm;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use std::fmt::Write;
 use partition::partition;
+use std::fmt::Write;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
