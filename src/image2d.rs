@@ -6,11 +6,47 @@ use std::ops::{Index, IndexMut};
 use image::Rgb;
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Image2d {
-    data: Vec<Vec3>,
+pub struct Array2d<T> {
+    data: Vec<T>,
     pub size_x: usize,
     pub size_y: usize,
 }
+
+impl<T: std::clone::Clone + std::default::Default> Array2d<T> {
+    fn index_1d(&self, x: usize, y: usize) -> usize {
+        y * self.size_x + x
+    }
+
+    pub fn size(&self) -> usize {
+        self.size_x * self.size_y
+    }
+
+    pub fn new(size_x: usize, size_y: usize) -> Array2d<T> {
+        Array2d::<T> {
+            data: vec![T::default(); size_x * size_y],
+            size_x: size_x,
+            size_y: size_y,
+        }
+    }
+}
+
+impl<T: std::clone::Clone + std::default::Default> Index<(usize, usize)> for Array2d<T> {
+    type Output = T;
+
+    fn index(&self, pos: (usize, usize)) -> &Self::Output {
+        let index = self.index_1d(pos.0, pos.1);
+        &self.data[index]
+    }
+}
+
+impl<T: std::clone::Clone + std::default::Default> IndexMut<(usize, usize)> for Array2d<T> {
+    fn index_mut(&mut self, pos: (usize, usize)) -> &mut Self::Output {
+        let index = self.index_1d(pos.0, pos.1);
+        &mut self.data[index]
+    }
+}
+
+pub type Image2d = Array2d<Vec3>;
 
 /// Convert from linear RGB to sRGB
 fn to_srgb(c: &Vec3) -> Vec3 {
@@ -29,22 +65,6 @@ fn to_srgb(c: &Vec3) -> Vec3 {
 }
 
 impl Image2d {
-    fn index_1d(&self, x: usize, y: usize) -> usize {
-        y * self.size_x + x
-    }
-
-    pub fn size(&self) -> usize {
-        self.size_x * self.size_y
-    }
-
-    pub fn new(size_x: usize, size_y: usize) -> Image2d {
-        Image2d {
-            data: vec![Vec3::zeros(); size_x * size_y],
-            size_x: size_x,
-            size_y: size_y,
-        }
-    }
-
     pub fn save(&self, path: String) {
         // let mut img_buffer = image::Rgb32FImage::new(self.size_x as u32, self.size_y as u32);
         let mut img_buffer = image::RgbImage::new(self.size_x as u32, self.size_y as u32);
@@ -93,28 +113,3 @@ impl Image2d {
         return image2d;
     }
 }
-
-impl Index<(usize, usize)> for Image2d {
-    type Output = Vec3;
-
-    fn index(&self, pos: (usize, usize)) -> &Self::Output {
-        let index = self.index_1d(pos.0, pos.1);
-        &self.data[index]
-    }
-}
-
-impl IndexMut<(usize, usize)> for Image2d {
-    fn index_mut(&mut self, pos: (usize, usize)) -> &mut Self::Output {
-        let index = self.index_1d(pos.0, pos.1);
-        &mut self.data[index]
-    }
-}
-// how to write unit tests !!!
-// #[cfg(test)]
-// mod tests{
-//     #[test]
-//     fn it_works() {
-//         let result = 2 + 2;
-//         assert_eq!(result, 4);
-//     }
-// }
