@@ -1,5 +1,5 @@
 use crate::aabb::Aabb;
-use crate::materials::factory::create_material;
+// use crate::materials::factory::create_material;
 use crate::materials::factory::MaterialFactory;
 use crate::materials::material::MaterialType;
 use crate::surfaces::quad::Quad;
@@ -99,7 +99,7 @@ impl Factory<SurfaceType> for SurfaceFactory {
                     ignore_lines: true,
                 };
                 let obj = tobj::load_obj(filename, &LOAD_OPTIONS);
-                
+
                 // assert!(obj.is_ok());
                 let (models, _) = obj.expect("Failed to load OBJ file");
                 println!("len models {}", models.len());
@@ -194,7 +194,7 @@ impl SurfaceFactory {
                     .unwrap())
                 .clone()
             } else {
-                create_material((*mat).clone())
+                self.material_factory.create_material((*mat).clone())
             }
         } else {
             panic!("Invalid material");

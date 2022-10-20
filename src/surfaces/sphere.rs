@@ -77,6 +77,7 @@ mod tests {
     use glm::Vec3;
     use std::rc::Rc;
 
+    use crate::materials::factory::create_texture;
     use crate::materials::lambertian::Lambertian;
     use crate::materials::material::MaterialType;
     use crate::ray::Ray;
@@ -84,13 +85,15 @@ mod tests {
     use crate::surfaces::surface::Surface;
     use crate::transform::Transform;
 
+    use serde_json::json;
+
     extern crate approx;
 
     #[test]
     fn test_ray_sphere_intersection() {
         // Let's check if your implementation was correct:
         let material: Rc<MaterialType> = Rc::new(MaterialType::from(Lambertian {
-            albedo: Vec3::new(1.0, 1.0, 1.0),
+            albedo: create_texture(&json!({"albedo": 1.0}), "albedo"),
         }));
         let test_sphere = Sphere {
             radius: 1.0,

@@ -47,7 +47,7 @@ mod tests {
     use serde_json::json;
     use std::rc::Rc;
 
-    use crate::materials::factory::create_material;
+    use crate::materials::factory::MaterialFactory;
     use crate::materials::material::Material;
     use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
@@ -62,7 +62,8 @@ mod tests {
             "albedo": surface_color,
             "roughness": 0.3
         });
-        let metal_material = create_material(metal_json);
+        let mf = MaterialFactory::new();
+        let metal_material = mf.create_material(metal_json);
 
         // Let's create a fictitious hitpoint
         let surface_point = Vec3::new(1.0, 2.0, 0.0);

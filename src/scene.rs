@@ -146,7 +146,7 @@ impl Scene {
             })
         };
 
-        let num_samples: i32 = 50;
+        let num_samples: i32 = 5;
         let max_depth: i32 = 64;
 
         Scene {

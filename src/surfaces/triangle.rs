@@ -219,7 +219,7 @@ mod tests {
     use glm::{Vec2, Vec3};
 
     use crate::surfaces::triangle::single_triangle_intersect;
-    use crate::{materials::factory::create_material, ray::Ray};
+    use crate::{materials::factory::MaterialFactory, ray::Ray};
     use serde_json::json;
 
     extern crate approx;
@@ -242,7 +242,8 @@ mod tests {
         let ray = Ray::new(Vec3::new(1.0, -1.0, -5.0), Vec3::new(0.0, 0.20, 0.50));
 
         let material_json = json!({"type": "lambertian", "albedo": 1.0});
-        let material = create_material(material_json);
+        let mf = MaterialFactory::new();
+        let material = mf.create_material(material_json);
 
         // run function
         if let Some(hit) =

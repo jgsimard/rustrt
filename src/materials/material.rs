@@ -46,6 +46,7 @@ pub trait Material {
 
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
+use crate::materials::fresnel_blend::FresnelBlend;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
 
@@ -58,4 +59,5 @@ pub enum MaterialType {
     Dielectric,
     Metal,
     DiffuseLight,
+    FresnelBlend,
 }

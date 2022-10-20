@@ -43,7 +43,7 @@ mod tests {
     use serde_json::json;
     use std::rc::Rc;
 
-    use crate::materials::factory::create_material;
+    use crate::materials::factory::MaterialFactory;
     use crate::materials::material::Material;
     use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
@@ -56,7 +56,8 @@ mod tests {
             "type": "lambertian",
             "albedo": surface_color
         });
-        let lambert_material = create_material(lambert_json);
+        let mf = MaterialFactory::new();
+        let lambert_material = mf.create_material(lambert_json);
 
         // Let's create a fictitious hitpoint
         let surface_point = Vec3::new(1.0, 2.0, 0.0);

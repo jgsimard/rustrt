@@ -2,23 +2,24 @@ use crate::materials::material::Material;
 use crate::surfaces::surface::HitInfo;
 extern crate nalgebra_glm as glm;
 use crate::ray::Ray;
-use crate::utils::{reflect, reflectance, refract};
+use crate::textures::texture::{Texture, TextureType};
+use crate::utils::{luminance, reflect, reflectance, refract};
 use glm::Vec3;
 use rand::Rng;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Dielectric {
-    pub ior: f32,
+    pub ior: TextureType,
 }
 
 impl Material for Dielectric {
     fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
         let front_face = glm::dot(&hit.gn, &r_in.direction) < 0.0;
-
+        let ior = luminance(&self.ior.value(hit).unwrap());
         let (normal, ratio_index_of_refraction) = if front_face {
-            (hit.sn, 1.0 / self.ior)
+            (hit.sn, 1.0 / ior)
         } else {
-            (-hit.sn, self.ior)
+            (-hit.sn, ior)
         };
 
         let unit_direction = glm::normalize(&r_in.direction);
