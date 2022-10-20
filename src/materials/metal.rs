@@ -6,6 +6,7 @@ use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
 use crate::textures::texture::{Texture, TextureType};
 use crate::utils::{luminance, random_in_unit_sphere, reflect};
+use crate::surfaces::surface::ScatterRecord;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Metal {
@@ -37,6 +38,18 @@ impl Material for Metal {
 
     fn is_emissive(&self) -> bool {
         false
+    }
+
+    fn eval(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> Vec3 {
+        Vec3::zeros()
+    }
+
+    fn sample(&self,wi: &Vec3,hit: &HitInfo,rv: &glm::Vec2) -> Option<(ScatterRecord,bool)> {
+        None
+    }
+
+    fn pdf(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> f32 {
+        0.0
     }
 }
 

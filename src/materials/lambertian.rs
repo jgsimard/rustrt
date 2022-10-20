@@ -1,8 +1,10 @@
 use crate::materials::material::Material;
 use crate::ray::Ray;
-use crate::surfaces::surface::HitInfo;
+use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{Texture, TextureType};
 use crate::utils::random_in_unit_sphere;
+use crate::onb::ONB;
+use crate::sampling::sample_hemisphere_cosine;
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
@@ -33,6 +35,24 @@ impl Material for Lambertian {
     }
     fn is_emissive(&self) -> bool {
         false
+    }
+
+    fn eval(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> Vec3 {
+        self.albedo.value(hit).unwrap() * self.pdf(wi, scattered, hit)
+    }
+
+    fn sample(&self,wi: &Vec3,hit: &HitInfo,rv: &glm::Vec2) -> Option<(ScatterRecord,bool)> {
+        let uvw = ONB::build_from_w(&hit.gn);
+        let srec = ScatterRecord{
+            attenuation : Vec3::zeros(), // FIXME
+            wo: uvw.local(&sample_hemisphere_cosine(rv)),
+            is_specular: false
+        };
+        Some((srec, true))
+    }
+
+    fn pdf(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> f32 {
+        f32::max(0.0, glm::dot(&scattered, &hit.gn)) * std::f32::consts::FRAC_1_PI
     }
 }
 
@@ -87,5 +107,15 @@ mod tests {
         } else {
             println!("Lambert scatter incorrect! Scattering should have been successful\n");
         }
+    }
+
+    #[test]
+    fn test_lambertian_mc(){
+
+    }
+
+    #[test]
+    fn test_lambertian_rotated_mc(){
+        
     }
 }

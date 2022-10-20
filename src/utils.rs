@@ -1,10 +1,12 @@
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
-use serde_json::{from_value, Value};
-
 use rand::Rng;
+use serde_json::{from_value, Value};
+use std::ops::{Add, Mul, Sub};
 
-const INV_TWOPI: f32 = 1.0 / std::f32::consts::TAU;
+pub const INV_FOURPI: f32 = 1.0 / (4.0 * std::f32::consts::PI);
+pub const INV_TWOPI: f32 = 1.0 / (2.0 * std::f32::consts::PI);
+
 /// Always-positive modulo operation
 fn modulo(a_: f32, b: f32) -> f32 {
     let mut a = a_;
@@ -15,6 +17,13 @@ fn modulo(a_: f32, b: f32) -> f32 {
     }
 
     return a;
+}
+
+pub fn lerp<T, F>(a: T, b: T, f: F) -> T
+where
+    T: Clone + Add<T, Output = T> + Sub<T, Output = T> + Mul<F, Output = T>,
+{
+    a.clone() + (b - a) * f
 }
 
 fn direction_to_spherical_coordinates(v: &Vec3) -> Vec2 {

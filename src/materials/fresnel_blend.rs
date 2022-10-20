@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::materials::material::Material;
 use crate::ray::Ray;
-use crate::surfaces::surface::HitInfo;
+use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{Texture, TextureType};
 use crate::utils::luminance;
 use crate::utils::reflectance;
@@ -45,5 +45,16 @@ impl Material for FresnelBlend {
     }
     fn is_emissive(&self) -> bool {
         false
+    }
+    fn eval(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> Vec3 {
+        Vec3::zeros()
+    }
+
+    fn sample(&self,wi: &Vec3,hit: &HitInfo,rv: &glm::Vec2) -> Option<(ScatterRecord,bool)> {
+        None
+    }
+
+    fn pdf(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> f32 {
+        0.0
     }
 }

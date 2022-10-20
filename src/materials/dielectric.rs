@@ -4,6 +4,7 @@ extern crate nalgebra_glm as glm;
 use crate::ray::Ray;
 use crate::textures::texture::{Texture, TextureType};
 use crate::utils::{luminance, reflect, reflectance, refract};
+use crate::surfaces::surface::ScatterRecord;
 use glm::Vec3;
 use rand::Rng;
 
@@ -49,5 +50,17 @@ impl Material for Dielectric {
 
     fn is_emissive(&self) -> bool {
         false
+    }
+
+    fn eval(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> Vec3 {
+        Vec3::zeros()
+    }
+
+    fn sample(&self,wi: &Vec3,hit: &HitInfo,rv: &glm::Vec2) -> Option<(ScatterRecord,bool)> {
+        None
+    }
+
+    fn pdf(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> f32 {
+        0.0
     }
 }

@@ -85,3 +85,14 @@ pub struct HitInfo {
 //     /// Hit information at the sampled point
 //     hit: HitInfo
 // }
+
+/// Data record for querying the scatter ray is_specular is for backward compatibility
+pub struct ScatterRecord
+{
+    /// Attenuation to apply to the traced ray
+    pub attenuation: Vec3,
+    /// The sampled outgoing direction
+    pub wo: Vec3,              
+    /// Flag indicating whether the ray has a degenerate PDF  
+    pub is_specular: bool
+}

@@ -3,11 +3,13 @@ mod camera;
 mod image2d;
 mod materials;
 mod ray;
+mod sampling;
 mod scene;
 mod surfaces;
 mod textures;
 mod transform;
 mod utils;
+mod onb;
 
 mod example_scenes;
 
