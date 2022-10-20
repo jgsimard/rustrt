@@ -176,6 +176,15 @@ pub fn parse_transform(json: &Value) -> Transform {
     }
 }
 
+pub fn read_transform(v: &Value) -> Transform {
+    let m = v.as_object().expect("Should be a map");
+    if m.contains_key("transform") {
+        parse_transform(&v["transform"])
+    } else {
+        Default::default()
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

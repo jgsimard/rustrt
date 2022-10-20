@@ -6,7 +6,6 @@ use rand::Rng;
 
 const INV_TWOPI: f32 = 1.0 / std::f32::consts::TAU;
 /// Always-positive modulo operation
-// template <typename T>
 fn modulo(a_: f32, b: f32) -> f32 {
     let mut a = a_;
     let n = (a / b).floor();
@@ -33,24 +32,23 @@ pub fn direction_to_spherical_uv(p: &Vec3) -> Vec2 {
     )
 }
 
-pub fn read_vector2_f32(v: &Value, name: &str, default: Vec2) -> Vec2 {
-    v.get(name)
-        .map_or(default, |v: &Value| from_value::<Vec2>(v.clone()).unwrap())
+pub fn read<T: for<'de> serde::de::Deserialize<'de>>(v: &Value, name: &str) -> T {
+    from_value::<T>(
+        (*v.get(name)
+            .unwrap_or_else(|| panic!("could not read {}", name)))
+        .clone(),
+    )
+    .unwrap_or_else(|_v| panic!("could not transform {}", name))
 }
 
-pub fn read_vector3_f32(v: &Value, name: &str, default: Vec3) -> Vec3 {
-    v.get(name)
-        .map_or(default, |v: &Value| from_value::<Vec3>(v.clone()).unwrap())
-}
-
-pub fn read_v_or_f(j: &Value, thing_name: &str, default: Vec3) -> Vec3 {
+pub fn read_v_or_f(j: &Value, thing_name: &str) -> Vec3 {
     let v = j.get(thing_name).unwrap().clone();
     let thing: Vec3;
     if v.is_number() {
         let thing_number: f32 = from_value(v).unwrap();
         thing = Vec3::new(thing_number, thing_number, thing_number);
     } else {
-        thing = read_vector3_f32(j, thing_name, default);
+        thing = read::<Vec3>(j, thing_name);
     }
     thing
 }

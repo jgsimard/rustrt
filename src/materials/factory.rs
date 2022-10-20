@@ -1,14 +1,15 @@
 use crate::image2d::Image2d;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
+use crate::materials::fresnel_blend::FresnelBlend;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::material::MaterialType;
 use crate::materials::metal::Metal;
 use crate::textures::texture::{
     CheckerTexture, ConstantTexture, ImageTexture, MarbleTexture, TextureType,
 };
-use crate::transform::parse_transform;
-use crate::utils::{read_v_or_f, Factory};
+use crate::transform::read_transform;
+use crate::utils::{read, read_v_or_f, Factory};
 
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
@@ -51,7 +52,7 @@ impl MaterialFactory {
                 Rc::new(MaterialType::from(Dielectric { ior }))
             }
             "diffuse_light" => {
-                let emit = read_v_or_f(&material_json, "emit", Vec3::new(1.0, 1.0, 1.0));
+                let emit = read_v_or_f(&material_json, "emit");
                 Rc::new(MaterialType::from(DiffuseLight { emit }))
             }
             "fresnel_blend" => {
@@ -110,24 +111,6 @@ impl Factory<Rc<MaterialType>> for MaterialFactory {
     }
 }
 
-impl MaterialFactory {}
-
-use crate::utils::read_vector3_f32;
-
-use super::fresnel_blend::FresnelBlend;
-
-pub fn read_f32(v: &Value, name: &str) -> f32 {
-    v.get(name)
-        .map(|v: &Value| from_value::<f32>(v.clone()).expect("unable to read f32"))
-        .unwrap()
-}
-
-pub fn read_vec3(v: &Value, name: &str) -> Vec3 {
-    v.get(name)
-        .map(|v: &Value| from_value::<Vec3>(v.clone()).expect("unable to read Vec3"))
-        .unwrap()
-}
-
 pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
     let v = j.get(thing_name).unwrap().clone();
     let texture = if v.is_number() {
@@ -135,7 +118,7 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
         let color = Vec3::new(thing_number, thing_number, thing_number);
         TextureType::from(ConstantTexture { color: color })
     } else if v.is_array() {
-        let color = read_vector3_f32(j, thing_name, Vec3::zeros());
+        let color = read::<Vec3>(j, thing_name);
         TextureType::from(ConstantTexture { color: color })
     } else if v.is_object() {
         let texture_type = v
@@ -146,18 +129,15 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
 
         match texture_type {
             "constant" => {
-                let color = read_vec3(&v, "color");
+                let color = read::<Vec3>(&v, "color");
                 TextureType::from(ConstantTexture { color: color })
             }
             "checker" => {
                 let even = Box::new(create_texture(&v, "even"));
                 let odd = Box::new(create_texture(&v, "odd"));
-                let scale = read_f32(&v, "scale");
-                let transform = if v.as_object().unwrap().contains_key("transform") {
-                    parse_transform(&v["transform"])
-                } else {
-                    Default::default()
-                };
+                let scale = read::<f32>(&v, "scale");
+                let transform = read_transform(&v);
+
                 TextureType::from(CheckerTexture {
                     odd_texture: odd,
                     even_texture: even,
@@ -168,12 +148,8 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
             "marble" => {
                 let veins = Box::new(create_texture(&v, "veins"));
                 let base = Box::new(create_texture(&v, "base"));
-                let scale = read_f32(&v, "scale");
-                let transform = if v.as_object().unwrap().contains_key("transform") {
-                    parse_transform(&v["transform"])
-                } else {
-                    Default::default()
-                };
+                let scale = read::<f32>(&v, "scale");
+                let transform = read_transform(&v);
                 TextureType::from(MarbleTexture {
                     base: base,
                     veins: veins,
@@ -182,7 +158,7 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
                 })
             }
             "image" => {
-                let filename: String = from_value(v["filename"].clone()).expect("no filename");
+                let filename: String = read(&v, "filename");
                 let image = Image2d::load(filename);
 
                 TextureType::from(ImageTexture { image: image })

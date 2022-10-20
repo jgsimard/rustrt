@@ -94,7 +94,7 @@ impl Scene {
         //
         // parse scene background
         //
-        let background = read_v_or_f(&scene_json, "background", Vec3::new(1.0, 1.0, 1.0));
+        let background = read_v_or_f(&scene_json, "background");
         println!("background: {}", background);
 
         //

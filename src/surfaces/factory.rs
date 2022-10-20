@@ -6,16 +6,15 @@ use crate::surfaces::quad::Quad;
 use crate::surfaces::sphere::Sphere;
 use crate::surfaces::surface::SurfaceType;
 use crate::surfaces::triangle::{Mesh, Triangle};
-use crate::transform::parse_transform;
-use crate::utils::read_vector2_f32;
+use crate::transform::read_transform;
+use crate::utils::read;
 use crate::utils::Factory;
 use nalgebra::Vector3;
-use serde_json::{from_value, Map, Value};
+use serde_json::{Map, Value};
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use tobj;
-use tobj::LoadOptions;
 
 pub struct SurfaceFactory {
     pub material_factory: MaterialFactory,
@@ -28,16 +27,8 @@ impl Factory<SurfaceType> for SurfaceFactory {
 
         match surface_type {
             "sphere" => {
-                let radius = if let Some(r) = m.get("radius") {
-                    from_value((*r).clone()).unwrap()
-                } else {
-                    1.0
-                };
-                let transform = if m.contains_key("transform") {
-                    parse_transform(&v["transform"])
-                } else {
-                    Default::default()
-                };
+                let radius = read(v, "radius");
+                let transform = read_transform(v);
                 let material = self.get_material(m);
 
                 return Some(vec![SurfaceType::from(Sphere {
@@ -48,18 +39,14 @@ impl Factory<SurfaceType> for SurfaceFactory {
             }
             "quad" => {
                 let size = if m.get("size").unwrap().is_number() {
-                    let s = m.get("size").unwrap().as_f64().unwrap() as f32;
+                    let s = read(v, "size");
                     Vec2::new(s, s)
                 } else {
-                    read_vector2_f32(v, "size", Vec2::new(1.0, 1.0))
+                    read::<Vec2>(v, "size")
                 };
                 let size = size / 2.0;
 
-                let transform = if m.contains_key("transform") {
-                    parse_transform(&v["transform"])
-                } else {
-                    Default::default()
-                };
+                let transform = read_transform(v);
                 let material = self.get_material(m);
 
                 return Some(vec![SurfaceType::from(Quad {
@@ -69,40 +56,13 @@ impl Factory<SurfaceType> for SurfaceFactory {
                 })]);
             }
             "mesh" => {
-                let transform = if v.as_object().unwrap().contains_key("transform") {
-                    parse_transform(&v["transform"])
-                } else {
-                    Default::default()
-                };
+                let transform = read_transform(v);
+                let filename: String = read(v, "filename");
 
-                let filename: String = from_value(v["filename"].clone()).expect("no filename");
+                let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
 
-                // pub const OFFLINE_RENDERING_LOAD_OPTIONS: LoadOptions = LoadOptions {
-                //     #[cfg(feature = "merging")]
-                //     merge_identical_points: true,
-                //     #[cfg(feature = "reordering")]
-                //     reorder_data: true,
-                //     single_index: false,
-                //     triangulate: false,
-                //     ignore_points: true,
-                //     ignore_lines: true,
-                // }
-
-                const LOAD_OPTIONS: LoadOptions = LoadOptions {
-                    #[cfg(feature = "merging")]
-                    merge_identical_points: true,
-                    #[cfg(feature = "reordering")]
-                    reorder_data: true,
-                    single_index: false,
-                    triangulate: true,
-                    ignore_points: true,
-                    ignore_lines: true,
-                };
-                let obj = tobj::load_obj(filename, &LOAD_OPTIONS);
-
-                // assert!(obj.is_ok());
+                assert!(obj.is_ok());
                 let (models, _) = obj.expect("Failed to load OBJ file");
-                println!("len models {}", models.len());
                 let mesh = &models[0].mesh;
                 let vs: Vec<Vec3> = mesh
                     .positions
@@ -126,8 +86,6 @@ impl Factory<SurfaceType> for SurfaceFactory {
                     .chunks(2)
                     .map(|p| Vec2::new(p[0], p[1]))
                     .collect();
-
-                println!("len {}", mesh.indices.len());
 
                 let vertex_indices: Vec<Vector3<usize>> = mesh
                     .indices

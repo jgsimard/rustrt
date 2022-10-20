@@ -4,7 +4,7 @@ use glm::{Vec2, Vec3};
 use serde_json::{from_value, Value};
 
 use crate::ray::Ray;
-use crate::transform::{parse_transform, Transform};
+use crate::transform::{read_transform, Transform};
 use crate::utils::deg2rad;
 
 /// A virtual pinhole camera.
@@ -56,11 +56,7 @@ impl PinholeCamera {
         let aperture_radius: f32 = from_value(json["aperture"].clone()).unwrap_or(0.);
         let focal_distance: f32 = from_value(json["fdist"].clone()).unwrap_or(1.);
         let vfov: f32 = from_value(json["vfov"].clone()).unwrap_or(90.);
-        let transform = if json.as_object().unwrap().contains_key("transform") {
-            parse_transform(&json["transform"])
-        } else {
-            Default::default()
-        };
+        let transform = read_transform(json);
 
         // Assignment 1: read the vertical field-of-view from j ("vfov"),
         // and compute the width and height of the image plane. Remember that
