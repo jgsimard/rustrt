@@ -2,14 +2,15 @@ mod aabb;
 mod camera;
 mod image2d;
 mod materials;
+mod onb;
 mod ray;
 mod sampling;
 mod scene;
 mod surfaces;
+mod testing;
 mod textures;
 mod transform;
 mod utils;
-mod onb;
 
 mod example_scenes;
 

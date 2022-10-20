@@ -2,9 +2,9 @@ use crate::materials::material::Material;
 use crate::surfaces::surface::HitInfo;
 extern crate nalgebra_glm as glm;
 use crate::ray::Ray;
+use crate::surfaces::surface::ScatterRecord;
 use crate::textures::texture::{Texture, TextureType};
 use crate::utils::{luminance, reflect, reflectance, refract};
-use crate::surfaces::surface::ScatterRecord;
 use glm::Vec3;
 use rand::Rng;
 
@@ -52,15 +52,15 @@ impl Material for Dielectric {
         false
     }
 
-    fn eval(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> Vec3 {
+    fn eval(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> Vec3 {
         Vec3::zeros()
     }
 
-    fn sample(&self,wi: &Vec3,hit: &HitInfo,rv: &glm::Vec2) -> Option<(ScatterRecord,bool)> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<(ScatterRecord, bool)> {
         None
     }
 
-    fn pdf(&self,wi: &Vec3,scattered: &Vec3,hit: &HitInfo) -> f32 {
+    fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
         0.0
     }
 }

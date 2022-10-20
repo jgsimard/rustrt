@@ -1,6 +1,6 @@
 extern crate nalgebra_glm as glm;
 use enum_dispatch::enum_dispatch;
-use glm::{Vec3, Vec2};
+use glm::{Vec2, Vec3};
 
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
 
