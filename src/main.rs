@@ -1,6 +1,7 @@
 mod aabb;
 mod camera;
 mod image2d;
+mod integrators;
 mod materials;
 mod onb;
 mod ray;

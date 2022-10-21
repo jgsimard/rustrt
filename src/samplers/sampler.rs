@@ -56,15 +56,13 @@ impl Sampler for IndependentSampler {
     fn start_pixel(&mut self, _x: i32, _y: i32) {}
 
     fn next1f(&mut self) -> f32 {
-        let mut rng = rand::thread_rng();
         self.current_dimension += 1;
-        rng.gen()
+        self.rng.gen()
     }
 
     fn next2f(&mut self) -> Vec2 {
-        let mut rng = rand::thread_rng();
         self.current_dimension += 2;
-        Vec2::new(rng.gen(), rng.gen())
+        Vec2::new(self.rng.gen(), self.rng.gen())
     }
 
     fn advance(&mut self) {
