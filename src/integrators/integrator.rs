@@ -2,7 +2,7 @@ extern crate nalgebra_glm as glm;
 
 use crate::ray::Ray;
 use crate::scene::Scene;
-use crate::surfaces::surface::{Surface, HitInfo};
+use crate::surfaces::surface::Surface;
 use crate::materials::material::Material;
 use crate::samplers::sampler::{Sampler, SamplerType};
 use enum_dispatch::enum_dispatch;
