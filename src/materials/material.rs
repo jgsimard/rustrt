@@ -38,7 +38,7 @@ pub trait Material {
     /// evaluations needed for explicit Monte Carlo integration in your
     /// #Integrator, but this also precludes the use of MIS or mixture sampling
     /// since the pdf is unknown.
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<(ScatterRecord, bool)>;
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord>;
 
     /// Compute the probability density that #sample() will generate \c scattered (given \c wi).
     fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32;

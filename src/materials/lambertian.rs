@@ -41,17 +41,17 @@ impl Material for Lambertian {
         self.albedo.value(hit).unwrap() * self.pdf(wi, scattered, hit)
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<(ScatterRecord, bool)> {
+    fn sample(&self, _wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
         let uvw = ONB::build_from_w(&hit.gn);
         let srec = ScatterRecord {
-            attenuation: Vec3::zeros(), // FIXME
+            attenuation: self.albedo.value(hit).unwrap(),
             wo: uvw.local(&sample_hemisphere_cosine(rv)),
             is_specular: false,
         };
-        Some((srec, true))
+        Some(srec)
     }
 
-    fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
+    fn pdf(&self, _wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
         f32::max(0.0, glm::dot(&scattered, &hit.gn)) * std::f32::consts::FRAC_1_PI
     }
 }
@@ -109,11 +109,41 @@ mod tests {
         }
     }
 
+    use crate::testing::{MaterialTest, SampleTest};
+
     #[test]
-    fn test_lambertian_mc() {
-        let normal = Vec3::new(0.0, 0.0, 1.0);
+    fn lambertian_monte_carlo() {
+        let v = json!({
+            "type": "sample_material",
+            "material": {
+                "type": "lambertian",
+                "albedo": 1.0
+            },
+            "normal": [
+                0, 0, 1
+            ],
+            "name": "lambertian"
+        });
+
+        let mut test = MaterialTest::new(v);
+        test.run();
     }
 
     #[test]
-    fn test_lambertian_rotated_mc() {}
+    fn lambertian_rotated_monte_carlo() {
+        let v = json!({
+            "type": "sample_material",
+            "material": {
+                "type": "lambertian",
+                "albedo": 1.0
+            },
+            "normal": [
+                0.25, 0.5, 1.0
+            ],
+            "name": "lambertian-rotated"
+        });
+
+        let mut test = MaterialTest::new(v);
+        test.run();
+    }
 }

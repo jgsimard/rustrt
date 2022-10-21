@@ -22,3 +22,7 @@ tobj = "3.2"
 approx = "0.5"
 partition = "0.1"
 lazy_static = "1.4"
+
+
+[profile.test]
+opt-level = 3 # otherwise sampling tests take forever

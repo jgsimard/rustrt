@@ -50,7 +50,7 @@ impl Material for FresnelBlend {
         Vec3::zeros()
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<(ScatterRecord, bool)> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
         None
     }
 

@@ -7,6 +7,10 @@ use std::ops::{Add, Mul, Sub};
 pub const INV_FOURPI: f32 = 1.0 / (4.0 * std::f32::consts::PI);
 pub const INV_TWOPI: f32 = 1.0 / (2.0 * std::f32::consts::PI);
 
+pub fn sincos(x: f32) -> (f32, f32) {
+    (f32::sin(x), f32::cos(x))
+}
+
 /// Always-positive modulo operation
 fn modulo(a_: f32, b: f32) -> f32 {
     let mut a = a_;
@@ -41,6 +45,20 @@ pub fn direction_to_spherical_uv(p: &Vec3) -> Vec2 {
     )
 }
 
+pub fn spherical_coordinates_to_direction(phi_theta: &Vec2) -> Vec3 {
+    let (sin_theta, cos_theta) = sincos(phi_theta.y);
+    let (sin_phi, cos_phi) = sincos(phi_theta.x);
+
+    return Vec3::new(sin_theta * cos_phi, sin_theta * sin_phi, cos_theta);
+}
+
+pub fn spherical_uv_to_direction(uv: &Vec2) -> Vec3 {
+    return spherical_coordinates_to_direction(&Vec2::new(
+        (uv.x - 0.5) * 2.0 * std::f32::consts::PI,
+        (1.0 - uv.y) * std::f32::consts::PI,
+    ));
+}
+
 pub fn read<T: for<'de> serde::de::Deserialize<'de>>(v: &Value, name: &str) -> T {
     from_value::<T>(
         (*v.get(name)
@@ -48,6 +66,11 @@ pub fn read<T: for<'de> serde::de::Deserialize<'de>>(v: &Value, name: &str) -> T
         .clone(),
     )
     .unwrap_or_else(|_v| panic!("could not transform {}", name))
+}
+
+pub fn read_or<T: for<'de> serde::de::Deserialize<'de>>(v: &Value, name: &str, default: T) -> T {
+    v.get(name)
+        .map_or(default, |v: &Value| from_value::<T>(v.clone()).unwrap())
 }
 
 pub fn read_v_or_f(j: &Value, thing_name: &str) -> Vec3 {

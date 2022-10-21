@@ -1,11 +1,7 @@
 extern crate nalgebra_glm as glm;
-use crate::utils::{lerp, INV_FOURPI, INV_TWOPI};
+use crate::utils::{lerp, sincos, INV_FOURPI, INV_TWOPI};
 use glm::{Vec2, Vec3};
 // let mut rng = rand::thread_rng();
-
-fn sincos(x: f32) -> (f32, f32) {
-    (f32::sin(x), f32::cos(x))
-}
 
 /// Uniformly sample a vector on a 2D disk with radius 1, centered around the origin
 fn sample_disk(rv: &Vec2) -> Vec2 {
