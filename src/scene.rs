@@ -1,5 +1,5 @@
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use serde_json::{json, Value, Map};
+use serde_json::{json, Map, Value};
 use std::fmt::Write;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
@@ -30,11 +30,10 @@ pub struct Scene {
 }
 
 impl Scene {
-
     //
     // parse the sampler
     //
-    pub fn get_sampler(map_json: Map<String, Value>) -> SamplerType{
+    pub fn get_sampler(map_json: Map<String, Value>) -> SamplerType {
         let sampler = if map_json.contains_key("sampler") {
             let mut sampler_json = (*map_json.get("sampler").unwrap()).clone();
             if !sampler_json.as_object().unwrap().contains_key("type") {
@@ -48,7 +47,6 @@ impl Scene {
         };
         return sampler;
     }
-
 
     pub fn new(scene_json: Value) -> Scene {
         println!("Parsing...");
@@ -211,9 +209,10 @@ impl Scene {
                     for _ in 0..sample_count {
                         let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f();
                         let ray = self.camera.generate_ray(&pixel);
-                        if self.integrator.is_integrator(){
-                            color += self.integrator.li(self, &mut sampler, &ray, 0) / (sample_count as f32);
-                        }else{
+                        if self.integrator.is_integrator() {
+                            color += self.integrator.li(self, &mut sampler, &ray, 0)
+                                / (sample_count as f32);
+                        } else {
                             color += self.recursive_color(&ray, 0) / (sample_count as f32);
                         }
                     }

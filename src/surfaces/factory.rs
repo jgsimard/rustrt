@@ -7,8 +7,7 @@ use crate::surfaces::sphere::Sphere;
 use crate::surfaces::surface::SurfaceType;
 use crate::surfaces::triangle::{Mesh, Triangle};
 use crate::transform::read_transform;
-use crate::utils::read;
-use crate::utils::Factory;
+use crate::utils::{read, read_or, Factory};
 use nalgebra::Vector3;
 use serde_json::{Map, Value};
 use std::rc::Rc;
@@ -27,7 +26,7 @@ impl Factory<SurfaceType> for SurfaceFactory {
 
         match surface_type {
             "sphere" => {
-                let radius = read(v, "radius");
+                let radius = read_or(v, "radius", 1.0);
                 let transform = read_transform(v);
                 let material = self.get_material(m);
 
