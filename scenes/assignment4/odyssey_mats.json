@@ -28,7 +28,7 @@
     "surfaces": [
         {
             "type": "mesh",
-            "filename": "../assets/cube.obj",
+            "filename": "assets/cube.obj",
             "name": "monolith",
             "transform": [
                 {

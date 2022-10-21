@@ -37,12 +37,12 @@
         {
             "type": "mesh",
             "name": "ajax",
-            "filename": "../assets/ajax.obj",
+            "filename": "assets/ajax.obj",
             "material": "white"
         }, {
             "type": "mesh",
             "name": "floor",
-            "filename": "../assets/plane.obj",
+            "filename": "assets/plane.obj",
             "transform": [
                 {
                     "scale": [100, 1, 100]
