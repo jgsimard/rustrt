@@ -198,10 +198,11 @@ impl SampleTest for MaterialTest {
 
                 // Incorporate Jacobian of spherical mapping and bin area into the sample weight
                 let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
-                let weight    = (histogram.size() as f32) / (PI * (2.0 * PI) * (self.num_samples as f32) * sin_theta);
+                let weight = (histogram.size() as f32)
+                    / (PI * (2.0 * PI) * (self.num_samples as f32) * sin_theta);
                 // Accumulate into histogram
                 histogram[(pixel.x as usize, pixel.y as usize)] += weight;
-                valid_samples+=1;
+                valid_samples += 1;
             } else {
                 continue;
             }
@@ -209,16 +210,15 @@ impl SampleTest for MaterialTest {
 
         // Now upscale our histogram and pdf
         let mut histo_fullres = Array2d::<f32>::new(self.image_width, self.image_height);
-        for y in 0..histo_fullres.size_y{
-            for x in 0..histo_fullres.size_x{
+        for y in 0..histo_fullres.size_y {
+            for x in 0..histo_fullres.size_x {
                 histo_fullres[(x, y)] = histogram[(x / histo_subsample, y / histo_subsample)];
-
             }
         }
 
         let mut pdf_fullres = Array2d::<f32>::new(self.image_width, self.image_height);
-        for y in 0..pdf_fullres.size_y{
-            for x in 0..pdf_fullres.size_x{
+        for y in 0..pdf_fullres.size_y {
+            for x in 0..pdf_fullres.size_x {
                 pdf_fullres[(x, y)] = pdf[(x / histo_subsample, y / histo_subsample)];
             }
         }
@@ -238,16 +238,19 @@ impl SampleTest for MaterialTest {
         // NOTE: we use get_file_resolver()[0] here to refer to the parent directory of the scene file.
         // This assumes that the calling code has prepended this directory to the front of the global resolver list
         generate_heatmap(&pdf_fullres, max_value).save(format!("tests/{}-pdf.png", self.name));
-        generate_heatmap(&histo_fullres, max_value).save(format!("tests/{}-sampled.png", self.name));
+        generate_heatmap(&histo_fullres, max_value)
+            .save(format!("tests/{}-sampled.png", self.name));
 
         // Output statistics
         println!("Integral of PDF (should be close to 1): {}\n", integral);
         approx::assert_abs_diff_eq!(integral, 1.0, epsilon = 1e-4);
 
         let sample_integral = (valid_samples as f32) / (self.num_samples as f32) * 100.0;
-        println!("{}% of samples were valid (this should be close to 100%)\n", sample_integral);
+        println!(
+            "{}% of samples were valid (this should be close to 100%)\n",
+            sample_integral
+        );
         approx::assert_abs_diff_eq!(sample_integral, 100.0, epsilon = 1e-4);
-
 
         if nan_or_inf {
             println!("Some directions/PDFs contained invalid values (NaN or infinity). This should not happen. 
