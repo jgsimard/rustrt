@@ -2,6 +2,7 @@ extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use rand::Rng;
 use serde_json::Value;
+use std::fs;
 
 use crate::image2d::{Array2d, Image2d};
 use crate::materials::factory::MaterialFactory;
@@ -237,6 +238,7 @@ impl SampleTest for MaterialTest {
         // Generate heat maps
         // NOTE: we use get_file_resolver()[0] here to refer to the parent directory of the scene file.
         // This assumes that the calling code has prepended this directory to the front of the global resolver list
+        fs::create_dir_all("tests").expect("unable to create tests dir");
         generate_heatmap(&pdf_fullres, max_value).save(format!("tests/{}-pdf.png", self.name));
         generate_heatmap(&histo_fullres, max_value)
             .save(format!("tests/{}-sampled.png", self.name));
