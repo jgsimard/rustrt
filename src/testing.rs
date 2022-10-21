@@ -10,7 +10,7 @@ use crate::materials::material::{Material, MaterialType};
 use crate::surfaces::surface::HitInfo;
 use crate::utils::{
     direction_to_spherical_coordinates, inferno, read, read_or, spherical_coordinates_to_direction,
-    INV_TWOPI,
+    FRAC_1_TWOPI,
 };
 
 use std::f32::consts::FRAC_1_PI;
@@ -18,7 +18,7 @@ use std::f32::consts::PI;
 use std::rc::Rc;
 
 pub trait SampleTest {
-    fn run(&mut self);
+    fn run(&mut self, target: f32, epsilon: f32);
     fn sample(&mut self, rv: &Vec2) -> Option<Vec3>;
     fn pdf(&self, dir: &Vec3) -> f32;
     fn print_more_statistics(&self);
@@ -131,11 +131,11 @@ impl SampleTest for MaterialTest {
         let image_width = self.image_width as f32;
         let image_height = self.image_height as f32;
         let a = direction_to_spherical_coordinates(dir);
-        let b = Vec2::new(image_width * INV_TWOPI, image_height * FRAC_1_PI);
+        let b = Vec2::new(image_width * FRAC_1_TWOPI, image_height * FRAC_1_PI);
         return a.component_mul(&b);
     }
 
-    fn run(&mut self) {
+    fn run(&mut self, target: f32, epsilon: f32) {
         println!("---------------------------------------------------------------------------\n");
         println!("Running sample test for \"{}\"\n", self.name);
 
@@ -182,7 +182,7 @@ impl SampleTest for MaterialTest {
         let mut nan_or_inf = false;
         let mut rng = rand::thread_rng();
         // Progress progress2(fmt::format("Generating samples {}", num_samples), num_samples);
-        for i in 0..self.num_samples {
+        for _ in 0..self.num_samples {
             if let Some(dir) = self.sample(&Vec2::new(rng.gen(), rng.gen())) {
                 if f32::is_nan(dir.x + dir.y + dir.z) || f32::is_infinite(dir.x + dir.y + dir.z) {
                     nan_or_inf = true;
@@ -225,7 +225,7 @@ impl SampleTest for MaterialTest {
         }
 
         // Step 3: For auto-exposure, compute 99.95th percentile instead of maximum for increased robustness
-        let mut values = pdf.data.as_mut_slice();
+        let values = pdf.data.as_mut_slice();
         values.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         let max_value = values[((pdf_size as f32 - 1.0) * 0.9995) as usize];
@@ -246,14 +246,15 @@ impl SampleTest for MaterialTest {
         // Output statistics
         println!("Integral of PDF (should be close to 1): {}\n", integral);
 
-        let sample_integral = (valid_samples as f32) / (self.num_samples as f32) * 100.0;
+        let sample_integral = (valid_samples as f32) / (self.num_samples as f32);
         println!(
             "{}% of samples were valid (this should be close to 100%)\n",
-            sample_integral
+            sample_integral * 100.0
         );
 
-        approx::assert_abs_diff_eq!(integral, 1.0, epsilon = 1e-4);
-        approx::assert_abs_diff_eq!(sample_integral, 100.0, epsilon = 1e-4);
+        approx::assert_abs_diff_eq!(integral, target, epsilon = epsilon);
+        approx::assert_abs_diff_eq!(sample_integral, target, epsilon = epsilon);
+        approx::assert_abs_diff_eq!(sample_integral, integral, epsilon = epsilon);
 
         if nan_or_inf {
             println!("Some directions/PDFs contained invalid values (NaN or infinity). This should not happen. 

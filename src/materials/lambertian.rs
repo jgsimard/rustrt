@@ -126,7 +126,7 @@ mod tests {
         });
 
         let mut test = MaterialTest::new(v);
-        test.run();
+        test.run(1.0, 1e-4);
     }
 
     #[test]
@@ -144,6 +144,6 @@ mod tests {
         });
 
         let mut test = MaterialTest::new(v);
-        test.run();
+        test.run(1.0, 1e-4);
     }
 }

@@ -5,7 +5,7 @@ use serde_json::{from_value, Value};
 use std::ops::{Add, Mul, Sub};
 
 pub const INV_FOURPI: f32 = 1.0 / (4.0 * std::f32::consts::PI);
-pub const INV_TWOPI: f32 = 1.0 / (2.0 * std::f32::consts::PI);
+pub const FRAC_1_TWOPI: f32 = 1.0 / (2.0 * std::f32::consts::PI);
 
 pub fn sincos(x: f32) -> (f32, f32) {
     (f32::sin(x), f32::cos(x))
@@ -41,7 +41,7 @@ pub fn direction_to_spherical_coordinates(v: &Vec3) -> Vec2 {
 pub fn direction_to_spherical_uv(p: &Vec3) -> Vec2 {
     let sph = direction_to_spherical_coordinates(p);
     Vec2::new(
-        modulo(sph.x * INV_TWOPI - 0.5, 1.0),
+        modulo(sph.x * FRAC_1_TWOPI - 0.5, 1.0),
         1.0 - sph.y * std::f32::consts::FRAC_1_PI,
     )
 }

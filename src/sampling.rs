@@ -1,5 +1,5 @@
 extern crate nalgebra_glm as glm;
-use crate::utils::{lerp, sincos, INV_FOURPI, INV_TWOPI};
+use crate::utils::{lerp, sincos, INV_FOURPI, FRAC_1_TWOPI};
 use glm::{Vec2, Vec3};
 // let mut rng = rand::thread_rng();
 
@@ -42,7 +42,7 @@ pub fn sample_hemisphere(rv: &Vec2) -> Vec3 {
 
 /// Probability density of #sample_hemisphere()
 pub fn sample_hemisphere_pdf(v: &Vec3) -> f32 {
-    return INV_TWOPI;
+    return FRAC_1_TWOPI;
 }
 
 /// Uniformly sample a vector on the unit hemisphere around the pole (0,0,1) with respect to projected solid
@@ -68,10 +68,11 @@ pub fn sample_hemisphere_cosine_power(exponent: f32, rv: &Vec2) -> Vec3 {
     return Vec3::new(cos_phi * sin_theta, sin_phi * sin_theta, cos_theta);
 }
 
-/// Probability density of #sample_hemisphere_cosine_power()
+/// Probability density of sample_hemisphere_cosine_power()
+/// 
+/// from $$cst * \int_0^{2pi} \int_0^{pi/2} cos^n(theta) sin(theta) dtheta dphi =  cst * 2 pi / (n + 1) = 1 => cst = (n + 1) / (2 \pi)$$
 pub fn sample_hemisphere_cosine_power_pdf(exponent: f32, cosine: f32) -> f32 {
-    // from cst * \int_0^{2pi} \int_0^{pi/2} cos^n(theta) sin(theta) dtheta dphi =  cst * 2 pi / (n + 1) = 1 => cst = (n + 1) / (2 pi)
-    return f32::powf(cosine, exponent) * (exponent + 1.0) * INV_TWOPI;
+    return f32::powf(cosine, exponent) * (exponent + 1.0) * FRAC_1_TWOPI;
 }
 
 /// Uniformly sample a vector on a spherical cap around (0, 0, 1)
@@ -87,7 +88,7 @@ pub fn sample_sphere_cap(rv: &Vec2, cos_theta_max: f32) -> Vec3 {
 
 /// Probability density of #sample_sphere_cap()
 pub fn sample_sphere_cap_pdf(cos_theta: f32, cos_theta_max: f32) -> f32 {
-    return INV_TWOPI / (1.0 - cos_theta_max);
+    return FRAC_1_TWOPI / (1.0 - cos_theta_max);
 }
 
 /// Sample a point uniformly on a triangle with vertices `v0`, `v1`, `v2`.

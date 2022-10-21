@@ -15,7 +15,7 @@ pub struct Phong {
 }
 
 impl Material for Phong {
-    fn scatter(&self, _r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, _r_in: &Ray, _hit: &HitInfo) -> Option<(Vec3, Ray)> {
         None
     }
 
@@ -44,8 +44,8 @@ impl Material for Phong {
         None
     }
 
-    fn pdf(&self, _wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
-        let mirror_dir = glm::normalize(&reflect(scattered, &hit.gn));
+    fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
+        let mirror_dir = glm::normalize(&reflect(wi, &hit.gn));
         let cosine =  f32::max(glm::dot(&glm::normalize(scattered), &mirror_dir), 0.0);
         let pdf = sample_hemisphere_cosine_power_pdf(self.exponent , cosine);
         let final_pdf = if glm::dot(scattered, &hit.gn) >= 0.0 {pdf} else {0.0};
@@ -75,7 +75,7 @@ mod tests {
         });
 
         let mut test = MaterialTest::new(v);
-        test.run();
+        test.run(1.0, 1e-2);
     }
 
     #[test]
@@ -94,6 +94,6 @@ mod tests {
         });
 
         let mut test = MaterialTest::new(v);
-        test.run();
+        test.run(0.945, 1e-3);
     }
 }
