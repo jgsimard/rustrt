@@ -1,21 +1,22 @@
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use nalgebra::Vector2;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::fmt::Write;
 extern crate nalgebra_glm as glm;
-use glm::Vec3;
-use rand::Rng;
+use glm::{Vec2, Vec3};
 
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
 use crate::materials::material::Material;
 use crate::ray::Ray;
 
+use crate::samplers::sampler::Sampler;
+use crate::samplers::sampler::SamplerType;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::Surface;
 
 use crate::aabb::Aabb;
 use crate::materials::factory::MaterialFactory;
+use crate::samplers::sampler::create_sampler;
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::surfaces::factory::SurfaceFactory;
 use crate::surfaces::surface::SurfaceGroupType;
@@ -25,7 +26,7 @@ pub struct Scene {
     pub surfaces: SurfaceGroupType,
     // pub emitters: SurfaceGroup,
     // pub integrator: Rc<dyn Integrator>,
-    // pub sampler: Rc<dyn Sampler>,
+    pub sampler: SamplerType,
     pub camera: PinholeCamera,
     pub background: Vec3,
     pub num_samples: i32,
@@ -47,7 +48,6 @@ impl Scene {
             "camera".to_string(),
             "sampler".to_string(),
             "background".to_string(),
-            "num_samples".to_string(),
             "max_depth".to_string(),
         ];
 
@@ -66,21 +66,20 @@ impl Scene {
                 .expect("No camera specified in scene!"),
         );
 
-        // //
-        // // parse the sampler
-        // //
-        // let sampler = if map_json.contains_key("sampler"){
-        //     let sampler_json = map_json.get("sampler").unwrap().as_object().unwrap();
-        //     if !sampler_json.contains_key("type"){
-        //         println!("No sampler 'type' specified, assuming independent sampling.");
-        //         sampler_json["type"] = serde_json::from_str("independent").unwrap();
-        //     }
-        //     // make_sampler(sampler_json.unwrap())
-        //     -1
-        // } else {
-        //     println!("No sampler specified, defaulting to 1 spp independent sampling.");
-        //     make_sampler(json!({"type" : "independent", "samples": 1}))
-        // };
+        //
+        // parse the sampler
+        //
+        let sampler = if map_json.contains_key("sampler") {
+            let mut sampler_json = (*map_json.get("sampler").unwrap()).clone();
+            if !sampler_json.as_object().unwrap().contains_key("type") {
+                println!("No sampler 'type' specified, assuming independent sampling.");
+                sampler_json["type"] = serde_json::from_str("independent").unwrap();
+            }
+            create_sampler(&sampler_json)
+        } else {
+            println!("No sampler specified, defaulting to 1 spp independent sampling.");
+            create_sampler(&json!({"type" : "independent", "samples": 1}))
+        };
 
         // //
         // // parse the integrator
@@ -150,6 +149,7 @@ impl Scene {
         let max_depth: i32 = 64;
 
         Scene {
+            sampler: sampler,
             surfaces: surfaces,
             camera: camera,
             background: background,
@@ -175,12 +175,12 @@ impl Scene {
         }
     }
 
-    pub fn raytrace(&self) -> Image2d {
+    pub fn raytrace(&mut self) -> Image2d {
         let mut image = Image2d::new(
             self.camera.resolution.x as usize,
             self.camera.resolution.y as usize,
         );
-        let sample_count = self.num_samples;
+        let sample_count = self.sampler.sample_count();
 
         {
             let progress_bar = ProgressBar::new(image.size() as u64);
@@ -190,16 +190,12 @@ impl Scene {
                 .progress_chars("#>-"));
             println!("Rendering ...");
             // Generate a ray for each pixel in the ray image
-            let mut rng = rand::thread_rng();
             for y in 0..image.size_y {
                 for x in 0..image.size_x {
                     let mut color = Vec3::new(0.0, 0.0, 0.0);
                     for _ in 0..sample_count {
-                        // rays_traced.inc(1);
-                        let ray = self.camera.generate_ray(&Vector2::new(
-                            (x as f32) + 0.5 + rng.gen::<f32>() / 2.0,
-                            (y as f32) + 0.5 + rng.gen::<f32>() / 2.0,
-                        ));
+                        let pixel = Vec2::new(x as f32, y as f32) + self.sampler.next2f();
+                        let ray = self.camera.generate_ray(&pixel);
                         color += self.recursive_color(&ray, 0) / (sample_count as f32);
                     }
                     image[(x, y)] = color;
