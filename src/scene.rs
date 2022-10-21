@@ -189,7 +189,7 @@ impl Scene {
                         let pixel = Vec2::new(x as f32, y as f32) + self.sampler.next2f();
                         let ray = self.camera.generate_ray(&pixel);
                         if self.integrator.is_integrator(){
-                            color += self.integrator.li(self, &ray, 0);
+                            color += self.integrator.li(self, &ray, 0) / (sample_count as f32);
                         }else{
                             color += self.recursive_color(&ray, 0) / (sample_count as f32);
                         }
