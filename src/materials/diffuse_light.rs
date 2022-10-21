@@ -38,7 +38,7 @@ impl Material for DiffuseLight {
         emited_color * self.pdf(wi, scattered, hit)
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, _wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
         let uvw = ONB::build_from_w(&hit.gn);
         let srec = ScatterRecord {
             attenuation: Vec3::zeros(), // FIXME
@@ -48,7 +48,7 @@ impl Material for DiffuseLight {
         Some(srec)
     }
 
-    fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
+    fn pdf(&self, wi: &Vec3, _scattered: &Vec3, _hit: &HitInfo) -> f32 {
         sample_hemisphere_pdf(wi)
     }
 }

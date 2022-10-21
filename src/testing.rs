@@ -52,6 +52,8 @@ fn generate_heatmap(density: &Array2d<f32>, max_value: f32) -> Image2d {
 }
 
 impl MaterialTest {
+    // it is used in tests, but it gives me a warning : FIXME !
+    #[allow(unused)]
     pub fn new(v: Value) -> MaterialTest {
         let mf = MaterialFactory::new();
         let material = mf.create_material(v["material"].clone());
