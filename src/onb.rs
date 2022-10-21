@@ -1,6 +1,7 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
+/// OrthoNormal Basis
 pub struct ONB {
     axis: [Vec3; 3],
 }
