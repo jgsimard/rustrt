@@ -2,8 +2,8 @@ extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use partition::partition;
-use rand::Rng;
 use rand::rngs::ThreadRng;
+use rand::Rng;
 use std::fmt::Write;
 
 use crate::aabb::Aabb;
@@ -29,20 +29,20 @@ impl Surface for LinearSurfaceGroup {
         option_hit
     }
 
-    fn pdf(&self,o: &Vec3,dir: &Vec3) -> f32 {
+    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
         let mut pdf = 0.0;
-        if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)){
-            for surface in self.surfaces.iter(){
+        if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)) {
+            for surface in self.surfaces.iter() {
                 pdf += surface.pdf(o, dir);
             }
         }
         pdf
     }
-    fn sample(&self, o: &Vec3,  rv: &Vec2) -> Option<(EmitterRecord,Vec3)> {
+    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
         let mut rng = rand::thread_rng();
         self.surfaces[rng.gen_range(0..self.surfaces.len())].sample(o, rv)
     }
-    
+
     // fn is_emissive(&self) -> bool {
     //     unimplemented!()
     // }

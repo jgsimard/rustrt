@@ -142,7 +142,9 @@ impl Factory<SurfaceType> for SurfaceFactory {
 
 impl SurfaceFactory {
     pub fn new() -> SurfaceFactory {
-        SurfaceFactory { material_factory: MaterialFactory::new() }
+        SurfaceFactory {
+            material_factory: MaterialFactory::new(),
+        }
     }
 
     fn get_material(&self, m: &Map<String, Value>) -> Rc<MaterialType> {

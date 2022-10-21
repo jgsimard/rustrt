@@ -7,14 +7,14 @@ use std::fs;
 use crate::image2d::{Array2d, Image2d};
 use crate::materials::factory::MaterialFactory;
 use crate::materials::material::{Material, MaterialType};
-use crate::surfaces::surface::{HitInfo, SurfaceType, Surface, EmitterRecord};
-use crate::utils::{
-    direction_to_spherical_coordinates, inferno, read, read_or, spherical_coordinates_to_direction,
-    FRAC_1_TWOPI, Factory
-};
-use crate::surfaces::surface::SurfaceGroupType;
 use crate::surfaces::accelerators::LinearSurfaceGroup;
 use crate::surfaces::factory::SurfaceFactory;
+use crate::surfaces::surface::SurfaceGroupType;
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
+use crate::utils::{
+    direction_to_spherical_coordinates, inferno, read, read_or, spherical_coordinates_to_direction,
+    Factory, FRAC_1_TWOPI,
+};
 
 use std::f32::consts::FRAC_1_PI;
 use std::f32::consts::PI;
@@ -29,7 +29,7 @@ pub struct MaterialTest {
     material: Rc<MaterialType>,
     // normal: Vec3,
     incoming: Vec3,
-    hit: HitInfo
+    hit: HitInfo,
 }
 
 pub struct SampleTestParameters {
@@ -41,7 +41,6 @@ pub struct SampleTestParameters {
     image_height: usize,
     num_samples: usize,
 }
-
 
 impl MaterialTest {
     // it is used in tests, but it gives me a warning : FIXME !
@@ -68,15 +67,15 @@ impl MaterialTest {
             material: material.clone(),
             // normal: normal,
             incoming: incoming,
-            hit: hit
+            hit: hit,
         };
-        let parameters = SampleTestParameters { 
-            any_specular: false, 
-            any_below_hemisphere: false, 
-            name: name, 
-            image_width: image_width, 
-            image_height: image_height, 
-            num_samples: num_samples 
+        let parameters = SampleTestParameters {
+            any_specular: false,
+            any_below_hemisphere: false,
+            name: name,
+            image_width: image_width,
+            image_height: image_height,
+            num_samples: num_samples,
         };
         (test, parameters)
     }
@@ -120,8 +119,6 @@ impl SurfaceTest {
         let mf = MaterialFactory::new();
         let material = mf.create_material(surface_json["material"].clone());
 
-        
-
         let mut surface_facory = SurfaceFactory::new();
         let mut surfaces_vec = Vec::new();
         if let Some(mut surface) = surface_facory.make(&surface_json.clone()) {
@@ -132,10 +129,12 @@ impl SurfaceTest {
                 surface_json["type"]
             );
         }
-         let surface_group =  SurfaceGroupType::from(LinearSurfaceGroup {surfaces: surfaces_vec });
+        let surface_group = SurfaceGroupType::from(LinearSurfaceGroup {
+            surfaces: surfaces_vec,
+        });
 
-         let test = SurfaceTest { 
-            surface_group: surface_group
+        let test = SurfaceTest {
+            surface_group: surface_group,
         };
 
         let name = read(&v, "name");
@@ -143,18 +142,17 @@ impl SurfaceTest {
         let image_height = read_or(&v, "image_height", 256);
         let num_samples = read_or(&v, "num_samples", 50) * image_width * image_height;
 
-        let parameters = SampleTestParameters { 
-            any_specular: false, 
-            any_below_hemisphere: false, 
-            name: name, 
-            image_width: image_width, 
-            image_height: image_height, 
-            num_samples: num_samples 
+        let parameters = SampleTestParameters {
+            any_specular: false,
+            any_below_hemisphere: false,
+            name: name,
+            image_width: image_width,
+            image_height: image_height,
+            num_samples: num_samples,
         };
         (test, parameters)
     }
 }
-
 
 impl SampleTest for SurfaceTest {
     fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3) -> f32 {
@@ -162,7 +160,7 @@ impl SampleTest for SurfaceTest {
     }
 
     fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3> {
-        if let Some((erec, v)) = self.surface_group.sample(&Vec3::zeros(), rv){
+        if let Some((erec, v)) = self.surface_group.sample(&Vec3::zeros(), rv) {
             let dir = glm::normalize(&erec.wi);
             return Some(dir);
         }

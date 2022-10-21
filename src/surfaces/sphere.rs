@@ -1,11 +1,11 @@
 use crate::aabb::Aabb;
-use crate::materials::material::{MaterialType, Material};
+use crate::materials::material::{Material, MaterialType};
+use crate::onb::ONB;
 use crate::ray::Ray;
-use crate::sampling::{sample_sphere_cap_pdf, sample_sphere_cap};
+use crate::sampling::{sample_sphere_cap, sample_sphere_cap_pdf};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
 use crate::utils::direction_to_spherical_uv;
-use crate::onb::ONB;
 
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
@@ -74,60 +74,59 @@ impl Surface for Sphere {
     }
 
     fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
-        if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)){
+        if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)) {
             let center = self.transform.point(&Vec3::zeros());
             // let direction = center - o;
             let dist = glm::length(&(o - center));
-            let cos_theta_max = f32::sqrt(dist*dist - self.radius*self.radius)/dist; 
-            return sample_sphere_cap_pdf(cos_theta_max, cos_theta_max)
+            let cos_theta_max = f32::sqrt(dist * dist - self.radius * self.radius) / dist;
+            return sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
         }
         return 0.0;
     }
 
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord,Vec3)> {
+    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
         // FIXME ; not sure this is the right implementation
         let center = self.transform.point(&Vec3::zeros());
-        let direction : Vec3 = center - o;
+        let direction: Vec3 = center - o;
         let dist = glm::length(&(o - center));
 
-        let cos_theta_max = f32::sqrt(dist*dist - self.radius*self.radius)/dist; 
+        let cos_theta_max = f32::sqrt(dist * dist - self.radius * self.radius) / dist;
 
         let uvw = ONB::build_from_w(&direction);
         let sample = uvw.local(&sample_sphere_cap(rv, cos_theta_max)) + o;
-        
+
         let wi = sample - o;
         let dist2 = glm::length2(&wi);
         let t = f32::sqrt(dist2);
         let normal = glm::normalize(&(sample - center));
         let wi = wi / t;
 
-        let hit = HitInfo{
+        let hit = HitInfo {
             t: t,
             p: sample,
             mat: self.material.clone(),
             gn: normal,
             sn: normal,
-            uv: Vec2::zeros()
+            uv: Vec2::zeros(),
         };
-        
+
         let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
 
-        let emitted = if let Some(e) = self.material.emmitted(&Ray::new(o.clone(), wi), &hit){
+        let emitted = if let Some(e) = self.material.emmitted(&Ray::new(o.clone(), wi), &hit) {
             e / pdf
         } else {
             Vec3::zeros()
         };
 
-        let erec = EmitterRecord{
+        let erec = EmitterRecord {
             o: o.clone(),
             wi: wi,
-            pdf : pdf,
-            hit: hit
+            pdf: pdf,
+            hit: hit,
         };
 
-        Some((erec, emitted))        
+        Some((erec, emitted))
     }
-    
 
     fn is_emissive(&self) -> bool {
         self.material.is_emissive()

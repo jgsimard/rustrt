@@ -1,4 +1,4 @@
-use crate::materials::material::MaterialType;
+use crate::materials::material::{MaterialType, Material};
 use crate::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
@@ -59,17 +59,75 @@ impl Surface for Quad {
         self.transform.aabb(&self.local_bounds())
     }
 
-//     fn pdf(&self, _erec: &EmitterRecord, _rv: &glm::Vec2) -> f32 {
-//         unimplemented!()
-//     }
+    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
+        if let Some(hit) = self.intersect(&Ray::new(*o, *dir)) {
+            let v0 = self.transform.vector(&Vec3::new(self.size.x, 0.0, 0.0));
+            let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
 
-//     fn sample(&self, _rv: &glm::Vec2) -> Option<(EmitterRecord, Vec3)> {
-//         unimplemented!()
-//     }
+            let area = 4.0 * glm::length(&glm::cross(&v0, &v1));
+            let distance2 = hit.t * hit.t * glm::length2(&dir);
+            let cosine = f32::abs(glm::dot(&dir, &hit.gn) / glm::length(&dir));
+            let geometry_factor = distance2 / cosine;
+            let pdf = 1.0 / area;
 
-//     fn is_emissive(&self) -> bool {
-//         unimplemented!()
-//     }
+            return  geometry_factor * pdf;
+        }
+        return 0.0;
+    }
+
+    fn sample(&self, o: &Vec3,rv: &Vec2) -> Option<(EmitterRecord,Vec3)> {
+        let new_rv = (rv * 2.0).add_scalar(-1.0);
+        let temp = new_rv.component_mul(&self.size);
+        let raw_p = Vec3::new(temp.x, temp.y, 0.0);
+
+        let p   = self.transform.point(&raw_p);
+        let wi = p - o;
+        let distance2 = glm::length2(&wi);
+        let t = f32::sqrt(distance2);
+        let normal = self.transform.normal(&Vec3::z());
+        let wi = wi / t;
+
+
+
+        let v0 = self.transform.vector(&Vec3::new(self.size.x, 0.0, 0.0));
+        let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
+
+        let area = 4.0 * glm::length(&glm::cross(&v0, &v1));
+        // let distance2 = hit.t * hit.t * glm::length2(&dir);
+        let cosine = f32::abs(glm::dot(&wi, &normal));
+        let geometry_factor = distance2 / cosine;
+        let pdf = 1.0 / area * geometry_factor;
+
+        let hit = HitInfo {
+            t: t,
+            p: p,
+            mat: self.material.clone(),
+            gn: normal,
+            sn: normal,
+            uv: Vec2::zeros(),
+        };
+
+        let emitted = if let Some(e) = self.material.emmitted(&Ray::new(o.clone(), wi), &hit) {
+            e / pdf
+        } else {
+            Vec3::zeros()
+        };
+
+
+        let erec = EmitterRecord {
+            o: o.clone(),
+            wi: wi,
+            pdf: pdf,
+            hit: hit,
+        };
+
+        Some((erec, emitted))
+    }
+
+
+    fn is_emissive(&self) -> bool {
+        self.material.is_emissive()
+    }
 }
 
 impl Quad {
@@ -77,5 +135,40 @@ impl Quad {
         const EPS: f32 = 1e-4 as f32;
         let v = glm::vec3(self.size.x + EPS, self.size.y + EPS, EPS);
         Aabb { min: -v, max: v }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+    use crate::testing::SurfaceTest;
+
+    #[test]
+    fn quad_monte_carlo() {
+        let v = json!({
+            "type": "sample_surface",
+            "name": "quad",
+            "surface": {
+                "type": "quad",
+                "size": 1.0,
+                "transform": {
+                    "o": [
+                        0, 0, 1
+                    ],
+                    "x": [
+                        1, 0, 0
+                    ],
+                    "y": [0, 1, 1]
+                },
+                "material": {
+                    "type": "lambertian",
+                    "albedo": 1.0
+                }
+            }
+        });
+
+        let (test, mut parameters) = SurfaceTest::new(v);
+        parameters.run(&test, 1.0, 1e-2);
     }
 }
