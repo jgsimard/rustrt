@@ -1,4 +1,5 @@
 use crate::image2d::Image2d;
+use crate::materials::blinn_phong::BlinnPhong;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::fresnel_blend::FresnelBlend;
@@ -10,7 +11,7 @@ use crate::textures::texture::{
     CheckerTexture, ConstantTexture, ImageTexture, MarbleTexture, TextureType,
 };
 use crate::transform::read_transform;
-use crate::utils::{read, read_v_or_f, Factory, read_or};
+use crate::utils::{read, read_or, read_v_or_f, Factory};
 
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
@@ -96,6 +97,11 @@ impl MaterialFactory {
                 let albedo = create_texture(&material_json, "albedo");
                 let exponent = read_or(&material_json, "exponent", 1.0);
                 Rc::new(MaterialType::from(Phong { albedo, exponent }))
+            }
+            "blinn_phong" => {
+                let albedo = create_texture(&material_json, "albedo");
+                let exponent = read_or(&material_json, "exponent", 1.0);
+                Rc::new(MaterialType::from(BlinnPhong { albedo, exponent }))
             }
             _ => unimplemented!("The material type '{}' ", type_material),
         }

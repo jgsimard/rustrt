@@ -1,3 +1,4 @@
+pub mod blinn_phong;
 pub mod dielectric;
 pub mod diffuse_light;
 pub mod factory;

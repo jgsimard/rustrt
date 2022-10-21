@@ -9,12 +9,12 @@ extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Phong {
+pub struct BlinnPhong {
     pub albedo: TextureType,
     pub exponent: f32,
 }
 
-impl Material for Phong {
+impl Material for BlinnPhong {
     fn scatter(&self, _r_in: &Ray, _hit: &HitInfo) -> Option<(Vec3, Ray)> {
         None
     }
@@ -31,11 +31,14 @@ impl Material for Phong {
     }
 
     fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
-        let mirror_dir = glm::normalize(&reflect(wi, &hit.gn));
-        let uvw = ONB::build_from_w(&mirror_dir);
+        let uvw = ONB::build_from_w(&hit.gn);
+        let normal = uvw.local(&sample_hemisphere_cosine_power(self.exponent, rv));
+
+        let mirror_dir = glm::normalize(&reflect(wi, &normal));
+
         let srec = ScatterRecord {
             attenuation: self.albedo.value(hit).unwrap(),
-            wo: uvw.local(&sample_hemisphere_cosine_power(self.exponent, rv)),
+            wo: mirror_dir,
             is_specular: false,
         };
         if glm::dot(&srec.wo, &hit.gn) >= 0.0 {
@@ -45,15 +48,16 @@ impl Material for Phong {
     }
 
     fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
-        let mirror_dir = glm::normalize(&reflect(wi, &hit.gn));
-        let cosine = f32::max(glm::dot(&glm::normalize(scattered), &mirror_dir), 0.0);
-        let pdf = sample_hemisphere_cosine_power_pdf(self.exponent, cosine);
-        let final_pdf = if glm::dot(scattered, &hit.gn) >= 0.0 {
-            pdf
+        let random_normal = glm::normalize(&(-glm::normalize(wi) + glm::normalize(scattered)));
+        let cosine = f32::max(glm::dot(&random_normal, &hit.gn), 0.0);
+        let normal_pdf = sample_hemisphere_cosine_power_pdf(self.exponent, cosine);
+        let final_pdf = normal_pdf / (4.0 * glm::dot(&(-wi), &random_normal));
+        let ouput_pdf = if glm::dot(scattered, &hit.gn) >= 0.0 {
+            final_pdf
         } else {
             0.0
         };
-        return final_pdf;
+        return ouput_pdf;
     }
 }
 
@@ -63,40 +67,40 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn phong_monte_carlo() {
+    fn blinn_phong_monte_carlo() {
         let v = json!({
             "type": "sample_material",
             "material": {
-                "type": "phong",
+                "type": "blinn_phong",
                 "albedo": 1.0,
-                "exponent": 2
+                "exponent": 10
             },
             "normal": [
                 0, 0, 1
             ],
-            "name": "phong"
+            "name": "blinn_phong"
         });
 
         let mut test = MaterialTest::new(v);
-        test.run(1.0, 1e-2);
+        test.run(0.969, 1e-3);
     }
 
     #[test]
-    fn phong_rotated_monte_carlo() {
+    fn blin_phong_rotated_monte_carlo() {
         let v = json!({
             "type": "sample_material",
             "material": {
-                "type": "phong",
+                "type": "blinn_phong",
                 "albedo": 1.0,
-                "exponent": 2
+                "exponent": 10
             },
             "normal": [
                 0.25, 0.5, 1.0
             ],
-            "name": "phong-rotated"
+            "name": "blinn_phong-rotated"
         });
 
         let mut test = MaterialTest::new(v);
-        test.run(0.945, 1e-3);
+        test.run(0.909, 1e-3);
     }
 }

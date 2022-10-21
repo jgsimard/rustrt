@@ -44,6 +44,7 @@ pub trait Material {
     fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32;
 }
 
+use crate::materials::blinn_phong::BlinnPhong;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::fresnel_blend::FresnelBlend;
@@ -61,5 +62,6 @@ pub enum MaterialType {
     Metal,
     DiffuseLight,
     FresnelBlend,
-    Phong
+    Phong,
+    BlinnPhong,
 }

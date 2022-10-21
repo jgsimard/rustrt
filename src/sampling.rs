@@ -1,5 +1,5 @@
 extern crate nalgebra_glm as glm;
-use crate::utils::{lerp, sincos, INV_FOURPI, FRAC_1_TWOPI};
+use crate::utils::{lerp, sincos, FRAC_1_TWOPI, INV_FOURPI};
 use glm::{Vec2, Vec3};
 // let mut rng = rand::thread_rng();
 
@@ -69,7 +69,7 @@ pub fn sample_hemisphere_cosine_power(exponent: f32, rv: &Vec2) -> Vec3 {
 }
 
 /// Probability density of sample_hemisphere_cosine_power()
-/// 
+///
 /// from $$cst * \int_0^{2pi} \int_0^{pi/2} cos^n(theta) sin(theta) dtheta dphi =  cst * 2 pi / (n + 1) = 1 => cst = (n + 1) / (2 \pi)$$
 pub fn sample_hemisphere_cosine_power_pdf(exponent: f32, cosine: f32) -> f32 {
     return f32::powf(cosine, exponent) * (exponent + 1.0) * FRAC_1_TWOPI;
