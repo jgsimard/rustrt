@@ -140,23 +140,23 @@ impl SampleTest for MaterialTest {
         println!("Running sample test for \"{}\"\n", self.name);
 
         // Merge adjacent pixels to decrease noise in the histogram
-        const histo_subsample: usize = 4;
+        const HISTO_SUBSAMPLE: usize = 4;
 
         // Step 1: Evaluate pdf over the sphere and compute its integral
         let mut integral = 0.0;
         let mut pdf = Array2d::<f32>::new(
-            self.image_width / histo_subsample,
-            self.image_height / histo_subsample,
+            self.image_width / HISTO_SUBSAMPLE,
+            self.image_height / HISTO_SUBSAMPLE,
         );
         let pdf_size = pdf.size();
         for y in 0..pdf.size_y {
             for x in 0..pdf.size_x {
                 let mut accum = 0.0;
-                for sx in 0..histo_subsample {
-                    for sy in 0..histo_subsample {
+                for sx in 0..HISTO_SUBSAMPLE {
+                    for sy in 0..HISTO_SUBSAMPLE {
                         let pixel = Vec2::new(
-                            (histo_subsample * x + sx) as f32,
-                            (histo_subsample * y + sy) as f32,
+                            (HISTO_SUBSAMPLE * x + sx) as f32,
+                            (HISTO_SUBSAMPLE * y + sy) as f32,
                         );
                         let dir = self.pixel_to_direction(&pixel);
                         let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
@@ -168,14 +168,14 @@ impl SampleTest for MaterialTest {
                         integral += pixel_area * value;
                     }
                 }
-                pdf[(x, y)] = accum / ((histo_subsample * histo_subsample) as f32);
+                pdf[(x, y)] = accum / ((HISTO_SUBSAMPLE * HISTO_SUBSAMPLE) as f32);
             }
         }
 
         // Step 2: Generate histogram of samples
         let mut histogram = Array2d::<f32>::new(
-            self.image_width / histo_subsample,
-            self.image_height / histo_subsample,
+            self.image_width / HISTO_SUBSAMPLE,
+            self.image_height / HISTO_SUBSAMPLE,
         );
 
         let mut valid_samples = 0;
@@ -188,7 +188,7 @@ impl SampleTest for MaterialTest {
                     nan_or_inf = true;
                 }
                 // Map scattered direction to pixel in our sample histogram
-                let pixel = self.direction_to_pixel(&dir) / (histo_subsample as f32);
+                let pixel = self.direction_to_pixel(&dir) / (HISTO_SUBSAMPLE as f32);
                 if pixel.x < 0.0
                     || pixel.y < 0.0
                     || pixel.x >= histogram.size_x as f32
@@ -213,14 +213,14 @@ impl SampleTest for MaterialTest {
         let mut histo_fullres = Array2d::<f32>::new(self.image_width, self.image_height);
         for y in 0..histo_fullres.size_y {
             for x in 0..histo_fullres.size_x {
-                histo_fullres[(x, y)] = histogram[(x / histo_subsample, y / histo_subsample)];
+                histo_fullres[(x, y)] = histogram[(x / HISTO_SUBSAMPLE, y / HISTO_SUBSAMPLE)];
             }
         }
 
         let mut pdf_fullres = Array2d::<f32>::new(self.image_width, self.image_height);
         for y in 0..pdf_fullres.size_y {
             for x in 0..pdf_fullres.size_x {
-                pdf_fullres[(x, y)] = pdf[(x / histo_subsample, y / histo_subsample)];
+                pdf_fullres[(x, y)] = pdf[(x / HISTO_SUBSAMPLE, y / HISTO_SUBSAMPLE)];
             }
         }
 
@@ -245,13 +245,14 @@ impl SampleTest for MaterialTest {
 
         // Output statistics
         println!("Integral of PDF (should be close to 1): {}\n", integral);
-        approx::assert_abs_diff_eq!(integral, 1.0, epsilon = 1e-4);
 
         let sample_integral = (valid_samples as f32) / (self.num_samples as f32) * 100.0;
         println!(
             "{}% of samples were valid (this should be close to 100%)\n",
             sample_integral
         );
+
+        approx::assert_abs_diff_eq!(integral, 1.0, epsilon = 1e-4);
         approx::assert_abs_diff_eq!(sample_integral, 100.0, epsilon = 1e-4);
 
         if nan_or_inf {

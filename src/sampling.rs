@@ -17,7 +17,6 @@ fn sample_disk_pdf(p: &Vec2) -> f32 {
     } else {
         0.0
     }
-    // return length2(p) <= 1 ? INV_PI : 0.0f;
 }
 
 /// Uniformly sample a vector on the unit sphere with respect to solid angles

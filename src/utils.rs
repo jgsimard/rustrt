@@ -23,6 +23,7 @@ fn modulo(a_: f32, b: f32) -> f32 {
     return a;
 }
 
+#[allow(unused)]
 pub fn lerp<T, F>(a: T, b: T, f: F) -> T
 where
     T: Clone + Add<T, Output = T> + Sub<T, Output = T> + Mul<F, Output = T>,
@@ -52,6 +53,7 @@ pub fn spherical_coordinates_to_direction(phi_theta: &Vec2) -> Vec3 {
     return Vec3::new(sin_theta * cos_phi, sin_theta * sin_phi, cos_theta);
 }
 
+#[allow(unused)]
 pub fn spherical_uv_to_direction(uv: &Vec2) -> Vec3 {
     return spherical_coordinates_to_direction(&Vec2::new(
         (uv.x - 0.5) * 2.0 * std::f32::consts::PI,
@@ -89,9 +91,10 @@ pub trait Factory<T> {
     fn make(&mut self, v: &Value) -> Option<Vec<T>>;
 }
 
-// pub fn rad2deg(rad: f32) -> f32 {
-//     180.0 / std::f32::consts::PI * rad
-// }
+#[allow(unused)]
+pub fn rad2deg(rad: f32) -> f32 {
+    180.0 / std::f32::consts::PI * rad
+}
 
 pub fn deg2rad(rad: f32) -> f32 {
     std::f32::consts::PI / 180.0 * rad
@@ -149,6 +152,7 @@ pub fn reflectance(cosine: f32, ref_idx: f32) -> f32 {
 }
 
 // COLORS
+#[allow(unused)]
 pub fn viridis(t: f32) -> Vec3 {
     const C0: Vec3 = Vec3::new(0.2777273272234177, 0.005407344544966578, 0.3340998053353061);
     const C1: Vec3 = Vec3::new(0.1050930431085774, 1.404613529898575, 1.384590162594685);
@@ -173,6 +177,7 @@ pub fn inferno(t: f32) -> Vec3 {
     return C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))));
 }
 
+#[allow(unused)]
 pub fn magma(t: f32) -> Vec3 {
     const C0: Vec3 = Vec3::new(-0.002136485053939, -0.000749655052795, -0.005386127855323);
     const C1: Vec3 = Vec3::new(0.2516605407371642, 0.6775232436837668, 2.494026599312351);
@@ -185,6 +190,7 @@ pub fn magma(t: f32) -> Vec3 {
     return C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))));
 }
 
+#[allow(unused)]
 pub fn plasma(t: f32) -> Vec3 {
     const C0: Vec3 = Vec3::new(0.05873234392399702, 0.02333670892565664, 0.5433401826748754);
     const C1: Vec3 = Vec3::new(2.176514634195958, 0.2383834171260182, 0.7539604599784036);

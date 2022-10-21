@@ -5,3 +5,4 @@ pub mod fresnel_blend;
 pub mod lambertian;
 pub mod material;
 pub mod metal;
+pub mod phong;

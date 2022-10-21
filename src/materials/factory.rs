@@ -5,11 +5,12 @@ use crate::materials::fresnel_blend::FresnelBlend;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::material::MaterialType;
 use crate::materials::metal::Metal;
+use crate::materials::phong::Phong;
 use crate::textures::texture::{
     CheckerTexture, ConstantTexture, ImageTexture, MarbleTexture, TextureType,
 };
 use crate::transform::read_transform;
-use crate::utils::{read, read_v_or_f, Factory};
+use crate::utils::{read, read_v_or_f, Factory, read_or};
 
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
@@ -90,6 +91,11 @@ impl MaterialFactory {
                     refracted: refracted,
                     reflected: reflected,
                 }))
+            }
+            "phong" => {
+                let albedo = create_texture(&material_json, "albedo");
+                let exponent = read_or(&material_json, "exponent", 1.0);
+                Rc::new(MaterialType::from(Phong { albedo, exponent }))
             }
             _ => unimplemented!("The material type '{}' ", type_material),
         }

@@ -49,6 +49,7 @@ use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::fresnel_blend::FresnelBlend;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
+use crate::materials::phong::Phong;
 
 // #[derive(Debug, PartialEq, Serialize, Deserialize)]
 
@@ -60,4 +61,5 @@ pub enum MaterialType {
     Metal,
     DiffuseLight,
     FresnelBlend,
+    Phong
 }
