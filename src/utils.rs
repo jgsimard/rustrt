@@ -4,7 +4,7 @@ use rand::Rng;
 use serde_json::{from_value, Value};
 use std::ops::{Add, Mul, Sub};
 
-// pub const INV_FOURPI: f32 = 1.0 / (4.0 * std::f32::consts::PI);
+pub const INV_FOURPI: f32 = 1.0 / (4.0 * std::f32::consts::PI);
 pub const FRAC_1_TWOPI: f32 = 1.0 / (2.0 * std::f32::consts::PI);
 
 pub fn sincos(x: f32) -> (f32, f32) {

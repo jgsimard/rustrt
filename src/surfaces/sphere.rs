@@ -1,7 +1,8 @@
 use crate::aabb::Aabb;
-use crate::materials::material::MaterialType;
+use crate::materials::material::{MaterialType, Material};
 use crate::ray::Ray;
-use crate::surfaces::surface::{HitInfo, Surface};
+use crate::sampling::sample_sphere_cap_pdf;
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
 use crate::utils::direction_to_spherical_uv;
 extern crate nalgebra_glm as glm;
@@ -68,6 +69,25 @@ impl Surface for Sphere {
 
     fn bounds(&self) -> Aabb {
         self.transform.aabb(&self.local_bounds())
+    }
+
+    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
+        if let Some(hit) = self.intersect(&Ray::new(*o, *dir)){
+            let center = self.transform.point(&Vec3::zeros());
+            let direction = center - o;
+            let dist = glm::length(&(o - center));
+            let cos_theta_max = f32::sqrt(dist*dist - self.radius*self.radius)/dist; 
+            return sample_sphere_cap_pdf(cos_theta_max, cos_theta_max)
+        }
+        return 0.0;
+    }
+
+    // fn sample(&self, _rv: &glm::Vec2) -> Option<(EmitterRecord, Vec3)> {
+    //     unimplemented!()
+    // }
+
+    fn is_emissive(&self) -> bool {
+        self.material.is_emissive()
     }
 }
 
@@ -142,5 +162,29 @@ mod tests {
         } else {
             panic!("Transformed sphere intersection incorrect! Should hit sphere");
         }
+    }
+
+    use crate::testing::SurfaceTest;
+
+    #[test]
+    fn sphere_monte_carlo() {
+        let v = json!({
+            "type": "sample_surface",
+            "name": "sphere",
+            "surface": {
+                "type": "sphere",
+                "radius": 3.0,
+                "transform": {
+                    "o": [0, 3.2, 0.4]
+                },
+                "material": {
+                    "type": "lambertian",
+                    "albedo": 1.0
+                }
+            }
+        });
+
+        let (test, mut parameters) = SurfaceTest::new(v);
+        parameters.run(&test, 1.0, 1e-3);
     }
 }

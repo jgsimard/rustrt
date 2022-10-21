@@ -7,30 +7,32 @@ use std::fs;
 use crate::image2d::{Array2d, Image2d};
 use crate::materials::factory::MaterialFactory;
 use crate::materials::material::{Material, MaterialType};
-use crate::surfaces::surface::HitInfo;
+use crate::surfaces::surface::{HitInfo, SurfaceType, Surface, EmitterRecord};
 use crate::utils::{
     direction_to_spherical_coordinates, inferno, read, read_or, spherical_coordinates_to_direction,
-    FRAC_1_TWOPI,
+    FRAC_1_TWOPI, Factory
 };
+use crate::surfaces::surface::SurfaceGroupType;
+use crate::surfaces::accelerators::LinearSurfaceGroup;
+use crate::surfaces::factory::SurfaceFactory;
 
 use std::f32::consts::FRAC_1_PI;
 use std::f32::consts::PI;
 use std::rc::Rc;
 
 pub trait SampleTest {
-    fn run(&mut self, target: f32, epsilon: f32);
-    fn sample(&mut self, rv: &Vec2) -> Option<Vec3>;
-    fn pdf(&self, dir: &Vec3) -> f32;
-    fn print_more_statistics(&self);
-    fn pixel_to_direction(&self, pixel: &Vec2) -> Vec3;
-    fn direction_to_pixel(&self, dir: &Vec3) -> Vec2;
+    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3>;
+    fn pdf(&self, params: &mut SampleTestParameters, dir: &Vec3) -> f32;
 }
 
 pub struct MaterialTest {
     material: Rc<MaterialType>,
     // normal: Vec3,
     incoming: Vec3,
-    hit: HitInfo,
+    hit: HitInfo
+}
+
+pub struct SampleTestParameters {
     any_specular: bool,
     any_below_hemisphere: bool,
 
@@ -40,21 +42,11 @@ pub struct MaterialTest {
     num_samples: usize,
 }
 
-fn generate_heatmap(density: &Array2d<f32>, max_value: f32) -> Image2d {
-    let mut result = Image2d::new(density.size_x, density.size_y);
-
-    for y in 0..density.size_y {
-        for x in 0..density.size_x {
-            result[(x, y)] = inferno(density[(x, y)] / max_value);
-        }
-    }
-    return result;
-}
 
 impl MaterialTest {
     // it is used in tests, but it gives me a warning : FIXME !
     #[allow(unused)]
-    pub fn new(v: Value) -> MaterialTest {
+    pub fn new(v: Value) -> (MaterialTest, SampleTestParameters) {
         let mf = MaterialFactory::new();
         let material = mf.create_material(v["material"].clone());
         let normal = glm::normalize(&read(&v, "normal"));
@@ -72,35 +64,38 @@ impl MaterialTest {
         let image_height = read_or(&v, "image_height", 256);
         let num_samples = read_or(&v, "num_samples", 50) * image_width * image_height;
 
-        MaterialTest {
+        let test = MaterialTest {
             material: material.clone(),
             // normal: normal,
             incoming: incoming,
-            hit: hit,
-            any_specular: false,
-            any_below_hemisphere: false,
-            name: name,
-            image_width: image_width,
-            image_height: image_height,
-            num_samples: num_samples,
-        }
+            hit: hit
+        };
+        let parameters = SampleTestParameters { 
+            any_specular: false, 
+            any_below_hemisphere: false, 
+            name: name, 
+            image_width: image_width, 
+            image_height: image_height, 
+            num_samples: num_samples 
+        };
+        (test, parameters)
     }
 }
 
 impl SampleTest for MaterialTest {
-    fn pdf(&self, dir: &Vec3) -> f32 {
+    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3) -> f32 {
         self.material.pdf(&self.incoming, dir, &self.hit)
     }
 
-    fn sample(&mut self, rv: &Vec2) -> Option<Vec3> {
+    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3> {
         if let Some(srec) = self.material.sample(&self.incoming, &self.hit, rv) {
             let dir = srec.wo;
             if srec.is_specular {
-                self.any_specular = true;
+                params.any_specular = true;
             }
             let wo = glm::normalize(&srec.wo);
             if glm::dot(&wo, &self.hit.sn) < -1e-8 {
-                self.any_below_hemisphere = true;
+                params.any_below_hemisphere = true;
                 return None;
             }
             return Some(dir);
@@ -108,7 +103,77 @@ impl SampleTest for MaterialTest {
             return None;
         }
     }
+}
 
+pub struct SurfaceTest {
+    surface_group: SurfaceGroupType,
+    // normal: Vec3,
+    // incoming: Vec3,
+    // hit: HitInfo
+}
+
+impl SurfaceTest {
+    // it is used in tests, but it gives me a warning : FIXME !
+    #[allow(unused)]
+    pub fn new(v: Value) -> (SurfaceTest, SampleTestParameters) {
+        let surface_json = v["surface"].clone();
+        let mf = MaterialFactory::new();
+        let material = mf.create_material(surface_json["material"].clone());
+
+        
+
+        let mut surface_facory = SurfaceFactory::new();
+        let mut surfaces_vec = Vec::new();
+        if let Some(mut surface) = surface_facory.make(&surface_json.clone()) {
+            surfaces_vec.append(&mut surface);
+        } else {
+            panic!(
+                "surface of type : {} not yet supported",
+                surface_json["type"]
+            );
+        }
+         let surface_group =  SurfaceGroupType::from(LinearSurfaceGroup {surfaces: surfaces_vec });
+
+         let test = SurfaceTest { 
+            surface_group: surface_group
+        };
+
+        let name = read(&v, "name");
+        let image_width = read_or(&v, "image_width", 512);
+        let image_height = read_or(&v, "image_height", 256);
+        let num_samples = read_or(&v, "num_samples", 50) * image_width * image_height;
+
+        let parameters = SampleTestParameters { 
+            any_specular: false, 
+            any_below_hemisphere: false, 
+            name: name, 
+            image_width: image_width, 
+            image_height: image_height, 
+            num_samples: num_samples 
+        };
+        (test, parameters)
+    }
+}
+
+
+impl SampleTest for SurfaceTest {
+    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3) -> f32 {
+        self.surface_group.pdf(&Vec3::zeros(), dir)
+    }
+
+    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3> {
+        // if let Some((erec, v)) = self.surface_group.sample(rv){
+        //     let dir = glm::normalize(&erec.wi);
+        //     return Some(dir);
+
+        // }
+        return None;
+    }
+}
+
+impl SampleTestParameters {
+    // it is used in tests, but it gives me a warning : FIXME !
+    #[allow(unused)]
     fn print_more_statistics(&self) {
         if self.any_specular {
             println!("is_specular is set. It should not be.")
@@ -116,11 +181,13 @@ impl SampleTest for MaterialTest {
         if self.any_below_hemisphere {
             println!(
                 "Some generated directions were below the hemisphere. 
-            You should check for this case and return false from sample instead."
+        You should check for this case and return false from sample instead."
             );
         }
     }
 
+    // it is used in tests, but it gives me a warning : FIXME !
+    #[allow(unused)]
     fn pixel_to_direction(&self, pixel: &Vec2) -> Vec3 {
         let image_width = self.image_width as f32;
         let image_height = self.image_height as f32;
@@ -129,6 +196,8 @@ impl SampleTest for MaterialTest {
         return spherical_coordinates_to_direction(&a.component_mul(&b));
     }
 
+    // it is used in tests, but it gives me a warning : FIXME !
+    #[allow(unused)]
     fn direction_to_pixel(&self, dir: &Vec3) -> Vec2 {
         let image_width = self.image_width as f32;
         let image_height = self.image_height as f32;
@@ -137,7 +206,9 @@ impl SampleTest for MaterialTest {
         return a.component_mul(&b);
     }
 
-    fn run(&mut self, target: f32, epsilon: f32) {
+    // it is used in tests, but it gives me a warning : FIXME !
+    #[allow(unused)]
+    pub fn run(&mut self, sample_test: &dyn SampleTest, target: f32, epsilon: f32) {
         println!("---------------------------------------------------------------------------\n");
         println!("Running sample test for \"{}\"\n", self.name);
 
@@ -165,7 +236,7 @@ impl SampleTest for MaterialTest {
                         let pixel_area = (PI / self.image_width as f32)
                             * (PI * 2.0 / self.image_height as f32)
                             * sin_theta;
-                        let value = self.pdf(&dir);
+                        let value = sample_test.pdf(self, &dir);
                         accum += value;
                         integral += pixel_area * value;
                     }
@@ -185,7 +256,7 @@ impl SampleTest for MaterialTest {
         let mut rng = rand::thread_rng();
         // Progress progress2(fmt::format("Generating samples {}", num_samples), num_samples);
         for _ in 0..self.num_samples {
-            if let Some(dir) = self.sample(&Vec2::new(rng.gen(), rng.gen())) {
+            if let Some(dir) = sample_test.sample(self, &Vec2::new(rng.gen(), rng.gen())) {
                 if f32::is_nan(dir.x + dir.y + dir.z) || f32::is_infinite(dir.x + dir.y + dir.z) {
                     nan_or_inf = true;
                 }
@@ -260,8 +331,19 @@ impl SampleTest for MaterialTest {
 
         if nan_or_inf {
             println!("Some directions/PDFs contained invalid values (NaN or infinity). This should not happen. 
-            Make sure you catch all corner cases in your code.")
+        Make sure you catch all corner cases in your code.")
         }
         self.print_more_statistics();
     }
+}
+
+fn generate_heatmap(density: &Array2d<f32>, max_value: f32) -> Image2d {
+    let mut result = Image2d::new(density.size_x, density.size_y);
+
+    for y in 0..density.size_y {
+        for x in 0..density.size_x {
+            result[(x, y)] = inferno(density[(x, y)] / max_value);
+        }
+    }
+    return result;
 }

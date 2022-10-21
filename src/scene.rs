@@ -14,7 +14,7 @@ use crate::ray::Ray;
 use crate::samplers::sampler::{create_sampler, Sampler, SamplerType};
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::surfaces::factory::SurfaceFactory;
-use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceGroupType};
 use crate::utils::{read_v_or_f, Factory};
 
 pub struct Scene {
@@ -79,21 +79,6 @@ impl Scene {
                 .get("camera")
                 .expect("No camera specified in scene!"),
         );
-
-        // //
-        // // parse the sampler
-        // //
-        // let sampler = if map_json.contains_key("sampler") {
-        //     let mut sampler_json = (*map_json.get("sampler").unwrap()).clone();
-        //     if !sampler_json.as_object().unwrap().contains_key("type") {
-        //         println!("No sampler 'type' specified, assuming independent sampling.");
-        //         sampler_json["type"] = serde_json::from_str("independent").unwrap();
-        //     }
-        //     create_sampler(&sampler_json)
-        // } else {
-        //     println!("No sampler specified, defaulting to 1 spp independent sampling.");
-        //     create_sampler(&json!({"type" : "independent", "samples": 1}))
-        // };
 
         //
         // parse the integrator

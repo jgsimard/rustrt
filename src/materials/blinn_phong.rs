@@ -63,7 +63,7 @@ impl Material for BlinnPhong {
 
 #[cfg(test)]
 mod tests {
-    use crate::testing::{MaterialTest, SampleTest};
+    use crate::testing::MaterialTest;
     use serde_json::json;
 
     #[test]
@@ -81,8 +81,8 @@ mod tests {
             "name": "blinn_phong"
         });
 
-        let mut test = MaterialTest::new(v);
-        test.run(0.969, 1e-3);
+        let (test, mut parameters) = MaterialTest::new(v);
+        parameters.run(&test, 0.969, 1e-3);
     }
 
     #[test]
@@ -100,7 +100,7 @@ mod tests {
             "name": "blinn_phong-rotated"
         });
 
-        let mut test = MaterialTest::new(v);
-        test.run(0.909, 1e-3);
+        let (test, mut parameters) = MaterialTest::new(v);
+        parameters.run(&test, 0.909, 1e-3);
     }
 }

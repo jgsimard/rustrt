@@ -1,11 +1,12 @@
 extern crate nalgebra_glm as glm;
+use glm::Vec3;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use partition::partition;
 use std::fmt::Write;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::surfaces::surface::{HitInfo, Surface, SurfaceType};
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct LinearSurfaceGroup {
@@ -25,6 +26,28 @@ impl Surface for LinearSurfaceGroup {
         }
         option_hit
     }
+
+    fn pdf(&self,o: &Vec3,dir: &Vec3) -> f32 {
+        let mut pdf = 0.0;
+        if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)){
+            for surface in self.surfaces.iter(){
+                pdf += surface.pdf(o, dir);
+            }
+        }
+        pdf
+    }
+
+    // fn pdf(&self, _erec: &EmitterRecord, _rv: &glm::Vec2) -> f32 {
+    //     unimplemented!()
+    // }
+
+    // fn sample(&self, _rv: &glm::Vec2) -> Option<(EmitterRecord, Vec3)> {
+    //     unimplemented!()
+    // }
+
+    // fn is_emissive(&self) -> bool {
+    //     unimplemented!()
+    // }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -52,6 +75,18 @@ impl Surface for Bvh {
     fn bounds(&self) -> Aabb {
         self.bbox.clone()
     }
+
+    // fn pdf(&self, _erec: &EmitterRecord, _rv: &glm::Vec2) -> f32 {
+    //     unimplemented!()
+    // }
+
+    // fn sample(&self, _rv: &glm::Vec2) -> Option<(EmitterRecord, Vec3)> {
+    //     unimplemented!()
+    // }
+
+    // fn is_emissive(&self) -> bool {
+    //     unimplemented!()
+    // }
 }
 impl Bvh {
     pub fn new(surfaces: &mut Vec<SurfaceType>) -> Bvh {

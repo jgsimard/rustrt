@@ -77,8 +77,8 @@ mod tests {
             "name": "phong"
         });
 
-        let mut test = MaterialTest::new(v);
-        test.run(1.0, 1e-2);
+        let (test, mut parameters) = MaterialTest::new(v);
+        parameters.run(&test, 1.0, 1e-2);
     }
 
     #[test]
@@ -96,7 +96,7 @@ mod tests {
             "name": "phong-rotated"
         });
 
-        let mut test = MaterialTest::new(v);
-        test.run(0.945, 1e-3);
+        let (test, mut parameters) = MaterialTest::new(v);
+        parameters.run(&test, 0.945, 1e-3);
     }
 }

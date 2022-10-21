@@ -1,7 +1,7 @@
 use crate::aabb::Aabb;
 use crate::materials::material::MaterialType;
 use crate::ray::Ray;
-use crate::surfaces::surface::{HitInfo, Surface};
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
 
 use nalgebra::{Vector2, Vector3};
@@ -117,6 +117,18 @@ impl Surface for Triangle {
         }
         aabb
     }
+
+    // fn pdf(&self, _erec: &EmitterRecord, _rv: &glm::Vec2) -> f32 {
+    //     unimplemented!()
+    // }
+
+    // fn sample(&self, _rv: &glm::Vec2) -> Option<(EmitterRecord, Vec3)> {
+    //     unimplemented!()
+    // }
+
+    // fn is_emissive(&self) -> bool {
+    //     unimplemented!()
+    // }
 }
 
 /// Ray-Triangle intersection

@@ -1,6 +1,6 @@
 use crate::materials::material::MaterialType;
 use crate::ray::Ray;
-use crate::surfaces::surface::{HitInfo, Surface};
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
@@ -58,6 +58,18 @@ impl Surface for Quad {
     fn bounds(&self) -> Aabb {
         self.transform.aabb(&self.local_bounds())
     }
+
+//     fn pdf(&self, _erec: &EmitterRecord, _rv: &glm::Vec2) -> f32 {
+//         unimplemented!()
+//     }
+
+//     fn sample(&self, _rv: &glm::Vec2) -> Option<(EmitterRecord, Vec3)> {
+//         unimplemented!()
+//     }
+
+//     fn is_emissive(&self) -> bool {
+//         unimplemented!()
+//     }
 }
 
 impl Quad {

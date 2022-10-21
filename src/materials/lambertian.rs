@@ -109,7 +109,7 @@ mod tests {
         }
     }
 
-    use crate::testing::{MaterialTest, SampleTest};
+    use crate::testing::MaterialTest;
 
     #[test]
     fn lambertian_monte_carlo() {
@@ -125,8 +125,8 @@ mod tests {
             "name": "lambertian"
         });
 
-        let mut test = MaterialTest::new(v);
-        test.run(1.0, 1e-4);
+        let (test, mut parameters) = MaterialTest::new(v);
+        parameters.run(&test, 1.0, 1e-4);
     }
 
     #[test]
@@ -143,7 +143,7 @@ mod tests {
             "name": "lambertian-rotated"
         });
 
-        let mut test = MaterialTest::new(v);
-        test.run(1.0, 1e-4);
+        let (test, mut parameters) = MaterialTest::new(v);
+        parameters.run(&test, 1.0, 1e-4);
     }
 }
