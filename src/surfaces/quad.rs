@@ -1,4 +1,4 @@
-use crate::materials::material::{MaterialType, Material};
+use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
@@ -70,24 +70,22 @@ impl Surface for Quad {
             let geometry_factor = distance2 / cosine;
             let pdf = 1.0 / area;
 
-            return  geometry_factor * pdf;
+            return geometry_factor * pdf;
         }
         return 0.0;
-    } 
+    }
 
-    fn sample(&self, o: &Vec3,rv: &Vec2) -> Option<(EmitterRecord,Vec3)> {
+    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
         let new_rv = (rv * 2.0).add_scalar(-1.0);
         let temp = new_rv.component_mul(&self.size);
         let raw_p = Vec3::new(temp.x, temp.y, 0.0);
 
-        let p   = self.transform.point(&raw_p);
+        let p = self.transform.point(&raw_p);
         let wi = p - o;
         let distance2 = glm::length2(&wi);
         let t = f32::sqrt(distance2);
         let normal = self.transform.normal(&Vec3::z());
         let wi = wi / t;
-
-
 
         let v0 = self.transform.vector(&Vec3::new(self.size.x, 0.0, 0.0));
         let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
@@ -113,7 +111,6 @@ impl Surface for Quad {
             Vec3::zeros()
         };
 
-
         let erec = EmitterRecord {
             o: o.clone(),
             wi: wi,
@@ -123,7 +120,6 @@ impl Surface for Quad {
 
         Some((erec, emitted))
     }
-
 
     fn is_emissive(&self) -> bool {
         self.material.is_emissive()
@@ -138,11 +134,10 @@ impl Quad {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
     use crate::testing::SurfaceTest;
+    use serde_json::json;
 
     #[test]
     fn quad_monte_carlo() {

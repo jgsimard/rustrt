@@ -1,7 +1,7 @@
 use crate::aabb::Aabb;
-use crate::materials::material::{MaterialType, Material};
+use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
-use crate::sampling::{sample_triangle_pdf, sample_triangle};
+use crate::sampling::{sample_triangle, sample_triangle_pdf};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
 
@@ -124,19 +124,19 @@ impl Surface for Triangle {
             let v0 = self.vertex(0);
             let v1 = self.vertex(1);
             let v2 = self.vertex(2);
-            
+
             let pdf = sample_triangle_pdf(&v0, &v1, &v2);
 
             let distance2 = hit.t * hit.t * glm::length2(&dir);
             let cosine = f32::abs(glm::dot(&dir, &hit.gn) / glm::length(&dir));
             let geometry_factor = distance2 / cosine;
 
-            return  geometry_factor * pdf;
+            return geometry_factor * pdf;
         }
         return 0.0;
     }
 
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord,Vec3)> {
+    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
         let v0 = self.vertex(0);
         let v1 = self.vertex(1);
         let v2 = self.vertex(2);
@@ -147,12 +147,11 @@ impl Surface for Triangle {
         let t = f32::sqrt(distance2);
         let normal = self.mesh.transform.normal(&Vec3::z());
 
-
         let pdf = sample_triangle_pdf(&v0, &v1, &v2);
         let cosine = f32::abs(glm::dot(&wi, &normal));
         let geometry_factor = distance2 / cosine;
 
-        let pdf =  geometry_factor * pdf;
+        let pdf = geometry_factor * pdf;
 
         let hit = HitInfo {
             t: t,
@@ -163,12 +162,12 @@ impl Surface for Triangle {
             uv: Vec2::zeros(),
         };
 
-        let emitted = if let Some(e) = self.mesh.materials.emmitted(&Ray::new(o.clone(), wi), &hit) {
+        let emitted = if let Some(e) = self.mesh.materials.emmitted(&Ray::new(o.clone(), wi), &hit)
+        {
             e / pdf
         } else {
             Vec3::zeros()
         };
-
 
         let erec = EmitterRecord {
             o: o.clone(),

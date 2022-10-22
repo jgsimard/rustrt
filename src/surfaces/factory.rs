@@ -57,7 +57,7 @@ impl Factory<SurfaceType> for SurfaceFactory {
             "triangle" => {
                 let transform = read_transform(v);
                 let material = self.get_material(m);
-                if ! m.contains_key("positions"){
+                if !m.contains_key("positions") {
                     panic!("Triangle should have 'positions'");
                 }
                 let pos = read::<Vec<Vec3>>(v, "positions");
@@ -67,18 +67,16 @@ impl Factory<SurfaceType> for SurfaceFactory {
                     aabb.enclose_point(&vertex);
                 }
 
-                let (normals, normal_indices) = if m.contains_key("normals"){
+                let (normals, normal_indices) = if m.contains_key("normals") {
                     (read::<Vec<Vec3>>(v, "normals"), vec![Vector3::new(0, 1, 2)])
-                }
-                else {
+                } else {
                     println!("no normals in triangle");
                     (Vec::new(), Vec::new())
                 };
 
-                let (uvs, texture_indices) = if m.contains_key("uvs"){
+                let (uvs, texture_indices) = if m.contains_key("uvs") {
                     (read::<Vec<Vec2>>(v, "uvs"), vec![Vector3::new(0, 1, 2)])
-                }
-                else {
+                } else {
                     println!("no texture in triangle");
                     (Vec::new(), Vec::new())
                 };
@@ -88,7 +86,7 @@ impl Factory<SurfaceType> for SurfaceFactory {
                     vertex_normals: normals,
                     uvs: uvs,
                     vertex_indices: vec![Vector3::new(0, 1, 2)],
-                    normal_indices:  normal_indices,
+                    normal_indices: normal_indices,
                     texture_indices: texture_indices,
                     material_indices: Vec::new(),
                     materials: material,
@@ -96,7 +94,10 @@ impl Factory<SurfaceType> for SurfaceFactory {
                     bbox: aabb,
                 };
 
-                let triangle = Triangle { mesh : Rc::new(mesh), face_idx: 0};
+                let triangle = Triangle {
+                    mesh: Rc::new(mesh),
+                    face_idx: 0,
+                };
 
                 return Some(vec![SurfaceType::from(triangle)]);
                 // None
