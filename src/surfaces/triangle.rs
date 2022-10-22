@@ -1,6 +1,7 @@
 use crate::aabb::Aabb;
-use crate::materials::material::MaterialType;
+use crate::materials::material::{MaterialType, Material};
 use crate::ray::Ray;
+use crate::sampling::{sample_triangle_pdf, sample_triangle};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
 
@@ -34,7 +35,7 @@ pub struct Mesh {
 
     /// All materials in the mesh
     // materials: Vec<Rc<dyn Material>>,
-    pub materials: Rc<MaterialType>,
+    pub materials: Rc<MaterialType>, // TODO : change this if multiple materials !
 
     /// Transformation that the data has already been transformed by
     pub transform: Transform,
@@ -116,6 +117,72 @@ impl Surface for Triangle {
             }
         }
         aabb
+    }
+
+    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
+        if let Some(hit) = self.intersect(&Ray::new(*o, *dir)) {
+            let v0 = self.vertex(0);
+            let v1 = self.vertex(1);
+            let v2 = self.vertex(2);
+            
+            let pdf = sample_triangle_pdf(&v0, &v1, &v2);
+
+            let distance2 = hit.t * hit.t * glm::length2(&dir);
+            let cosine = f32::abs(glm::dot(&dir, &hit.gn) / glm::length(&dir));
+            let geometry_factor = distance2 / cosine;
+
+            return  geometry_factor * pdf;
+        }
+        return 0.0;
+    }
+
+    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord,Vec3)> {
+        let v0 = self.vertex(0);
+        let v1 = self.vertex(1);
+        let v2 = self.vertex(2);
+
+        let p = sample_triangle(&v0, &v1, &v2, rv);
+        let wi = p - o;
+        let distance2 = glm::length2(&wi);
+        let t = f32::sqrt(distance2);
+        let normal = self.mesh.transform.normal(&Vec3::z());
+
+
+        let pdf = sample_triangle_pdf(&v0, &v1, &v2);
+        let cosine = f32::abs(glm::dot(&wi, &normal));
+        let geometry_factor = distance2 / cosine;
+
+        let pdf =  geometry_factor * pdf;
+
+        let hit = HitInfo {
+            t: t,
+            p: p,
+            mat: self.mesh.materials.clone(),
+            gn: normal,
+            sn: normal,
+            uv: Vec2::zeros(),
+        };
+
+        let emitted = if let Some(e) = self.mesh.materials.emmitted(&Ray::new(o.clone(), wi), &hit) {
+            e / pdf
+        } else {
+            Vec3::zeros()
+        };
+
+
+        let erec = EmitterRecord {
+            o: o.clone(),
+            wi: wi,
+            pdf: pdf,
+            hit: hit,
+        };
+
+        Some((erec, emitted))
+    }
+
+    // TODO : change this if multiple materials !
+    fn is_emissive(&self) -> bool {
+        self.mesh.materials.is_emissive()
     }
 
     // fn pdf(&self, _erec: &EmitterRecord, _rv: &glm::Vec2) -> f32 {
@@ -237,7 +304,7 @@ mod tests {
     extern crate approx;
 
     #[test]
-    fn triangle_intersection() {
+    fn ray_triangle_intersection() {
         // Setup test data
         let v0 = Vec3::new(-2.0, -5.0, -1.0);
         let v1 = Vec3::new(1.0, 3.0, 1.0);
@@ -274,5 +341,35 @@ mod tests {
         } else {
             assert!(false, "did not hit")
         }
+    }
+
+    use crate::testing::SurfaceTest;
+    #[test]
+    fn triangle_monte_carlo() {
+        let v = json!({
+            "type": "sample_surface",
+            "name": "triangle",
+            "surface": {
+                "type": "triangle",
+                "positions": [
+                    [
+                        -0.5, 0.2, -1.0
+                    ],
+                    [
+                        0.5, 0.375, -1.0
+                    ],
+                    [
+                        -0.5, 0.2, 1.0
+                    ]
+                ],
+                "material": {
+                    "type": "lambertian",
+                    "albedo": 1.0
+                }
+            }
+        });
+
+        let (test, mut parameters) = SurfaceTest::new(v);
+        parameters.run(&test, 1.0, 1e-2);
     }
 }

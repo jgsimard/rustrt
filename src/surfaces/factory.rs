@@ -54,6 +54,53 @@ impl Factory<SurfaceType> for SurfaceFactory {
                     material,
                 })]);
             }
+            "triangle" => {
+                let transform = read_transform(v);
+                let material = self.get_material(m);
+                if ! m.contains_key("positions"){
+                    panic!("Triangle should have 'positions'");
+                }
+                let pos = read::<Vec<Vec3>>(v, "positions");
+
+                let mut aabb = Aabb::new();
+                for vertex in pos.iter() {
+                    aabb.enclose_point(&vertex);
+                }
+
+                let (normals, normal_indices) = if m.contains_key("normals"){
+                    (read::<Vec<Vec3>>(v, "normals"), vec![Vector3::new(0, 1, 2)])
+                }
+                else {
+                    println!("no normals in triangle");
+                    (Vec::new(), Vec::new())
+                };
+
+                let (uvs, texture_indices) = if m.contains_key("uvs"){
+                    (read::<Vec<Vec2>>(v, "uvs"), vec![Vector3::new(0, 1, 2)])
+                }
+                else {
+                    println!("no texture in triangle");
+                    (Vec::new(), Vec::new())
+                };
+
+                let mesh = Mesh {
+                    vertex_positions: pos,
+                    vertex_normals: normals,
+                    uvs: uvs,
+                    vertex_indices: vec![Vector3::new(0, 1, 2)],
+                    normal_indices:  normal_indices,
+                    texture_indices: texture_indices,
+                    material_indices: Vec::new(),
+                    materials: material,
+                    transform: transform,
+                    bbox: aabb,
+                };
+
+                let triangle = Triangle { mesh : Rc::new(mesh), face_idx: 0};
+
+                return Some(vec![SurfaceType::from(triangle)]);
+                // None
+            }
             "mesh" => {
                 let transform = read_transform(v);
                 let filename: String = read(v, "filename");

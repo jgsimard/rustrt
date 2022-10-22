@@ -9,8 +9,7 @@ use crate::materials::factory::MaterialFactory;
 use crate::materials::material::{Material, MaterialType};
 use crate::surfaces::accelerators::LinearSurfaceGroup;
 use crate::surfaces::factory::SurfaceFactory;
-use crate::surfaces::surface::SurfaceGroupType;
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
+use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
 use crate::utils::{
     direction_to_spherical_coordinates, inferno, read, read_or, spherical_coordinates_to_direction,
     Factory, FRAC_1_TWOPI,
@@ -159,8 +158,8 @@ impl SampleTest for SurfaceTest {
         self.surface_group.pdf(&Vec3::zeros(), dir)
     }
 
-    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3> {
-        if let Some((erec, v)) = self.surface_group.sample(&Vec3::zeros(), rv) {
+    fn sample(&self, _params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3> {
+        if let Some((erec, _v)) = self.surface_group.sample(&Vec3::zeros(), rv) {
             let dir = glm::normalize(&erec.wi);
             return Some(dir);
         }

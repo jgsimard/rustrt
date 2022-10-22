@@ -73,7 +73,7 @@ impl Surface for Quad {
             return  geometry_factor * pdf;
         }
         return 0.0;
-    }
+    } 
 
     fn sample(&self, o: &Vec3,rv: &Vec2) -> Option<(EmitterRecord,Vec3)> {
         let new_rv = (rv * 2.0).add_scalar(-1.0);

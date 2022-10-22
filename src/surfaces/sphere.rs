@@ -152,7 +152,7 @@ mod tests {
     extern crate approx;
 
     #[test]
-    fn test_ray_sphere_intersection() {
+    fn ray_sphere_intersection() {
         // Let's check if your implementation was correct:
         let material: Rc<MaterialType> = Rc::new(MaterialType::from(Lambertian {
             albedo: create_texture(&json!({"albedo": 1.0}), "albedo"),

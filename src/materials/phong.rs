@@ -59,7 +59,7 @@ impl Material for Phong {
 
 #[cfg(test)]
 mod tests {
-    use crate::testing::{MaterialTest, SampleTest};
+    use crate::testing::MaterialTest;
     use serde_json::json;
 
     #[test]

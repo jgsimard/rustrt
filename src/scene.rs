@@ -14,7 +14,7 @@ use crate::ray::Ray;
 use crate::samplers::sampler::{create_sampler, Sampler, SamplerType};
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::surfaces::factory::SurfaceFactory;
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceGroupType};
+use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
 use crate::utils::{read_v_or_f, Factory};
 
 pub struct Scene {
