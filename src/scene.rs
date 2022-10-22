@@ -20,7 +20,7 @@ use crate::utils::{read_v_or_f, Factory};
 
 pub struct Scene {
     pub surfaces: SurfaceGroupType,
-    // pub emitters: SurfaceGroup,
+    pub emitters: SurfaceGroupType,
     pub integrator: IntegratorType,
     // pub sampler: SamplerType,
     map_json: Map<String, Value>,
@@ -128,6 +128,10 @@ impl Scene {
                 }
             }
         }
+        // not sure about this cloned ... FIXME!
+        let emitters_vec = surfaces_vec.iter().filter(|x| x.is_emissive()).cloned().collect();
+
+        let emitters = SurfaceGroupType::from(LinearSurfaceGroup { surfaces: emitters_vec});
 
         //
         // create the scene-wide acceleration structure so we can put other surfaces into it
@@ -146,6 +150,7 @@ impl Scene {
 
         Scene {
             integrator: integrator,
+            emitters: emitters,
             // sampler: sampler,
             map_json: (*map_json).clone(),
             surfaces: surfaces,

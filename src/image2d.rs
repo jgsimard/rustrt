@@ -81,15 +81,16 @@ impl Image2d {
                 if min_ < min {
                     min = min_;
                 }
-
-                // let v = glm::sqrt(&self[(x, y)]);
+                let v = self[(x, y)];
+                // let v = glm::clamp(&v, 0.0, 1.0);
+                // let v = glm::sqrt(&v);
                 // img_buffer.put_pixel(x as u32, y as u32, Rgb([v.x, v.y, v.z]));
-                let v = to_srgb(&self[(x, y)]);
+                let v = to_srgb(&v);
                 let v = glm::clamp(&v, 0.0, 1.0) * 255.0;
                 img_buffer.put_pixel(x as u32, y as u32, Rgb([v.x as u8, v.y as u8, v.z as u8]));
             }
         }
-        // println!("raw image : min {}, max {}", min, max);
+        println!("raw image : min {}, max {}", min, max);
         // let img = image::DynamicImage::ImageRgb32F(img_buffer);
         // let img = img.into_rgb8();
         let img = image::DynamicImage::ImageRgb8(img_buffer);
