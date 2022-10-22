@@ -2,7 +2,6 @@ extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use partition::partition;
-use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::fmt::Write;
 
@@ -32,8 +31,9 @@ impl Surface for LinearSurfaceGroup {
     fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
         let mut pdf = 0.0;
         if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)) {
+            let n_sufaces = self.surfaces.len() as f32;
             for surface in self.surfaces.iter() {
-                pdf += surface.pdf(o, dir);
+                pdf += surface.pdf(o, dir) / n_sufaces;
             }
         }
         pdf
@@ -43,9 +43,9 @@ impl Surface for LinearSurfaceGroup {
         self.surfaces[rng.gen_range(0..self.surfaces.len())].sample(o, rv)
     }
 
-    // fn is_emissive(&self) -> bool {
-    //     unimplemented!()
-    // }
+    fn is_emissive(&self) -> bool {
+        unimplemented!()
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -74,17 +74,15 @@ impl Surface for Bvh {
         self.bbox.clone()
     }
 
-    // fn pdf(&self, _erec: &EmitterRecord, _rv: &glm::Vec2) -> f32 {
-    //     unimplemented!()
-    // }
-
-    // fn sample(&self, _rv: &glm::Vec2) -> Option<(EmitterRecord, Vec3)> {
-    //     unimplemented!()
-    // }
-
-    // fn is_emissive(&self) -> bool {
-    //     unimplemented!()
-    // }
+    fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
+        unimplemented!()
+    }
+    fn sample(&self, _o: &Vec3, _rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+        unimplemented!()
+    }
+    fn is_emissive(&self) -> bool {
+        unimplemented!()
+    }
 }
 impl Bvh {
     pub fn new(surfaces: &mut Vec<SurfaceType>) -> Bvh {
@@ -166,5 +164,82 @@ impl Bvh {
             bbox: bbox,
             children: children,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::testing::SurfaceTest;
+    use serde_json::json;
+    #[test]
+    fn surface_group_monte_carlo() {
+        let v = json!({
+            "type": "sample_surface",
+            "name": "group",
+            "surfaces": {
+                "type": "group",
+                "children": [
+                    {
+                        "type": "triangle",
+                        "positions": [
+                            [
+                                -1.5, 0.2, -1.0
+                            ],
+                            [
+                                2.5, 0.375, -1.0
+                            ],
+                            [
+                                -0.5, 0.2, 1.0
+                            ]
+                        ],
+                        "material": {
+                            "type": "lambertian",
+                            "albedo": 1.0
+                        }
+                    }, {
+                        "type": "quad",
+                        "size": 1.0,
+                        "transform": {
+                            "o": [
+                                0, 0, 1
+                            ],
+                            "x": [
+                                1, 1, 0
+                            ],
+                            "y": [0, 1, 1]
+                        },
+                        "material": {
+                            "type": "lambertian",
+                            "albedo": 1.0
+                        }
+                    }, {
+                        "type": "sphere",
+                        "radius": 3.0,
+                        "transform": {
+                            "o": [0, 2.4, 3.2]
+                        },
+                        "material": {
+                            "type": "lambertian",
+                            "albedo": 1.0
+                        }
+                    }, {
+                        "type": "mesh",
+                        "filename": "assets/cube.obj",
+                        "material": {
+                            "type": "lambertian",
+                            "albedo": 1.0
+                        },
+                        "transform": [
+                            {
+                                "translate": [0.0, -0.6, 0.2]
+                            }
+                        ]
+                    }
+                ]
+            }
+        });
+
+        let (test, mut parameters) = SurfaceTest::new(v);
+        parameters.run(&test, 1.0, 1e-2);
     }
 }

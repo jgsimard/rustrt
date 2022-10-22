@@ -14,6 +14,7 @@ use crate::ray::Ray;
 use crate::samplers::sampler::{create_sampler, Sampler, SamplerType};
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::surfaces::factory::SurfaceFactory;
+use crate::surfaces::surface::EmitterRecord;
 use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
 use crate::utils::{read_v_or_f, Factory};
 
@@ -217,6 +218,18 @@ impl Surface for Scene {
     }
 
     fn bounds(&self) -> Aabb {
+        unimplemented!()
+    }
+
+    fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
+        unimplemented!()
+    }
+
+    fn sample(&self, _o: &Vec3, _rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+        unimplemented!()
+    }
+
+    fn is_emissive(&self) -> bool {
         unimplemented!()
     }
 }

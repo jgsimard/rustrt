@@ -115,24 +115,6 @@ pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vec3 {
     }
 }
 
-// pub fn random_in_hemishere(rng: &mut impl Rng, normal: &Vec3) -> Vec3 {
-//     let in_unit_sphere = random_in_unit_sphere(rng);
-//     if glm::dot(&in_unit_sphere, normal) > 0.0 {
-//         in_unit_sphere
-//     } else {
-//         -1.0 * in_unit_sphere
-//     }
-// }
-
-// pub fn random_in_unit_disk(rng: &mut impl Rng) -> Vec3 {
-//     loop {
-//         let p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
-//         if p.norm_squared() < 1.0 {
-//             return p;
-//         }
-//     }
-// }
-
 pub fn reflect(direction: &Vec3, normal: &Vec3) -> Vec3 {
     direction - 2.0 * direction.dot(normal) * normal
 }

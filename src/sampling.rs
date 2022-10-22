@@ -19,18 +19,20 @@ use glm::{Vec2, Vec3};
 //     }
 // }
 
-// /// Uniformly sample a vector on the unit sphere with respect to solid angles
-// fn sample_sphere(rv: &Vec2) -> Vec3 {
-//     let cos_theta = 2.0 * rv.y - 1.0;
-//     let sin_theta = f32::sqrt(1.0 - cos_theta * cos_theta);
-//     let (sin_phi, cos_phi) = sincos(std::f32::consts::TAU * rv.x);
-//     return Vec3::new(cos_phi * sin_theta, sin_phi * sin_theta, cos_theta);
-// }
+/// Uniformly sample a vector on the unit sphere with respect to solid angles
+#[allow(unused)]
+fn sample_sphere(rv: &Vec2) -> Vec3 {
+    let cos_theta = 2.0 * rv.y - 1.0;
+    let sin_theta = f32::sqrt(1.0 - cos_theta * cos_theta);
+    let (sin_phi, cos_phi) = sincos(std::f32::consts::TAU * rv.x);
+    return Vec3::new(cos_phi * sin_theta, sin_phi * sin_theta, cos_theta);
+}
 
-// /// Probability density of #sample_sphere()
-// pub fn sample_sphere_pdf() -> f32 {
-//     return INV_FOURPI;
-// }
+/// Probability density of #sample_sphere()
+#[allow(unused)]
+pub fn sample_sphere_pdf() -> f32 {
+    return INV_FOURPI;
+}
 
 /// Uniformly sample a vector on the unit hemisphere around the pole (0,0,1) with respect to solid angles
 pub fn sample_hemisphere(rv: &Vec2) -> Vec3 {

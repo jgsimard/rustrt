@@ -114,9 +114,15 @@ impl SurfaceTest {
     // it is used in tests, but it gives me a warning : FIXME !
     #[allow(unused)]
     pub fn new(v: Value) -> (SurfaceTest, SampleTestParameters) {
-        let surface_json = v["surface"].clone();
-        let mf = MaterialFactory::new();
-        let material = mf.create_material(surface_json["material"].clone());
+        let m = v.as_object().unwrap();
+        let surface_json = if m.contains_key("surface") {
+            v["surface"].clone()
+        } else if m.contains_key("surfaces") {
+            v["surfaces"].clone()
+        } else {
+            println!("{}", v);
+            panic!("NOOOOO");
+        };
 
         let mut surface_facory = SurfaceFactory::new();
         let mut surfaces_vec = Vec::new();
@@ -305,8 +311,6 @@ impl SampleTestParameters {
         }
 
         // Generate heat maps
-        // NOTE: we use get_file_resolver()[0] here to refer to the parent directory of the scene file.
-        // This assumes that the calling code has prepended this directory to the front of the global resolver list
         fs::create_dir_all("tests").expect("unable to create tests dir");
         generate_heatmap(&pdf_fullres, max_value).save(format!("tests/{}-pdf.png", self.name));
         generate_heatmap(&histo_fullres, max_value)

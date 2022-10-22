@@ -183,18 +183,6 @@ impl Surface for Triangle {
     fn is_emissive(&self) -> bool {
         self.mesh.materials.is_emissive()
     }
-
-    // fn pdf(&self, _erec: &EmitterRecord, _rv: &glm::Vec2) -> f32 {
-    //     unimplemented!()
-    // }
-
-    // fn sample(&self, _rv: &glm::Vec2) -> Option<(EmitterRecord, Vec3)> {
-    //     unimplemented!()
-    // }
-
-    // fn is_emissive(&self) -> bool {
-    //     unimplemented!()
-    // }
 }
 
 /// Ray-Triangle intersection
