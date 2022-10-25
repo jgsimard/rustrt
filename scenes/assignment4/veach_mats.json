@@ -15,7 +15,7 @@
     },
     "sampler": {
         "type": "independent",
-        "samples": 64
+        "samples": 4
     },
     "background": 0,
     "accelerator": {

@@ -162,12 +162,11 @@ impl Surface for Triangle {
             uv: Vec2::zeros(),
         };
 
-        let emitted = if let Some(e) = self.mesh.materials.emmitted(&Ray::new(o.clone(), wi), &hit)
-        {
-            e / pdf
-        } else {
-            Vec3::zeros()
-        };
+        let emitted = self
+            .mesh
+            .materials
+            .emmitted(&Ray::new(o.clone(), wi), &hit)
+            .map_or(Vec3::zeros(), |e| e / pdf);
 
         let erec = EmitterRecord {
             o: o.clone(),

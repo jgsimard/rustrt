@@ -129,9 +129,15 @@ impl Scene {
             }
         }
         // not sure about this cloned ... FIXME!
-        let emitters_vec = surfaces_vec.iter().filter(|x| x.is_emissive()).cloned().collect();
+        let emitters_vec = surfaces_vec
+            .iter()
+            .filter(|x| x.is_emissive())
+            .cloned()
+            .collect();
 
-        let emitters = SurfaceGroupType::from(LinearSurfaceGroup { surfaces: emitters_vec});
+        let emitters = SurfaceGroupType::from(LinearSurfaceGroup {
+            surfaces: emitters_vec,
+        });
 
         //
         // create the scene-wide acceleration structure so we can put other surfaces into it

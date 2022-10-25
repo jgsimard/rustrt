@@ -29,7 +29,7 @@ pub enum IntegratorType {
     NormalsIntegrator,
     AmbientOcclusionIntegrator,
     PathTracerMatsIntegrator,
-    PathTracerNEEIntegrator
+    PathTracerNEEIntegrator,
 }
 
 #[derive(Debug, Clone)]
@@ -110,7 +110,6 @@ impl Integrator for PathTracerMatsIntegrator {
     }
 }
 
-
 /// Next Event Integrator
 #[derive(Debug, Clone)]
 pub struct PathTracerNEEIntegrator {
@@ -126,32 +125,30 @@ impl Integrator for PathTracerNEEIntegrator {
             if depth < self.max_bounces {
                 // indirect light
                 let rv_i = sampler.next2f();
-                let i_a =  if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_i) {                    
+                let i_a = if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_i) {
                     let new_ray = Ray::new(hit.p, srec.wo);
                     let recusive_li = self.li(scene, sampler, &new_ray, depth + 1);
 
                     let attenuation = hit.mat.eval(&ray.direction, &srec.wo, &hit)
-                            / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
+                        / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
 
                     attenuation.component_mul(&recusive_li)
-                    
                 } else {
                     Vec3::zeros()
                 };
 
-
                 // direct light
-                let rv_d = sampler.next2f();
-                if let Some((erec, v)) = scene.emitters.sample(&hit.p, &rv){
-                    let pdf = erec.pdf;
-                    let eval = hit.mat.eval(&ray.direction, &erec.wi, &hit);
-                    // println!("{}, {}", pdf, v);
-                    let attenuation = eval / pdf;
+                // let rv_d = sampler.next2f();
+                // if let Some((erec, v)) = scene.emitters.sample(&hit.p, &rv){
+                //     let pdf = erec.pdf;
+                //     let eval = hit.mat.eval(&ray.direction, &erec.wi, &hit);
+                //     // println!("{}, {}", pdf, v);
+                //     let attenuation = eval / pdf;
 
-                    return emitted + attenuation ; //.component_mul(&v);
-                    // return emitted + attenuation.component_mul(&v);
+                //     return emitted + attenuation ; //.component_mul(&v);
+                //     // return emitted + attenuation.component_mul(&v);
 
-                }
+                // }
 
                 // let rv = sampler.next2f();
                 // if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv) {
@@ -162,8 +159,8 @@ impl Integrator for PathTracerNEEIntegrator {
                 //     if srec.is_specular {
                 //         return emitted + srec.attenuation.component_mul(&recusive_li);
                 //     } else {
-                        let attenuation = hit.mat.eval(&ray.direction, &srec.wo, &hit)
-                            / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
+                // let attenuation = hit.mat.eval(&ray.direction, &srec.wo, &hit)
+                //     / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
                 //         return emitted + attenuation.component_mul(&recusive_li);
                 //     }
                 // }

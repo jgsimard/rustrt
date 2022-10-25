@@ -112,11 +112,10 @@ impl Surface for Sphere {
 
         let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
 
-        let emitted = if let Some(e) = self.material.emmitted(&Ray::new(o.clone(), wi), &hit) {
-            e / pdf
-        } else {
-            Vec3::zeros()
-        };
+        let emitted = self
+            .material
+            .emmitted(&Ray::new(o.clone(), wi), &hit)
+            .map_or(Vec3::zeros(), |e| e / pdf);
 
         let erec = EmitterRecord {
             o: o.clone(),
