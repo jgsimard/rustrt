@@ -118,8 +118,6 @@ impl Scene {
             .cloned()
             .collect();
 
-        let n_emitters = emitters_vec.len();
-
         let emitters = SurfaceGroupType::from(LinearSurfaceGroup {
             surfaces: emitters_vec,
         });

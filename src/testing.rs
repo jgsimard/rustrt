@@ -14,7 +14,6 @@ use crate::utils::{
     direction_to_spherical_coordinates, inferno, read, read_or, spherical_coordinates_to_direction,
     Factory, FRAC_1_TWOPI,
 };
-
 use std::f32::consts::FRAC_1_PI;
 use std::f32::consts::PI;
 use std::rc::Rc;
@@ -161,6 +160,7 @@ impl SurfaceTest {
 
 impl SampleTest for SurfaceTest {
     fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3) -> f32 {
+        // TODO FIX THIS!
         self.surface_group.pdf(&Vec3::zeros(), dir)
     }
 

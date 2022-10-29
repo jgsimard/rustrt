@@ -92,7 +92,7 @@ impl Surface for Sphere {
         let dist = glm::length(&(o - center));
 
         // FIXME: NOT STABLE AT ALL :((((((((((( the 0.999 is for numerical stability
-        let radius = glm::length(&self.transform.vector(&(Vec3::z()))) * self.radius * 0.98;
+        let radius = glm::length(&self.transform.vector(&(Vec3::z()))) * self.radius * 0.93;
 
         if radius > dist {
             return None;

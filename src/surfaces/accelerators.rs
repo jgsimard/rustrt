@@ -29,6 +29,7 @@ impl Surface for LinearSurfaceGroup {
     }
 
     fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
+        // must multiply this by the child pdf
         let n_sufaces = self.surfaces.len() as f32;
         return 1.0 / n_sufaces;
         // let mut pdf = 0.0;
