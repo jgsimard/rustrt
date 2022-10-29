@@ -28,15 +28,17 @@ impl Surface for LinearSurfaceGroup {
         option_hit
     }
 
-    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
-        let mut pdf = 0.0;
-        if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)) {
-            let n_sufaces = self.surfaces.len() as f32;
-            for surface in self.surfaces.iter() {
-                pdf += surface.pdf(o, dir) / n_sufaces;
-            }
-        }
-        pdf
+    fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
+        let n_sufaces = self.surfaces.len() as f32;
+        return 1.0 / n_sufaces;
+        // let mut pdf = 0.0;
+        // if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)) {
+        //     let n_sufaces = self.surfaces.len() as f32;
+        //     for surface in self.surfaces.iter() {
+        //         pdf += surface.pdf(o, dir) / n_sufaces;
+        //     }
+        // }
+        // pdf
     }
     fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
         let mut rng = rand::thread_rng();

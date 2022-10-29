@@ -147,6 +147,7 @@ pub fn viridis(t: f32) -> Vec3 {
     return C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))));
 }
 
+#[allow(unused)]
 pub fn inferno(t: f32) -> Vec3 {
     const C0: Vec3 = Vec3::new(0.00021894036911922, 0.0016510046310010, -0.019480898437091);
     const C1: Vec3 = Vec3::new(0.1065134194856116, 0.5639564367884091, 3.932712388889277);
