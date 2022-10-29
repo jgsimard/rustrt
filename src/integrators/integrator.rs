@@ -158,8 +158,8 @@ impl Integrator for PathTracerNEEIntegrator {
     fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray, _depth: i32) -> Vec3 {
         const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
         let mut radiance = Vec3::zeros();
-        let attenuation = Vec3::new(1.0, 1.0, 1.0);
-        let ray = Ray::new(ray_.origin, ray_.direction);
+        let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
+        let mut ray = Ray::new(ray_.origin, ray_.direction);
 
         for _ in 0..self.max_bounces {
             if let Some(hit) = scene.intersect(&ray) {
@@ -172,19 +172,37 @@ impl Integrator for PathTracerNEEIntegrator {
                     if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
                         let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
                         if light_visible {
-                            // light contribution
-                            let light_pdf = scene.emitters.pdf(&hit.p, &emit_rec.wi);
-                            // println!("{}", light_pdf);
-                            let a_light =
-                                hit.mat.eval(&ray.direction, &emit_rec.wi, &hit) / light_pdf;
-                            let b = a_light.component_mul(&v);
-                            let light = b.component_mul(&attenuation);
+                            let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
+                            let mut light = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit)
+                                / (select_probability * emit_rec.pdf);
+                            light = light.component_mul(&v);
+                            light = light.component_mul(&attenuation);
                             radiance += light;
                         }
                     }
                 }
 
                 radiance += emitted.component_mul(&attenuation);
+
+                // sample material
+                let rv_mat = sampler.next2f();
+                let srec = hit.mat.sample(&ray.direction, &hit, &rv_mat);
+                if srec.is_none() {
+                    break;
+                }
+                let srec = srec.unwrap();
+
+                // update for next bounce
+                let a = if srec.is_specular {
+                    srec.attenuation
+                } else {
+                    hit.mat.eval(&ray.direction, &srec.wo, &hit) / hit.mat.pdf(&ray.direction, &srec.wo, &hit)
+                };
+                attenuation = attenuation.component_mul(&a);
+
+                // update the ray for the next bounce
+                ray.origin = hit.p;
+                ray.direction = srec.wo;
             } else {
                 return radiance + scene.background.component_mul(&attenuation);
             }
@@ -204,6 +222,7 @@ fn power_heuristic(pdf1: f32, pdf2: f32, power: f32) -> (f32, f32) {
     let den = pdf1_pow + pdf2_pow;
     return (pdf1_pow / den, pdf2_pow / den);
 }
+
 impl Integrator for PathTracerMISIntegrator {
     fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray, _depth: i32) -> Vec3 {
         const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
@@ -216,8 +235,8 @@ impl Integrator for PathTracerMISIntegrator {
                 let emitted = hit.mat.emmitted(&ray, &hit).unwrap_or(BLACK);
 
                 // sample material
-                let rv = sampler.next2f();
-                let srec = hit.mat.sample(&ray.direction, &hit, &rv);
+                let rv_mat = sampler.next2f();
+                let srec = hit.mat.sample(&ray.direction, &hit, &rv_mat);
                 if srec.is_none() {
                     break;
                 }
@@ -233,20 +252,18 @@ impl Integrator for PathTracerMISIntegrator {
 
                 // mixture weight
                 let pdf_mat = hit.mat.pdf(&ray.direction, &srec.wo, &hit);
-                let pdf_light = scene.emitters.pdf(&hit.p, &emit_rec.wi) * emit_rec.pdf;
+                let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
+                let pdf_light = select_probability * emit_rec.pdf;
 
                 let (weight_mat, weight_light) = power_heuristic(pdf_mat, pdf_light, 2.0);
 
-                let rv_integrator = sampler.next1f();
-                let use_mat = rv_integrator < 0.5;
-
-                // visibility
+                // light contibution
                 let visibility_ray = Ray::new(hit.p, emit_rec.wi);
                 if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
                     let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
                     if light_visible {
-                        let mut light = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit)
-                            / scene.emitters.pdf(&hit.p, &emit_rec.wi);
+                        let mut light =
+                            hit.mat.eval(&ray.direction, &emit_rec.wi, &hit) / pdf_light;
                         light = light.component_mul(&v);
                         light = light.component_mul(&attenuation);
 
@@ -254,15 +271,14 @@ impl Integrator for PathTracerMISIntegrator {
                     }
                 }
 
+                // emitted contibution
                 radiance += emitted.component_mul(&attenuation);
 
-                // if use_mat{
-                // update attenuation
+                // update for next bounce
                 let mut a = if srec.is_specular {
                     srec.attenuation
                 } else {
-                    hit.mat.eval(&ray.direction, &srec.wo, &hit)
-                        / hit.mat.pdf(&ray.direction, &srec.wo, &hit)
+                    hit.mat.eval(&ray.direction, &srec.wo, &hit) / pdf_mat
                 };
                 a *= weight_mat;
                 attenuation = attenuation.component_mul(&a);
@@ -270,9 +286,6 @@ impl Integrator for PathTracerMISIntegrator {
                 // update the ray for the next bounce
                 ray.origin = hit.p;
                 ray.direction = srec.wo;
-                // } else{
-                //     break;
-                // }
             } else {
                 return radiance + scene.background.component_mul(&attenuation);
             }

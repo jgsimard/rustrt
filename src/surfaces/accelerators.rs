@@ -32,18 +32,11 @@ impl Surface for LinearSurfaceGroup {
         // must multiply this by the child pdf
         let n_sufaces = self.surfaces.len() as f32;
         return 1.0 / n_sufaces;
-        // let mut pdf = 0.0;
-        // if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)) {
-        //     let n_sufaces = self.surfaces.len() as f32;
-        //     for surface in self.surfaces.iter() {
-        //         pdf += surface.pdf(o, dir) / n_sufaces;
-        //     }
-        // }
-        // pdf
     }
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
-        let mut rng = rand::thread_rng();
-        self.surfaces[rng.gen_range(0..self.surfaces.len())].sample(o, rv)
+
+    fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+        let index = (rv.x * (self.surfaces.len() as f32)) as usize;
+        self.surfaces[index].sample(origin, rv)
     }
 
     fn is_emissive(&self) -> bool {

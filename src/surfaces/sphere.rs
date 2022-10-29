@@ -116,7 +116,8 @@ impl Surface for Sphere {
         let emitted = self
             .material
             .emmitted(&sample_ray, &hit)
-            .map_or(Vec3::zeros(), |e| e / pdf);
+            .unwrap_or_default();
+        // .map_or(Vec3::zeros(), |e| e / pdf);
 
         let erec = EmitterRecord {
             o: o.clone(),

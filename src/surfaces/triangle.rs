@@ -166,7 +166,8 @@ impl Surface for Triangle {
             .mesh
             .materials
             .emmitted(&Ray::new(origin.clone(), wi), &hit)
-            .map_or(Vec3::zeros(), |e| e / pdf);
+            .unwrap_or_default();
+        // .map_or(Vec3::zeros(), |e| e / pdf);
 
         let erec = EmitterRecord {
             o: origin.clone(),
