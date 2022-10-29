@@ -74,12 +74,14 @@ impl Surface for Sphere {
     }
 
     fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
-        if let Some(_hit) = self.intersect(&Ray::new(*o, *dir)) {
+        let test_ray = Ray::new(*o, *dir);
+        if let Some(_hit) = self.intersect(&test_ray) {
             let center = self.transform.point(&Vec3::zeros());
             // let direction = center - o;
             let dist = glm::length(&(o - center));
             let cos_theta_max = f32::sqrt(dist * dist - self.radius * self.radius) / dist;
-            return sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
+            let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
+            return pdf;
         }
         return 0.0;
     }
@@ -87,39 +89,35 @@ impl Surface for Sphere {
     fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
         // FIXME ; not sure this is the right implementation
         let center = self.transform.point(&Vec3::zeros());
-        let direction: Vec3 = center - o;
+        let direction_centre: Vec3 = center - o;
         let dist = glm::length(&(o - center));
 
-        let cos_theta_max = f32::sqrt(dist * dist - self.radius * self.radius) / dist;
+        let radius = glm::length(&self.transform.vector(&(Vec3::x() * self.radius * 0.999))); //the 0.999 is for numerical stability
 
-        let uvw = ONB::build_from_w(&direction);
-        let sample = uvw.local(&sample_sphere_cap(rv, cos_theta_max)) + o;
+        if radius > dist {
+            return None;
+        }
+        let cos_theta_max = f32::sqrt(dist * dist - radius * radius) / dist;
 
-        let wi = sample - o;
-        let dist2 = glm::length2(&wi);
-        let t = f32::sqrt(dist2);
-        let normal = glm::normalize(&(sample - center));
-        let wi = wi / t;
+        let uvw = ONB::build_from_w(&direction_centre);
+        let sample_direction = uvw.local(&sample_sphere_cap(rv, cos_theta_max));
+        
+        let sample_ray = Ray::new(o.clone(), sample_direction);
 
-        let hit = HitInfo {
-            t: t,
-            p: sample,
-            mat: self.material.clone(),
-            gn: normal,
-            sn: normal,
-            uv: Vec2::zeros(),
-        };
+        // TODO : not use this to make is faster
+        let hit = self.intersect(&sample_ray).expect("should generate a valid hitpoint");
 
         let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
 
+
         let emitted = self
             .material
-            .emmitted(&Ray::new(o.clone(), wi), &hit)
+            .emmitted(&sample_ray, &hit)
             .map_or(Vec3::zeros(), |e| e / pdf);
 
         let erec = EmitterRecord {
             o: o.clone(),
-            wi: wi,
+            wi: sample_direction,
             pdf: pdf,
             hit: hit,
         };
