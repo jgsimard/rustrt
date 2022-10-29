@@ -136,13 +136,13 @@ impl Surface for Triangle {
         return 0.0;
     }
 
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+    fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
         let v0 = self.vertex(0);
         let v1 = self.vertex(1);
         let v2 = self.vertex(2);
 
         let p = sample_triangle(&v0, &v1, &v2, rv);
-        let wi = p - o;
+        let wi = p - origin;
         let distance2 = glm::length2(&wi);
         let t = f32::sqrt(distance2);
         let normal = self.mesh.transform.normal(&Vec3::z());
@@ -165,11 +165,11 @@ impl Surface for Triangle {
         let emitted = self
             .mesh
             .materials
-            .emmitted(&Ray::new(o.clone(), wi), &hit)
+            .emmitted(&Ray::new(origin.clone(), wi), &hit)
             .map_or(Vec3::zeros(), |e| e / pdf);
 
         let erec = EmitterRecord {
-            o: o.clone(),
+            o: origin.clone(),
             wi: wi,
             pdf: pdf,
             hit: hit,

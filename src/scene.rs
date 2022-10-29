@@ -11,42 +11,39 @@ use crate::integrators::integrator::{create_integrator, Integrator, IntegratorTy
 use crate::materials::factory::MaterialFactory;
 use crate::materials::material::Material;
 use crate::ray::Ray;
-use crate::samplers::sampler::{create_sampler, Sampler, SamplerType};
+use crate::samplers::sampler::{create_sampler, Sampler};
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
 use crate::surfaces::factory::SurfaceFactory;
 use crate::surfaces::surface::EmitterRecord;
 use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
 use crate::utils::{read_v_or_f, Factory};
+use crate::surfaces::surface::SurfaceType;
 
 pub struct Scene {
     pub surfaces: SurfaceGroupType,
     pub emitters: SurfaceGroupType,
     pub integrator: IntegratorType,
-    // pub sampler: SamplerType,
-    map_json: Map<String, Value>,
-    pub camera: PinholeCamera,
+    sampler_value: Value,
+    camera: PinholeCamera,
     pub background: Vec3,
-    pub num_samples: i32,
-    pub max_depth: i32,
+    max_depth: i32,
+    pub n_emitters: usize
 }
 
 impl Scene {
-    //
-    // parse the sampler
-    //
-    pub fn get_sampler(map_json: Map<String, Value>) -> SamplerType {
-        let sampler = if map_json.contains_key("sampler") {
+    /// parse the sampler
+    pub fn get_sampler_json(map_json: Map<String, Value>) -> Value {
+        if map_json.contains_key("sampler") {
             let mut sampler_json = (*map_json.get("sampler").unwrap()).clone();
             if !sampler_json.as_object().unwrap().contains_key("type") {
                 println!("No sampler 'type' specified, assuming independent sampling.");
                 sampler_json["type"] = serde_json::from_str("independent").unwrap();
             }
-            create_sampler(&sampler_json)
+            sampler_json
         } else {
             println!("No sampler specified, defaulting to 1 spp independent sampling.");
-            create_sampler(&json!({"type" : "independent", "samples": 1}))
-        };
-        return sampler;
+            json!({"type" : "independent", "samples": 1})
+        }
     }
 
     pub fn new(scene_json: Value) -> Scene {
@@ -72,49 +69,37 @@ impl Scene {
             }
         }
 
-        //
-        // parse the camera
-        //
+        // camera
         let camera = PinholeCamera::new(
             scene_json
                 .get("camera")
                 .expect("No camera specified in scene!"),
         );
 
-        //
-        // parse the integrator
-        //
+        // integrator
         let integrator = create_integrator(&scene_json);
 
-        //
-        // parse scene background
-        //
+        // scene background
         let background = read_v_or_f(&scene_json, "background");
-        println!("background: {}", background);
 
-        //
-        // parse materials
-        //
+        // materials
         let mut material_factory = MaterialFactory::new();
         if map_json.contains_key("materials") {
-            for material_json in map_json.get("materials").unwrap().as_array().unwrap() {
-                // let surface = make_surface(sur);
-                if let Some(_material) = material_factory.make(material_json) {
-                } else {
-                    panic!(
-                        "surface of type : {} not yet supported",
-                        material_json["type"]
+            map_json
+                .get("materials")
+                .unwrap()
+                .as_array()
+                .expect("Materials should be in an array")
+                .iter()
+                .for_each(|mat| {
+                    material_factory.make(mat).expect(
+                        format!("surface of type : {} not yet supported", mat["type"]).as_str(),
                     );
-                }
-            }
+                });
         }
 
-        //
-        // parse surfaces
-        //
-        let mut surface_facory = SurfaceFactory {
-            material_factory: material_factory,
-        };
+        // surfaces
+        let mut surface_facory = SurfaceFactory { material_factory };
         let mut surfaces_vec = Vec::new();
         if map_json.contains_key("surfaces") {
             for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
@@ -129,19 +114,19 @@ impl Scene {
             }
         }
         // not sure about this cloned ... FIXME!
-        let emitters_vec = surfaces_vec
+        let emitters_vec: Vec<SurfaceType> = surfaces_vec
             .iter()
             .filter(|x| x.is_emissive())
             .cloned()
             .collect();
 
+        let n_emitters = emitters_vec.len();
+
         let emitters = SurfaceGroupType::from(LinearSurfaceGroup {
             surfaces: emitters_vec,
         });
 
-        //
         // create the scene-wide acceleration structure so we can put other surfaces into it
-        //
         let surfaces = if map_json.contains_key("accelerator") {
             SurfaceGroupType::from(Bvh::new(&mut surfaces_vec))
         } else {
@@ -151,19 +136,17 @@ impl Scene {
             })
         };
 
-        let num_samples: i32 = 5;
         let max_depth: i32 = 64;
 
         Scene {
             integrator: integrator,
             emitters: emitters,
-            // sampler: sampler,
-            map_json: (*map_json).clone(),
+            sampler_value: Scene::get_sampler_json((*map_json).clone()),
             surfaces: surfaces,
             camera: camera,
             background: background,
-            num_samples: num_samples,
             max_depth: max_depth,
+            n_emitters: n_emitters
         }
     }
 
@@ -189,36 +172,39 @@ impl Scene {
             self.camera.resolution.x as usize,
             self.camera.resolution.y as usize,
         );
-        let mut sampler = Scene::get_sampler(self.map_json.clone());
+        let mut sampler = create_sampler(&self.sampler_value);
         let sample_count = sampler.sample_count();
 
-        {
-            let progress_bar = ProgressBar::new(image.size() as u64);
-            progress_bar.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos:>7}/{len:7} ({eta})")
-                .unwrap()
-                .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
-                .progress_chars("#>-"));
-            println!("Rendering ...");
-            // Generate a ray for each pixel in the ray image
-            for y in 0..image.size_y {
-                for x in 0..image.size_x {
-                    let mut color = Vec3::new(0.0, 0.0, 0.0);
-                    for _ in 0..sample_count {
+        println!("Rendering ...");
+        let progress_bar = ProgressBar::new(image.size() as u64);
+        progress_bar.set_style(
+            ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos:>7}/{len:7} ({eta})")
+            .unwrap()
+            .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
+            .progress_chars("#>-"));
+
+        // Generate a ray for each pixel in the ray image
+        for y in 0..image.size_y {
+            for x in 0..image.size_x {
+                image[(x, y)] = (0..sample_count)
+                    .into_iter()
+                    .map(|_| {
                         let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f();
                         let ray = self.camera.generate_ray(&pixel);
                         if self.integrator.is_integrator() {
-                            color += self.integrator.li(self, &mut sampler, &ray, 0)
-                                / (sample_count as f32);
+                            self.integrator.li(self, &mut sampler, &ray, 0)
                         } else {
-                            color += self.recursive_color(&ray, 0) / (sample_count as f32);
+                            self.recursive_color(&ray, 0)
                         }
-                    }
-                    image[(x, y)] = color;
-                    progress_bar.inc(1);
-                }
+                    })
+                    .sum::<Vec3>()
+                    / (sample_count as f32);
+
+                progress_bar.inc(1);
             }
-            println!("Rendering time : {:?}", progress_bar.elapsed());
-        } // progress reporter goes out of scope here
+        }
+
+        println!("Rendering time : {:?}", progress_bar.elapsed());
         return image;
     }
 }

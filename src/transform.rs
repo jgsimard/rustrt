@@ -195,33 +195,16 @@ mod tests {
     extern crate approx;
 
     #[test]
-    fn test_transforms() {
-        println!(
-            "\n{}{}{}",
-            "--------------------------------------------------------\n",
-            "PROGRAMMING ASSIGNMENT, PART4: Transforms              \n",
-            "--------------------------------------------------------\n"
-        );
+    fn from_transformation_matrix() {
 
-        // Darts also provides you with a Transform class.
-        // Transform is a helper class that helps you transform geometric primitives
-        // correctly Internally, it keeps track of a transformation matrix and its
-        // inverse
-
-        // Let's create a random transformation matrix
+        // Setup
         let transformation_matrix = Matrix4::new(
             -0.846852, 0.107965, -0.520755, 0.0, -0.492958, -0.526819, 0.692427, 0.0, -0.199586,
             0.843093, 0.499359, 0.0, -0.997497, 0.127171, -0.613392, 1.0,
         )
         .transpose();
 
-        // Now that we have a matrix, we can create a transform from it:
         let transform = Transform::new(transformation_matrix);
-
-        // Go to transform.h and implement all required methods there. If you
-        // implement them correctly, the code below will work:
-
-        // Let's create some random geometric objects...
 
         let vector = Vector3::new(-0.997497, 0.127171, -0.6133920);
         let point = Vector3::new(0.617481, 0.170019, -0.0402539);
@@ -231,19 +214,15 @@ mod tests {
             Vector3::new(0.962222, 0.264941, -0.0627278),
         );
 
-        println!("vector = {}.", vector);
-        println!("point  = {}.", point);
-        println!("normal = {}.", normal);
-        println!("ray.o  = {};\nray.d  = {}.", ray.origin, ray.direction);
-
-        // ...and let's transform them!
-        // We can transform things simply by multiplying it with the transform.
-        // Let's check if you did it correctly:
+        // Use Transform
         let transformed_vector = transform.vector(&vector);
         let transformed_point = transform.point(&point);
         let transformed_normal = transform.normal(&normal);
         let transformed_ray = transform.ray(&ray);
 
+
+
+        // Test Transform
         let correct_transformed_vector = Vector3::new(0.904467, -0.6918370, 0.301205);
         let correct_transformed_point = Vector3::new(-1.596190, 0.0703303, -0.837324);
         let correct_transformed_normal = Vector3::new(-0.249534, 0.0890737, 0.96426);
@@ -272,8 +251,5 @@ mod tests {
             transformed_ray.direction,
             epsilon = 1e-5
         );
-
-        println!("The forward transform matrix is\n{}.", transform.m);
-        println!("The inverse transform matrix is\n{}.", transform.m_inv);
     }
 }

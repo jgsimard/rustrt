@@ -333,6 +333,7 @@ impl SampleTestParameters {
             println!("Some directions/PDFs contained invalid values (NaN or infinity). This should not happen. 
         Make sure you catch all corner cases in your code.")
         }
+        assert!(!nan_or_inf);
         self.print_more_statistics();
     }
 }

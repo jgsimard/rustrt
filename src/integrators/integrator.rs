@@ -37,7 +37,7 @@ pub struct NotAnIntegrator;
 
 impl Integrator for NotAnIntegrator {
     fn li(&self, _scene: &Scene, _sampler: &mut SamplerType, _ray: &Ray, _depth: i32) -> Vec3 {
-        Vec3::zeros()
+        unimplemented!()
     }
     fn is_integrator(&self) -> bool {
         false
@@ -81,32 +81,69 @@ pub struct PathTracerMatsIntegrator {
     max_bounces: i32,
 }
 
-impl Integrator for PathTracerMatsIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray, depth: i32) -> Vec3 {
-        const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
+// impl Integrator for PathTracerMatsIntegrator {
+//     fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray, depth: i32) -> Vec3 {
+//         const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 
-        if let Some(hit) = scene.intersect(ray) {
-            let emitted = hit.mat.emmitted(ray, &hit).unwrap_or(BLACK);
-            if depth < self.max_bounces {
+//         if let Some(hit) = scene.intersect(ray) {
+//             let emitted = hit.mat.emmitted(ray, &hit).unwrap_or(BLACK);
+//             if depth < self.max_bounces {
+//                 let rv = sampler.next2f();
+//                 if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv) {
+//                     let new_ray = Ray::new(hit.p, srec.wo);
+//                     let recusive_li = self.li(scene, sampler, &new_ray, depth + 1);
+
+//                     // RTIOW materials : no pdf
+//                     if srec.is_specular {
+//                         return emitted + srec.attenuation.component_mul(&recusive_li);
+//                     } else {
+//                         let attenuation = hit.mat.eval(&ray.direction, &srec.wo, &hit)
+//                             / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
+//                         return emitted + attenuation.component_mul(&recusive_li);
+//                     }
+//                 }
+//             }
+//             return emitted;
+//         } else {
+//             return scene.background;
+//         }
+//     }
+// }
+
+// iterative version
+impl Integrator for PathTracerMatsIntegrator {
+    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray, _depth: i32) -> Vec3 {
+        const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
+        let mut radiance = Vec3::zeros();
+        let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
+        let mut ray = Ray::new(ray_.origin, ray_.direction);
+
+        for _ in 0..=self.max_bounces {
+            if let Some(hit) = scene.intersect(&ray) {
+                let emitted = hit.mat.emmitted(&ray, &hit).unwrap_or(BLACK);
                 let rv = sampler.next2f();
                 if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv) {
-                    let new_ray = Ray::new(hit.p, srec.wo);
-                    let recusive_li = self.li(scene, sampler, &new_ray, depth + 1);
-
-                    // RTIOW materials : no pdf
-                    if srec.is_specular {
-                        return emitted + srec.attenuation.component_mul(&recusive_li);
+                    let a = if srec.is_specular {
+                        srec.attenuation
                     } else {
-                        let attenuation = hit.mat.eval(&ray.direction, &srec.wo, &hit)
-                            / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
-                        return emitted + attenuation.component_mul(&recusive_li);
-                    }
+                        hit.mat.eval(&ray.direction, &srec.wo, &hit)
+                            / hit.mat.pdf(&ray.direction, &srec.wo, &hit)
+                    };
+
+                    radiance += emitted.component_mul(&attenuation);
+                    attenuation = attenuation.component_mul(&a);
+
+                    // update the ray for the next bounce
+                    ray.origin = hit.p;
+                    ray.direction = srec.wo;
+                } else {
+                    break;
                 }
+            } else {
+                return radiance + scene.background.component_mul(&attenuation);
             }
-            return emitted;
-        } else {
-            return scene.background;
         }
+        return radiance;
     }
 }
 
@@ -116,59 +153,42 @@ pub struct PathTracerNEEIntegrator {
     max_bounces: i32,
 }
 
+// iterative version
 impl Integrator for PathTracerNEEIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray, depth: i32) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray, _depth: i32) -> Vec3 {
         const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
+        let mut radiance = Vec3::zeros();
+        let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
+        let mut ray = Ray::new(ray_.origin, ray_.direction);
 
-        if let Some(hit) = scene.intersect(ray) {
-            let emitted = hit.mat.emmitted(ray, &hit).unwrap_or(BLACK);
-            if depth < self.max_bounces {
-                // indirect light
-                let rv_i = sampler.next2f();
-                let i_a = if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_i) {
-                    let new_ray = Ray::new(hit.p, srec.wo);
-                    let recusive_li = self.li(scene, sampler, &new_ray, depth + 1);
+        for _ in 0..self.max_bounces {
+            if let Some(hit) = scene.intersect(&ray) {
+                
+        
+                let emitted = hit.mat.emmitted(&ray, &hit).unwrap_or(BLACK);
+                let rv = sampler.next2f();
+                if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv) {
+                    let a = if srec.is_specular {
+                        srec.attenuation
+                    } else {
+                        hit.mat.eval(&ray.direction, &srec.wo, &hit)
+                            / hit.mat.pdf(&ray.direction, &srec.wo, &hit)
+                    };
 
-                    let attenuation = hit.mat.eval(&ray.direction, &srec.wo, &hit)
-                        / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
+                    radiance += emitted.component_mul(&attenuation);
+                    attenuation = attenuation.component_mul(&a);
 
-                    attenuation.component_mul(&recusive_li)
+                    // update the ray for the next bounce
+                    ray.origin = hit.p;
+                    ray.direction = srec.wo;
                 } else {
-                    Vec3::zeros()
-                };
-
-                // direct light
-                // let rv_d = sampler.next2f();
-                // if let Some((erec, v)) = scene.emitters.sample(&hit.p, &rv){
-                //     let pdf = erec.pdf;
-                //     let eval = hit.mat.eval(&ray.direction, &erec.wi, &hit);
-                //     // println!("{}, {}", pdf, v);
-                //     let attenuation = eval / pdf;
-
-                //     return emitted + attenuation ; //.component_mul(&v);
-                //     // return emitted + attenuation.component_mul(&v);
-
-                // }
-
-                // let rv = sampler.next2f();
-                // if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv) {
-                //     let new_ray = Ray::new(hit.p, srec.wo);
-                //     let recusive_li = self.li(scene, sampler, &new_ray, depth + 1);
-
-                //     // RTIOW materials : no pdf
-                //     if srec.is_specular {
-                //         return emitted + srec.attenuation.component_mul(&recusive_li);
-                //     } else {
-                // let attenuation = hit.mat.eval(&ray.direction, &srec.wo, &hit)
-                //     / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
-                //         return emitted + attenuation.component_mul(&recusive_li);
-                //     }
-                // }
+                    break;
+                }
+            } else {
+                return radiance + scene.background.component_mul(&attenuation);
             }
-            return emitted;
-        } else {
-            return scene.background;
         }
+        return radiance;
     }
 }
 
@@ -182,22 +202,18 @@ pub fn create_integrator(v: &Value) -> IntegratorType {
         .get("type")
         .expect("no integrator type")
         .as_str()
-        .expect("lolz");
+        .expect("could not get integrator type");
 
     match sampler_type {
         "normals" => IntegratorType::from(NormalsIntegrator {}),
         "ao" => IntegratorType::from(AmbientOcclusionIntegrator {}),
         "path_tracer_mats" => {
             let max_bounces = read_or(integrator_json, "max_bounces", 1);
-            IntegratorType::from(PathTracerMatsIntegrator {
-                max_bounces: max_bounces,
-            })
+            IntegratorType::from(PathTracerMatsIntegrator { max_bounces })
         }
         "path_tracer_nee" => {
             let max_bounces = read_or(integrator_json, "max_bounces", 1);
-            IntegratorType::from(PathTracerNEEIntegrator {
-                max_bounces: max_bounces,
-            })
+            IntegratorType::from(PathTracerNEEIntegrator { max_bounces })
         }
         _ => {
             unimplemented!("Sampler type {}", sampler_type);
