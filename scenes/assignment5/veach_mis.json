@@ -14,8 +14,8 @@
         "resolution": [768, 512]
     },
     "sampler": {
-        "type": "cmj",
-        "samples": 32
+        "type": "independent",
+        "samples": 8
     },
     "background": 0,
     "accelerator": {
