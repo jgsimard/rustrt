@@ -17,7 +17,6 @@ use crate::surfaces::factory::SurfaceFactory;
 use crate::surfaces::surface::EmitterRecord;
 use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
 use crate::utils::{read_v_or_f, Factory};
-use crate::surfaces::surface::SurfaceType;
 
 pub struct Scene {
     pub surfaces: SurfaceGroupType,
@@ -27,7 +26,6 @@ pub struct Scene {
     camera: PinholeCamera,
     pub background: Vec3,
     max_depth: i32,
-    pub n_emitters: usize
 }
 
 impl Scene {
@@ -114,7 +112,7 @@ impl Scene {
             }
         }
         // not sure about this cloned ... FIXME!
-        let emitters_vec: Vec<SurfaceType> = surfaces_vec
+        let emitters_vec = surfaces_vec
             .iter()
             .filter(|x| x.is_emissive())
             .cloned()
@@ -146,7 +144,6 @@ impl Scene {
             camera: camera,
             background: background,
             max_depth: max_depth,
-            n_emitters: n_emitters
         }
     }
 

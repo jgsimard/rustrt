@@ -87,12 +87,12 @@ impl Surface for Sphere {
     }
 
     fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
-        // FIXME ; not sure this is the right implementation
         let center = self.transform.point(&Vec3::zeros());
         let direction_centre: Vec3 = center - o;
         let dist = glm::length(&(o - center));
 
-        let radius = glm::length(&self.transform.vector(&(Vec3::x() * self.radius * 0.999))); //the 0.999 is for numerical stability
+        // FIXME: NOT STABLE AT ALL :((((((((((( the 0.999 is for numerical stability
+        let radius = glm::length(&self.transform.vector(&(Vec3::z()))) * self.radius * 0.98;
 
         if radius > dist {
             return None;
@@ -101,14 +101,17 @@ impl Surface for Sphere {
 
         let uvw = ONB::build_from_w(&direction_centre);
         let sample_direction = uvw.local(&sample_sphere_cap(rv, cos_theta_max));
-        
+
         let sample_ray = Ray::new(o.clone(), sample_direction);
 
-        // TODO : not use this to make is faster
-        let hit = self.intersect(&sample_ray).expect("should generate a valid hitpoint");
-
+        // TODO : REPLACE THIS, not stable at all :(
+        let hit = self.intersect(&sample_ray).unwrap_or_else(|| {
+            panic!(
+                "dist : {}, radius:{:?}, sample_ray:{:?}, self:{:?}",
+                dist, radius, sample_ray, self
+            )
+        });
         let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
-
 
         let emitted = self
             .material

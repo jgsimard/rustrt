@@ -196,7 +196,6 @@ mod tests {
 
     #[test]
     fn from_transformation_matrix() {
-
         // Setup
         let transformation_matrix = Matrix4::new(
             -0.846852, 0.107965, -0.520755, 0.0, -0.492958, -0.526819, 0.692427, 0.0, -0.199586,
@@ -219,8 +218,6 @@ mod tests {
         let transformed_point = transform.point(&point);
         let transformed_normal = transform.normal(&normal);
         let transformed_ray = transform.ray(&ray);
-
-
 
         // Test Transform
         let correct_transformed_vector = Vector3::new(0.904467, -0.6918370, 0.301205);
