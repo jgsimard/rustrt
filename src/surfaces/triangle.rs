@@ -136,7 +136,7 @@ impl Surface for Triangle {
         return 0.0;
     }
 
-    fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+    fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
         let v0 = self.vertex(0);
         let v1 = self.vertex(1);
         let v2 = self.vertex(2);
@@ -174,9 +174,10 @@ impl Surface for Triangle {
             wi: wi,
             pdf: pdf,
             hit: hit,
+            emitted: emitted
         };
 
-        Some((erec, emitted))
+        Some(erec)
     }
 
     // TODO : change this if multiple materials !

@@ -165,7 +165,7 @@ impl SampleTest for SurfaceTest {
     }
 
     fn sample(&self, _params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3> {
-        if let Some((erec, _v)) = self.surface_group.sample(&Vec3::zeros(), rv) {
+        if let Some(erec) = self.surface_group.sample(&Vec3::zeros(), rv) {
             let dir = glm::normalize(&erec.wi);
             return Some(dir);
         }

@@ -166,7 +166,7 @@ impl Integrator for PathTracerNEEIntegrator {
                 let emitted = hit.mat.emmitted(&ray, &hit).unwrap_or(BLACK);
 
                 let rv_light = sampler.next2f();
-                if let Some((emit_rec, v)) = scene.emitters.sample(&hit.p, &rv_light) {
+                if let Some(emit_rec) = scene.emitters.sample(&hit.p, &rv_light) {
                     // visibility
                     let visibility_ray = Ray::new(hit.p, emit_rec.wi);
                     if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
@@ -175,7 +175,7 @@ impl Integrator for PathTracerNEEIntegrator {
                             let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
                             let mut light = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit)
                                 / (select_probability * emit_rec.pdf);
-                            light = light.component_mul(&v);
+                            light = light.component_mul(&emit_rec.emitted);
                             light = light.component_mul(&attenuation);
                             radiance += light;
                         }
@@ -248,14 +248,18 @@ impl Integrator for PathTracerMISIntegrator {
                 if light_sample.is_none() {
                     break;
                 }
-                let (emit_rec, v) = light_sample.unwrap();
+                let emit_rec = light_sample.unwrap();
 
                 // mixture weight
                 let pdf_mat = hit.mat.pdf(&ray.direction, &srec.wo, &hit);
                 let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
                 let pdf_light = select_probability * emit_rec.pdf;
 
-                let (weight_mat, weight_light) = power_heuristic(pdf_mat, pdf_light, 2.0);
+                let (weight_mat, weight_light) = if srec.is_specular{
+                    (1.0, 1.0)
+                } else{
+                    power_heuristic(pdf_mat, pdf_light, 2.0)
+                };
 
                 // light contibution
                 let visibility_ray = Ray::new(hit.p, emit_rec.wi);
@@ -264,7 +268,7 @@ impl Integrator for PathTracerMISIntegrator {
                     if light_visible {
                         let mut light =
                             hit.mat.eval(&ray.direction, &emit_rec.wi, &hit) / pdf_light;
-                        light = light.component_mul(&v);
+                        light = light.component_mul(&emit_rec.emitted);
                         light = light.component_mul(&attenuation);
 
                         radiance += light * weight_light;

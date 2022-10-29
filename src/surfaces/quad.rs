@@ -75,7 +75,7 @@ impl Surface for Quad {
         return 0.0;
     }
 
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
         let new_rv = (rv * 2.0).add_scalar(-1.0);
         let temp = new_rv.component_mul(&self.size);
         let raw_p = Vec3::new(temp.x, temp.y, 0.0);
@@ -116,9 +116,10 @@ impl Surface for Quad {
             wi: wi,
             pdf: pdf,
             hit: hit,
+            emitted: emitted
         };
 
-        Some((erec, emitted))
+        Some(erec)
     }
 
     fn is_emissive(&self) -> bool {

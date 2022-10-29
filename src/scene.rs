@@ -217,7 +217,7 @@ impl Surface for Scene {
         unimplemented!()
     }
 
-    fn sample(&self, _o: &Vec3, _rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+    fn sample(&self, _o: &Vec3, _rv: &Vec2) -> Option<EmitterRecord> {
         unimplemented!()
     }
 

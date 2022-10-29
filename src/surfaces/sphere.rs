@@ -86,7 +86,7 @@ impl Surface for Sphere {
         return 0.0;
     }
 
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
         let center = self.transform.point(&Vec3::zeros());
         let direction_centre: Vec3 = center - o;
         let dist = glm::length(&(o - center));
@@ -97,10 +97,10 @@ impl Surface for Sphere {
         if radius > dist {
             return None;
         }
-        let cos_theta_max = f32::sqrt(dist * dist - radius * radius) / dist;
-
+        let cos_theta_max_from_p = f32::sqrt(dist * dist - radius * radius) / dist;
+         // sample from p
         let uvw = ONB::build_from_w(&direction_centre);
-        let sample_direction = uvw.local(&sample_sphere_cap(rv, cos_theta_max));
+        let sample_direction = uvw.local(&sample_sphere_cap(rv, cos_theta_max_from_p));
 
         let sample_ray = Ray::new(o.clone(), sample_direction);
 
@@ -111,7 +111,25 @@ impl Surface for Sphere {
                 dist, radius, sample_ray, self
             )
         });
-        let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
+        
+        // // sample point on sphere directly
+        // let cos_theta_max_from_center = dist / radius;
+        // let uvw_sphere = ONB::build_from_w(&(-direction_centre));
+        // let sample_direction_from_center = uvw_sphere.local(&sample_sphere_cap(rv, cos_theta_max_from_center));
+
+        // let p = center + sample_direction_from_center * radius;
+        // let sample_direction = p - o; 
+        // let t = glm::length(&sample_direction);
+        // let sample_direction = sample_direction / t;
+        // let sample_ray = Ray::new(o.clone(), sample_direction);
+        // let normal = glm::normalize(&sample_direction_from_center);
+        // let uv = direction_to_spherical_uv(&self.transform.inverse().point(&p));
+        // let hit = HitInfo { t: t, p: p, gn: normal, sn: normal, uv: uv, mat: self.material.clone() };
+
+
+
+        
+        let pdf = sample_sphere_cap_pdf(cos_theta_max_from_p, cos_theta_max_from_p);
 
         let emitted = self
             .material
@@ -124,9 +142,10 @@ impl Surface for Sphere {
             wi: sample_direction,
             pdf: pdf,
             hit: hit,
+            emitted: emitted
         };
 
-        Some((erec, emitted))
+        Some(erec)
     }
 
     fn is_emissive(&self) -> bool {

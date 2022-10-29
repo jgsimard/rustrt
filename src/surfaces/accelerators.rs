@@ -34,7 +34,7 @@ impl Surface for LinearSurfaceGroup {
         return 1.0 / n_sufaces;
     }
 
-    fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+    fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
         let index = (rv.x * (self.surfaces.len() as f32)) as usize;
         self.surfaces[index].sample(origin, rv)
     }
@@ -73,7 +73,7 @@ impl Surface for Bvh {
     fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
         unimplemented!()
     }
-    fn sample(&self, _o: &Vec3, _rv: &Vec2) -> Option<(EmitterRecord, Vec3)> {
+    fn sample(&self, _o: &Vec3, _rv: &Vec2) -> Option<EmitterRecord> {
         unimplemented!()
     }
     fn is_emissive(&self) -> bool {
