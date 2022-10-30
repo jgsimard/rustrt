@@ -82,35 +82,6 @@ pub struct PathTracerMatsIntegrator {
     max_bounces: i32,
 }
 
-// impl Integrator for PathTracerMatsIntegrator {
-//     fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray, depth: i32) -> Vec3 {
-//         const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
-
-//         if let Some(hit) = scene.intersect(ray) {
-//             let emitted = hit.mat.emmitted(ray, &hit).unwrap_or(BLACK);
-//             if depth < self.max_bounces {
-//                 let rv = sampler.next2f();
-//                 if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv) {
-//                     let new_ray = Ray::new(hit.p, srec.wo);
-//                     let recusive_li = self.li(scene, sampler, &new_ray, depth + 1);
-
-//                     // RTIOW materials : no pdf
-//                     if srec.is_specular {
-//                         return emitted + srec.attenuation.component_mul(&recusive_li);
-//                     } else {
-//                         let attenuation = hit.mat.eval(&ray.direction, &srec.wo, &hit)
-//                             / hit.mat.pdf(&ray.direction, &srec.wo, &hit);
-//                         return emitted + attenuation.component_mul(&recusive_li);
-//                     }
-//                 }
-//             }
-//             return emitted;
-//         } else {
-//             return scene.background;
-//         }
-//     }
-// }
-
 // iterative version
 impl Integrator for PathTracerMatsIntegrator {
     fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray, _depth: i32) -> Vec3 {
@@ -166,7 +137,11 @@ impl Integrator for PathTracerNEEIntegrator {
                 let emitted = hit.mat.emmitted(&ray, &hit).unwrap_or(BLACK);
 
                 let rv_light = sampler.next2f();
-                if let Some(emit_rec) = scene.emitters.sample_from_group(&hit.p, &rv_light, sampler.next1f()) {
+                if let Some(emit_rec) =
+                    scene
+                        .emitters
+                        .sample_from_group(&hit.p, &rv_light, sampler.next1f())
+                {
                     // visibility
                     let visibility_ray = Ray::new(hit.p, emit_rec.wi);
                     if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
@@ -196,7 +171,8 @@ impl Integrator for PathTracerNEEIntegrator {
                 let a = if srec.is_specular {
                     srec.attenuation
                 } else {
-                    hit.mat.eval(&ray.direction, &srec.wo, &hit) / hit.mat.pdf(&ray.direction, &srec.wo, &hit)
+                    hit.mat.eval(&ray.direction, &srec.wo, &hit)
+                        / hit.mat.pdf(&ray.direction, &srec.wo, &hit)
                 };
                 attenuation = attenuation.component_mul(&a);
 
@@ -244,7 +220,10 @@ impl Integrator for PathTracerMISIntegrator {
 
                 // sample light
                 let rv_light = sampler.next2f();
-                let light_sample = scene.emitters.sample_from_group(&hit.p, &rv_light, sampler.next1f());
+                let light_sample =
+                    scene
+                        .emitters
+                        .sample_from_group(&hit.p, &rv_light, sampler.next1f());
                 if light_sample.is_none() {
                     break;
                 }
@@ -255,9 +234,9 @@ impl Integrator for PathTracerMISIntegrator {
                 let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
                 let pdf_light = select_probability * emit_rec.pdf;
 
-                let (weight_mat, weight_light) = if srec.is_specular{
+                let (weight_mat, weight_light) = if srec.is_specular {
                     (1.0, 1.0)
-                } else{
+                } else {
                     power_heuristic(pdf_mat, pdf_light, 2.0)
                 };
 
@@ -279,13 +258,13 @@ impl Integrator for PathTracerMISIntegrator {
                 radiance += emitted.component_mul(&attenuation);
 
                 // update for next bounce
-                let mut a = if srec.is_specular {
+                let mut mat_attenuation = if srec.is_specular {
                     srec.attenuation
                 } else {
                     hit.mat.eval(&ray.direction, &srec.wo, &hit) / pdf_mat
                 };
-                a *= weight_mat;
-                attenuation = attenuation.component_mul(&a);
+                mat_attenuation *= weight_mat;
+                attenuation = attenuation.component_mul(&mat_attenuation);
 
                 // update the ray for the next bounce
                 ray.origin = hit.p;

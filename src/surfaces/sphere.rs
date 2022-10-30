@@ -97,7 +97,7 @@ impl Surface for Sphere {
         if radius > dist {
             return None;
         }
-         // sample from p
+        // sample from p
         let uvw = ONB::build_from_w(&direction_centre);
         let sample_direction = uvw.local(&sample_sphere_cap(rv, cos_theta_max_from_p));
 
@@ -111,14 +111,14 @@ impl Surface for Sphere {
         //         cos_theta_max_from_p, cos_theta_max_from_p.acos(), dist, radius, sample_ray, self
         //     )
         // });
-        
+
         // // sample point on sphere directly
         // let cos_theta_max_from_center = dist / radius;
         // let uvw_sphere = ONB::build_from_w(&(-direction_centre));
         // let sample_direction_from_center = uvw_sphere.local(&sample_sphere_cap(rv, cos_theta_max_from_center));
 
         // let p = center + sample_direction_from_center * radius;
-        // let sample_direction = p - o; 
+        // let sample_direction = p - o;
         // let t = glm::length(&sample_direction);
         // let sample_direction = sample_direction / t;
         // let sample_ray = Ray::new(o.clone(), sample_direction);
@@ -126,9 +126,6 @@ impl Surface for Sphere {
         // let uv = direction_to_spherical_uv(&self.transform.inverse().point(&p));
         // let hit = HitInfo { t: t, p: p, gn: normal, sn: normal, uv: uv, mat: self.material.clone() };
 
-
-
-        
         let pdf = sample_sphere_cap_pdf(cos_theta_max_from_p, cos_theta_max_from_p);
 
         let emitted = self
@@ -142,7 +139,7 @@ impl Surface for Sphere {
             wi: sample_direction,
             pdf: pdf,
             hit: hit,
-            emitted: emitted
+            emitted: emitted,
         };
 
         Some(erec)

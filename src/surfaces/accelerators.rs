@@ -43,7 +43,7 @@ impl Surface for LinearSurfaceGroup {
         self.surfaces[index].sample(origin, rv)
     }
 
-    fn sample_from_group(&self,o: &Vec3,rv: &Vec2, rv1: f32) -> Option<EmitterRecord> {
+    fn sample_from_group(&self, o: &Vec3, rv: &Vec2, rv1: f32) -> Option<EmitterRecord> {
         let index = (rv1 * (self.surfaces.len() as f32)) as usize;
         self.surfaces[index].sample(o, rv)
     }

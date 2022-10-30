@@ -116,7 +116,7 @@ impl Surface for Quad {
             wi: wi,
             pdf: pdf,
             hit: hit,
-            emitted: emitted
+            emitted: emitted,
         };
 
         Some(erec)

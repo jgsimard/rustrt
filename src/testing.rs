@@ -38,7 +38,6 @@ pub struct SampleTestParameters {
     image_width: usize,
     image_height: usize,
     num_samples: usize,
-
 }
 
 impl MaterialTest {
@@ -166,7 +165,9 @@ impl SampleTest for SurfaceTest {
     }
 
     fn sample(&self, _params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3> {
-        let erec = self.surface_group.sample_from_group(&Vec3::zeros(), rv, rv1)?;
+        let erec = self
+            .surface_group
+            .sample_from_group(&Vec3::zeros(), rv, rv1)?;
         let dir = glm::normalize(&erec.wi);
         Some(dir)
     }
@@ -218,7 +219,6 @@ impl SampleTestParameters {
         const NB_SAMPLES: usize = 10;
         let mut rng = rand::thread_rng();
 
-
         // Step 1: Evaluate pdf over the sphere and compute its integral
         let mut integral = 0.0;
         let mut pdf = Array2d::<f32>::new(
@@ -245,7 +245,6 @@ impl SampleTestParameters {
                             accum += value / (NB_SAMPLES as f32);
                             integral += pixel_area * value / (NB_SAMPLES as f32);
                         }
-                        
                     }
                 }
                 pdf[(x, y)] = accum / ((HISTO_SUBSAMPLE * HISTO_SUBSAMPLE) as f32);
@@ -261,11 +260,10 @@ impl SampleTestParameters {
         let mut valid_samples = 0;
         let mut nan_or_inf = false;
         for _ in 0..self.num_samples {
-            if let Some(dir) = sample_test.sample(self, &Vec2::new(rng.gen(), rng.gen()), rng.gen() ) {
-
+            if let Some(dir) = sample_test.sample(self, &Vec2::new(rng.gen(), rng.gen()), rng.gen())
+            {
                 if f32::is_nan(dir.x + dir.y + dir.z) || f32::is_infinite(dir.x + dir.y + dir.z) {
                     nan_or_inf = true;
-
                 }
                 // Map scattered direction to pixel in our sample histogram
                 let pixel = self.direction_to_pixel(&dir) / (HISTO_SUBSAMPLE as f32);
@@ -281,7 +279,7 @@ impl SampleTestParameters {
                 let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
                 let weight = (histogram.size() as f32)
                     / (PI * (2.0 * PI) * (self.num_samples as f32) * sin_theta);
-                
+
                 // Accumulate into histogram
                 histogram[(pixel.x as usize, pixel.y as usize)] += weight;
                 valid_samples += 1;
@@ -335,11 +333,8 @@ impl SampleTestParameters {
         approx::assert_abs_diff_eq!(sample_integral, target, epsilon = epsilon);
         approx::assert_abs_diff_eq!(sample_integral, integral, epsilon = epsilon);
 
-        if nan_or_inf {
-            println!("Some directions/PDFs contained invalid values (NaN or infinity). This should not happen. 
-        Make sure you catch all corner cases in your code.")
-        }
-        assert!(!nan_or_inf);
+        assert!(!nan_or_inf, "Some directions/PDFs contained invalid values (NaN or infinity). This should not happen. 
+        Make sure you catch all corner cases in your code.");
         self.print_more_statistics();
     }
 }

@@ -58,7 +58,7 @@ impl Material for Dielectric {
 
     fn sample(&self, wi: &Vec3, hit: &HitInfo, _rv: &glm::Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
-        if let Some((attenuation, ray_out)) = self.scatter(&ray, hit){
+        if let Some((attenuation, ray_out)) = self.scatter(&ray, hit) {
             let srec = ScatterRecord {
                 attenuation: attenuation,
                 wo: ray_out.direction,
@@ -67,7 +67,6 @@ impl Material for Dielectric {
             return Some(srec);
         }
         return None;
-        
     }
 
     fn pdf(&self, _wi: &Vec3, _scattered: &Vec3, _hit: &HitInfo) -> f32 {
