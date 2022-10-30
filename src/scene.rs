@@ -9,7 +9,6 @@ use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
 use crate::integrators::integrator::{create_integrator, Integrator, IntegratorType};
 use crate::materials::factory::MaterialFactory;
-use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::samplers::sampler::{create_sampler, Sampler};
 use crate::surfaces::accelerators::{Bvh, LinearSurfaceGroup};
@@ -25,7 +24,6 @@ pub struct Scene {
     sampler_value: Value,
     camera: PinholeCamera,
     pub background: Vec3,
-    max_depth: i32,
 }
 
 impl Scene {
@@ -132,8 +130,6 @@ impl Scene {
             })
         };
 
-        let max_depth: i32 = 64;
-
         Scene {
             integrator: integrator,
             emitters: emitters,
@@ -141,24 +137,6 @@ impl Scene {
             surfaces: surfaces,
             camera: camera,
             background: background,
-            max_depth: max_depth,
-        }
-    }
-
-    fn recursive_color(&self, ray: &Ray, depth: i32) -> Vec3 {
-        const BLACK: Vec3 = Vec3::new(0.0, 0.0, 0.0);
-
-        if let Some(hit) = self.intersect(ray) {
-            let emitted = hit.mat.emmitted(ray, &hit).unwrap_or(BLACK);
-            if depth < self.max_depth {
-                if let Some((attenuation, scattered)) = hit.mat.scatter(ray, &hit) {
-                    return emitted
-                        + attenuation.component_mul(&self.recursive_color(&scattered, depth + 1));
-                }
-            }
-            return emitted;
-        } else {
-            return self.background;
         }
     }
 
@@ -186,11 +164,7 @@ impl Scene {
                     .map(|_| {
                         let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f();
                         let ray = self.camera.generate_ray(&pixel);
-                        if self.integrator.is_integrator() {
-                            self.integrator.li(self, &mut sampler, &ray, 0)
-                        } else {
-                            self.recursive_color(&ray, 0)
-                        }
+                        self.integrator.li(self, &mut sampler, &ray, 0)
                     })
                     .sum::<Vec3>()
                     / (sample_count as f32);

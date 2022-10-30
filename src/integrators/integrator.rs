@@ -19,17 +19,11 @@ use crate::integrators::path_tracer_nee::PathTracerNEEIntegrator;
 pub trait Integrator {
     /// Sample the incident radiance along a ray
     fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray, depth: i32) -> Vec3;
-
-    /// To retrofit the code
-    fn is_integrator(&self) -> bool {
-        true
-    }
 }
 
 #[enum_dispatch(Integrator)]
 #[derive(Debug, Clone)]
 pub enum IntegratorType {
-    NotAnIntegrator,
     NormalsIntegrator,
     AmbientOcclusionIntegrator,
     PathTracerMatsIntegrator,
@@ -37,22 +31,10 @@ pub enum IntegratorType {
     PathTracerMISIntegrator,
 }
 
-#[derive(Debug, Clone)]
-pub struct NotAnIntegrator;
-
-impl Integrator for NotAnIntegrator {
-    fn li(&self, _scene: &Scene, _sampler: &mut SamplerType, _ray: &Ray, _depth: i32) -> Vec3 {
-        unimplemented!()
-    }
-    fn is_integrator(&self) -> bool {
-        false
-    }
-}
-
 pub fn create_integrator(v: &Value) -> IntegratorType {
     let m = v.as_object().unwrap();
     if !m.contains_key("integrator") {
-        return IntegratorType::from(NotAnIntegrator {});
+        return IntegratorType::from(PathTracerMatsIntegrator { max_bounces: 64 });
     }
     let integrator_json = v.get("integrator").unwrap();
     let sampler_type = integrator_json
