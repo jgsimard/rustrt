@@ -166,7 +166,7 @@ impl Integrator for PathTracerNEEIntegrator {
                 let emitted = hit.mat.emmitted(&ray, &hit).unwrap_or(BLACK);
 
                 let rv_light = sampler.next2f();
-                if let Some(emit_rec) = scene.emitters.sample(&hit.p, &rv_light) {
+                if let Some(emit_rec) = scene.emitters.sample_from_group(&hit.p, &rv_light, sampler.next1f()) {
                     // visibility
                     let visibility_ray = Ray::new(hit.p, emit_rec.wi);
                     if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
@@ -244,7 +244,7 @@ impl Integrator for PathTracerMISIntegrator {
 
                 // sample light
                 let rv_light = sampler.next2f();
-                let light_sample = scene.emitters.sample(&hit.p, &rv_light);
+                let light_sample = scene.emitters.sample_from_group(&hit.p, &rv_light, sampler.next1f());
                 if light_sample.is_none() {
                     break;
                 }

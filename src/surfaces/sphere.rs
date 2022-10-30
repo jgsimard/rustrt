@@ -91,26 +91,26 @@ impl Surface for Sphere {
         let direction_centre: Vec3 = center - o;
         let dist = glm::length(&(o - center));
 
-        // FIXME: NOT STABLE AT ALL :((((((((((( the 0.999 is for numerical stability
-        let radius = glm::length(&self.transform.vector(&(Vec3::z()))) * self.radius * 0.93;
+        let radius = glm::length(&self.transform.vector(&(Vec3::z()))) * self.radius;
+        let cos_theta_max_from_p = f32::sqrt(dist * dist - radius * radius) / dist;
 
         if radius > dist {
             return None;
         }
-        let cos_theta_max_from_p = f32::sqrt(dist * dist - radius * radius) / dist;
          // sample from p
         let uvw = ONB::build_from_w(&direction_centre);
         let sample_direction = uvw.local(&sample_sphere_cap(rv, cos_theta_max_from_p));
 
         let sample_ray = Ray::new(o.clone(), sample_direction);
 
-        // TODO : REPLACE THIS, not stable at all :(
-        let hit = self.intersect(&sample_ray).unwrap_or_else(|| {
-            panic!(
-                "dist : {}, radius:{:?}, sample_ray:{:?}, self:{:?}",
-                dist, radius, sample_ray, self
-            )
-        });
+        let hit = self.intersect(&sample_ray)?;
+        // // TODO : REPLACE THIS, not stable at all :(
+        // let hit = self.intersect(&sample_ray).unwrap_or_else(|| {
+        //     panic!(
+        //         "cos {} theta{}, dist : {}, radius:{:?}, sample_ray:{:?}, self:{:?}",
+        //         cos_theta_max_from_p, cos_theta_max_from_p.acos(), dist, radius, sample_ray, self
+        //     )
+        // });
         
         // // sample point on sphere directly
         // let cos_theta_max_from_center = dist / radius;

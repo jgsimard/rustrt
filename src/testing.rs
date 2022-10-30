@@ -19,8 +19,8 @@ use std::f32::consts::PI;
 use std::rc::Rc;
 
 pub trait SampleTest {
-    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3>;
-    fn pdf(&self, params: &mut SampleTestParameters, dir: &Vec3) -> f32;
+    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3>;
+    fn pdf(&self, params: &mut SampleTestParameters, dir: &Vec3, rv: f32) -> f32;
 }
 
 pub struct MaterialTest {
@@ -38,6 +38,7 @@ pub struct SampleTestParameters {
     image_width: usize,
     image_height: usize,
     num_samples: usize,
+
 }
 
 impl MaterialTest {
@@ -80,11 +81,11 @@ impl MaterialTest {
 }
 
 impl SampleTest for MaterialTest {
-    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3) -> f32 {
+    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3, _rv: f32) -> f32 {
         self.material.pdf(&self.incoming, dir, &self.hit)
     }
 
-    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3> {
+    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2, _rv1: f32) -> Option<Vec3> {
         if let Some(srec) = self.material.sample(&self.incoming, &self.hit, rv) {
             let dir = srec.wo;
             if srec.is_specular {
@@ -159,17 +160,15 @@ impl SurfaceTest {
 }
 
 impl SampleTest for SurfaceTest {
-    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3) -> f32 {
-        // TODO FIX THIS!
-        self.surface_group.pdf(&Vec3::zeros(), dir)
+    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3, rv: f32) -> f32 {
+        let pdf_child = self.surface_group.pdf_child(&Vec3::zeros(), dir, rv);
+        pdf_child
     }
 
-    fn sample(&self, _params: &mut SampleTestParameters, rv: &Vec2) -> Option<Vec3> {
-        if let Some(erec) = self.surface_group.sample(&Vec3::zeros(), rv) {
-            let dir = glm::normalize(&erec.wi);
-            return Some(dir);
-        }
-        return None;
+    fn sample(&self, _params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3> {
+        let erec = self.surface_group.sample_from_group(&Vec3::zeros(), rv, rv1)?;
+        let dir = glm::normalize(&erec.wi);
+        Some(dir)
     }
 }
 
@@ -216,6 +215,9 @@ impl SampleTestParameters {
 
         // Merge adjacent pixels to decrease noise in the histogram
         const HISTO_SUBSAMPLE: usize = 4;
+        const NB_SAMPLES: usize = 10;
+        let mut rng = rand::thread_rng();
+
 
         // Step 1: Evaluate pdf over the sphere and compute its integral
         let mut integral = 0.0;
@@ -229,18 +231,21 @@ impl SampleTestParameters {
                 let mut accum = 0.0;
                 for sx in 0..HISTO_SUBSAMPLE {
                     for sy in 0..HISTO_SUBSAMPLE {
-                        let pixel = Vec2::new(
-                            (HISTO_SUBSAMPLE * x + sx) as f32,
-                            (HISTO_SUBSAMPLE * y + sy) as f32,
-                        );
-                        let dir = self.pixel_to_direction(&pixel);
-                        let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
-                        let pixel_area = (PI / self.image_width as f32)
-                            * (PI * 2.0 / self.image_height as f32)
-                            * sin_theta;
-                        let value = sample_test.pdf(self, &dir);
-                        accum += value;
-                        integral += pixel_area * value;
+                        for s in 0..NB_SAMPLES {
+                            let pixel = Vec2::new(
+                                (HISTO_SUBSAMPLE * x + sx) as f32,
+                                (HISTO_SUBSAMPLE * y + sy) as f32,
+                            );
+                            let dir = self.pixel_to_direction(&pixel);
+                            let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
+                            let pixel_area = (PI / self.image_width as f32)
+                                * (PI * 2.0 / self.image_height as f32)
+                                * sin_theta;
+                            let value = sample_test.pdf(self, &dir, rng.gen());
+                            accum += value / (NB_SAMPLES as f32);
+                            integral += pixel_area * value / (NB_SAMPLES as f32);
+                        }
+                        
                     }
                 }
                 pdf[(x, y)] = accum / ((HISTO_SUBSAMPLE * HISTO_SUBSAMPLE) as f32);
@@ -255,12 +260,12 @@ impl SampleTestParameters {
 
         let mut valid_samples = 0;
         let mut nan_or_inf = false;
-        let mut rng = rand::thread_rng();
-        // Progress progress2(fmt::format("Generating samples {}", num_samples), num_samples);
         for _ in 0..self.num_samples {
-            if let Some(dir) = sample_test.sample(self, &Vec2::new(rng.gen(), rng.gen())) {
+            if let Some(dir) = sample_test.sample(self, &Vec2::new(rng.gen(), rng.gen()), rng.gen() ) {
+
                 if f32::is_nan(dir.x + dir.y + dir.z) || f32::is_infinite(dir.x + dir.y + dir.z) {
                     nan_or_inf = true;
+
                 }
                 // Map scattered direction to pixel in our sample histogram
                 let pixel = self.direction_to_pixel(&dir) / (HISTO_SUBSAMPLE as f32);
@@ -276,6 +281,7 @@ impl SampleTestParameters {
                 let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
                 let weight = (histogram.size() as f32)
                     / (PI * (2.0 * PI) * (self.num_samples as f32) * sin_theta);
+                
                 // Accumulate into histogram
                 histogram[(pixel.x as usize, pixel.y as usize)] += weight;
                 valid_samples += 1;

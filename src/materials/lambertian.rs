@@ -126,7 +126,7 @@ mod tests {
         });
 
         let (test, mut parameters) = MaterialTest::new(v);
-        parameters.run(&test, 1.0, 1e-4);
+        parameters.run(&test, 1.0, 1e-2);
     }
 
     #[test]

@@ -2,7 +2,6 @@ extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use partition::partition;
-use rand::Rng;
 use std::fmt::Write;
 
 use crate::aabb::Aabb;
@@ -34,9 +33,19 @@ impl Surface for LinearSurfaceGroup {
         return 1.0 / n_sufaces;
     }
 
+    fn pdf_child(&self, o: &Vec3, dir: &Vec3, rv: f32) -> f32 {
+        let index = (rv * (self.surfaces.len() as f32)) as usize;
+        self.surfaces[index].pdf(o, dir)
+    }
+
     fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
         let index = (rv.x * (self.surfaces.len() as f32)) as usize;
         self.surfaces[index].sample(origin, rv)
+    }
+
+    fn sample_from_group(&self,o: &Vec3,rv: &Vec2, rv1: f32) -> Option<EmitterRecord> {
+        let index = (rv1 * (self.surfaces.len() as f32)) as usize;
+        self.surfaces[index].sample(o, rv)
     }
 
     fn is_emissive(&self) -> bool {
