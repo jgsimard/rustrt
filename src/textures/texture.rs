@@ -1,14 +1,12 @@
-extern crate nalgebra_glm as glm;
-
 use enum_dispatch::enum_dispatch;
-use glm::Vec3;
-
+use nalgebra_glm::Vec3;
+use serde_json::{from_value, Value};
 use crate::image2d::Image2d;
 use crate::surfaces::surface::HitInfo;
 use crate::transform::read_transform;
 use crate::utils::read;
 
-use serde_json::{from_value, Value};
+
 
 #[enum_dispatch]
 pub trait Texture {

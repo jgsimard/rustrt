@@ -1,12 +1,13 @@
+extern crate nalgebra_glm as glm;
+use glm::Vec3;
+use rand::Rng;
+
 use crate::materials::material::Material;
 use crate::surfaces::surface::HitInfo;
-extern crate nalgebra_glm as glm;
 use crate::ray::Ray;
 use crate::surfaces::surface::ScatterRecord;
 use crate::textures::texture::{Texture, TextureType};
 use crate::utils::{luminance, reflect, reflectance, refract};
-use glm::Vec3;
-use rand::Rng;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Dielectric {

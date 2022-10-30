@@ -109,7 +109,6 @@ impl Surface for Quad {
             .material
             .emmitted(&Ray::new(o.clone(), wi), &hit)
             .unwrap_or_default();
-        // .map_or(Vec3::zeros(), |e| e / pdf);
 
         let erec = EmitterRecord {
             o: o.clone(),

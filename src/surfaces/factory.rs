@@ -1,5 +1,4 @@
 use crate::aabb::Aabb;
-// use crate::materials::factory::create_material;
 use crate::materials::factory::MaterialFactory;
 use crate::materials::material::MaterialType;
 use crate::surfaces::quad::Quad;

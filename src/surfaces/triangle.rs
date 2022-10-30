@@ -44,12 +44,6 @@ pub struct Mesh {
     pub bbox: Aabb,
 }
 
-// impl Mesh {
-//     pub fn empty(&self) -> bool {
-//         self.vertex_indices.is_empty() | self.vertex_positions.is_empty()
-//     }
-// }
-
 #[derive(Debug, PartialEq, Clone)]
 pub struct Triangle {
     pub mesh: Rc<Mesh>,
@@ -167,7 +161,6 @@ impl Surface for Triangle {
             .materials
             .emmitted(&Ray::new(origin.clone(), wi), &hit)
             .unwrap_or_default();
-        // .map_or(Vec3::zeros(), |e| e / pdf);
 
         let erec = EmitterRecord {
             o: origin.clone(),
