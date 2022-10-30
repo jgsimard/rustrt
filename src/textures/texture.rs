@@ -5,13 +5,20 @@ use glm::Vec3;
 
 use crate::image2d::Image2d;
 use crate::surfaces::surface::HitInfo;
-use crate::textures::perlin;
-use crate::transform::Transform;
+use crate::transform::read_transform;
+use crate::utils::read;
+
+use serde_json::{from_value, Value};
 
 #[enum_dispatch]
 pub trait Texture {
     fn value(&self, hit: &HitInfo) -> Option<Vec3>;
 }
+
+use crate::textures::checker::CheckerTexture;
+use crate::textures::constant::ConstantTexture;
+use crate::textures::image::ImageTexture;
+use crate::textures::marble::MarbleTexture;
 
 #[enum_dispatch(Texture)]
 #[derive(Debug, PartialEq, Clone)]
@@ -22,70 +29,64 @@ pub enum TextureType {
     MarbleTexture,
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct ConstantTexture {
-    pub color: Vec3,
-}
+pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
+    let v = j.get(thing_name).unwrap().clone();
+    let texture = if v.is_number() {
+        let thing_number: f32 = from_value(v).unwrap();
+        let color = Vec3::new(thing_number, thing_number, thing_number);
+        TextureType::from(ConstantTexture { color: color })
+    } else if v.is_array() {
+        let color = read::<Vec3>(j, thing_name);
+        TextureType::from(ConstantTexture { color: color })
+    } else if v.is_object() {
+        let texture_type = v
+            .get("type")
+            .expect("no texture type")
+            .as_str()
+            .expect("lolz");
 
-impl Texture for ConstantTexture {
-    fn value(&self, _hit: &HitInfo) -> Option<Vec3> {
-        Some(self.color)
-    }
-}
+        match texture_type {
+            "constant" => {
+                let color = read::<Vec3>(&v, "color");
+                TextureType::from(ConstantTexture { color: color })
+            }
+            "checker" => {
+                let even = Box::new(create_texture(&v, "even"));
+                let odd = Box::new(create_texture(&v, "odd"));
+                let scale = read::<f32>(&v, "scale");
+                let transform = read_transform(&v);
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct CheckerTexture {
-    pub odd_texture: Box<TextureType>,
-    pub even_texture: Box<TextureType>,
-    pub scale: f32,
-    pub transform: Transform,
-}
+                TextureType::from(CheckerTexture {
+                    odd_texture: odd,
+                    even_texture: even,
+                    scale: scale,
+                    transform: transform,
+                })
+            }
+            "marble" => {
+                let veins = Box::new(create_texture(&v, "veins"));
+                let base = Box::new(create_texture(&v, "base"));
+                let scale = read::<f32>(&v, "scale");
+                let transform = read_transform(&v);
+                TextureType::from(MarbleTexture {
+                    base: base,
+                    veins: veins,
+                    scale: scale,
+                    transform: transform,
+                })
+            }
+            "image" => {
+                let filename: String = read(&v, "filename");
+                let image = Image2d::load(filename);
 
-impl Texture for CheckerTexture {
-    fn value(&self, hit: &HitInfo) -> Option<Vec3> {
-        let p = self.transform.point(&hit.p);
-        // let sines = (p.x * self.scale).sin() *  (p.y * self.scale).sin() * (p.z * self.scale).sin();
-        let sines = (p.x / self.scale).sin() * (p.y / self.scale).sin() * (p.z / self.scale).sin();
-        if sines < 0.0 {
-            self.odd_texture.value(hit)
-        } else {
-            self.even_texture.value(hit)
+                TextureType::from(ImageTexture { image: image })
+            }
+            _ => {
+                unimplemented!("Texture type {}", texture_type);
+            }
         }
-    }
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct ImageTexture {
-    pub image: Image2d,
-}
-
-impl Texture for ImageTexture {
-    fn value(&self, hit: &HitInfo) -> Option<Vec3> {
-        let x = (self.image.size_x as f32) * hit.uv.x;
-        let y = (self.image.size_y as f32) * (1.0 - hit.uv.y);
-        let v = self.image[(x as usize, y as usize)];
-        Some(v)
-    }
-}
-#[derive(Debug, PartialEq, Clone)]
-pub struct MarbleTexture {
-    pub base: Box<TextureType>,
-    pub veins: Box<TextureType>,
-    pub scale: f32,
-    pub transform: Transform,
-}
-
-impl Texture for MarbleTexture {
-    fn value(&self, hit: &HitInfo) -> Option<Vec3> {
-        let t =
-            0.5 * (1.0 + (self.scale * hit.p.z + 10.0 * perlin::turb(hit.p, self.scale, 7)).sin());
-        let v = glm::lerp(
-            &self.veins.value(hit).unwrap(),
-            &self.base.value(hit).unwrap(),
-            t,
-        );
-
-        Some(v)
-        // None
-    }
+    } else {
+        panic!("unable to read texture {:?}", v);
+    };
+    texture
 }

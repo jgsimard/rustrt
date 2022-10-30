@@ -58,14 +58,9 @@ impl PinholeCamera {
         let vfov: f32 = from_value(json["vfov"].clone()).unwrap_or(90.);
         let transform = read_transform(json);
 
-        // Assignment 1: read the vertical field-of-view from j ("vfov"),
-        // and compute the width and height of the image plane. Remember that
-        // the "vfov" parameter is specified in degrees, but C++ math functions
-        // expect it in radians. You can use deg2rad() from common.h to convert
-        // from one to the other
         let height = 2.0 * focal_distance * deg2rad(vfov / 2.0).tan();
         let width = resolution[0] / resolution[1] * height;
-        let size = Vec2::new(width, -height); // FIXME : might need to change this
+        let size = Vec2::new(width, -height);
 
         PinholeCamera {
             transform: transform,
