@@ -46,7 +46,7 @@ pub trait Surface {
     fn is_emissive(&self) -> bool;
 }
 
-use crate::surfaces::accelerators::Bvh;
+use crate::surfaces::bvh::Bvh;
 use crate::surfaces::quad::Quad;
 use crate::surfaces::sphere::Sphere;
 use crate::surfaces::triangle::Triangle;
@@ -60,7 +60,7 @@ pub enum SurfaceType {
     Bvh,
 }
 
-use crate::surfaces::accelerators::LinearSurfaceGroup;
+use crate::surfaces::surface_group::LinearSurfaceGroup;
 
 #[enum_dispatch(Surface)]
 #[derive(Debug, PartialEq, Clone)]

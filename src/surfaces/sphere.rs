@@ -156,7 +156,7 @@ mod tests {
     use glm::Vec3;
     use std::rc::Rc;
 
-    use crate::materials::factory::create_texture;
+    use crate::textures::texture::create_texture;
     use crate::materials::lambertian::Lambertian;
     use crate::materials::material::MaterialType;
     use crate::ray::Ray;
