@@ -44,12 +44,21 @@ impl Material for Metal {
         Vec3::zeros()
     }
 
-    fn sample(&self, _wi: &Vec3, _hit: &HitInfo, _rv: &glm::Vec2) -> Option<ScatterRecord> {
-        None
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, _rv: &glm::Vec2) -> Option<ScatterRecord> {
+        let ray = Ray::new(hit.p - wi, *wi);
+        if let Some((attenuation, ray_out)) = self.scatter(&ray, hit) {
+            let srec = ScatterRecord {
+                attenuation: attenuation,
+                wo: ray_out.direction,
+                is_specular: true,
+            };
+            return Some(srec);
+        }
+        return None;
     }
 
     fn pdf(&self, _wi: &Vec3, _scattered: &Vec3, _hit: &HitInfo) -> f32 {
-        0.0
+        1.0
     }
 }
 
