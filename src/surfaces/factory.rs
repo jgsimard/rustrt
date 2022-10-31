@@ -203,12 +203,6 @@ impl Factory<SurfaceType> for SurfaceFactory {
 }
 
 impl SurfaceFactory {
-    pub fn new() -> SurfaceFactory {
-        SurfaceFactory {
-            material_factory: MaterialFactory::new(),
-        }
-    }
-
     fn get_material(&self, m: &Map<String, Value>) -> Rc<MaterialType> {
         let material = if let Some(mat) = m.get("material") {
             if mat.is_string() {

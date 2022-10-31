@@ -136,7 +136,7 @@ impl Quad {
 
 #[cfg(test)]
 mod tests {
-    use crate::testing::SurfaceTest;
+    use crate::tests::sample_test::SurfaceTest;
     use serde_json::json;
 
     #[test]

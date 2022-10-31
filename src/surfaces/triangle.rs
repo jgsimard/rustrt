@@ -324,7 +324,8 @@ mod tests {
         }
     }
 
-    use crate::testing::SurfaceTest;
+
+    use crate::tests::sample_test::SurfaceTest;
     #[test]
     fn triangle_monte_carlo() {
         let v = json!({

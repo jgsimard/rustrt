@@ -222,7 +222,8 @@ mod tests {
         }
     }
 
-    use crate::testing::SurfaceTest;
+    
+    use crate::tests::sample_test::SurfaceTest;
 
     #[test]
     fn sphere_monte_carlo() {

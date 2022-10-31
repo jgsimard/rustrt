@@ -109,7 +109,7 @@ mod tests {
         }
     }
 
-    use crate::testing::MaterialTest;
+    use crate::tests::sample_test::MaterialTest;
 
     #[test]
     fn lambertian_monte_carlo() {

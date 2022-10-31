@@ -41,8 +41,6 @@ pub struct SampleTestParameters {
 }
 
 impl MaterialTest {
-    // it is used in tests, but it gives me a warning : FIXME !
-    #[allow(unused)]
     pub fn new(v: Value) -> (MaterialTest, SampleTestParameters) {
         let mf = MaterialFactory::new();
         let material = mf.create_material(v["material"].clone());
@@ -110,8 +108,6 @@ pub struct SurfaceTest {
 }
 
 impl SurfaceTest {
-    // it is used in tests, but it gives me a warning : FIXME !
-    #[allow(unused)]
     pub fn new(v: Value) -> (SurfaceTest, SampleTestParameters) {
         let m = v.as_object().unwrap();
         let surface_json = if m.contains_key("surface") {
@@ -123,7 +119,7 @@ impl SurfaceTest {
             panic!("NOOOOO");
         };
 
-        let mut surface_facory = SurfaceFactory::new();
+        let mut surface_facory = SurfaceFactory{material_factory: MaterialFactory::new()};
         let mut surfaces_vec = Vec::new();
         if let Some(mut surface) = surface_facory.make(&surface_json.clone()) {
             surfaces_vec.append(&mut surface);
@@ -174,8 +170,6 @@ impl SampleTest for SurfaceTest {
 }
 
 impl SampleTestParameters {
-    // it is used in tests, but it gives me a warning : FIXME !
-    #[allow(unused)]
     fn print_more_statistics(&self) {
         if self.any_specular {
             println!("is_specular is set. It should not be.")
@@ -188,8 +182,6 @@ impl SampleTestParameters {
         }
     }
 
-    // it is used in tests, but it gives me a warning : FIXME !
-    #[allow(unused)]
     fn pixel_to_direction(&self, pixel: &Vec2) -> Vec3 {
         let image_width = self.image_width as f32;
         let image_height = self.image_height as f32;
@@ -198,8 +190,6 @@ impl SampleTestParameters {
         return spherical_coordinates_to_direction(&a.component_mul(&b));
     }
 
-    // it is used in tests, but it gives me a warning : FIXME !
-    #[allow(unused)]
     fn direction_to_pixel(&self, dir: &Vec3) -> Vec2 {
         let image_width = self.image_width as f32;
         let image_height = self.image_height as f32;
@@ -208,8 +198,6 @@ impl SampleTestParameters {
         return a.component_mul(&b);
     }
 
-    // it is used in tests, but it gives me a warning : FIXME !
-    #[allow(unused)]
     pub fn run(&mut self, sample_test: &dyn SampleTest, target: f32, epsilon: f32) {
         println!("---------------------------------------------------------------------------\n");
         println!("Running sample test for \"{}\"\n", self.name);
@@ -231,7 +219,7 @@ impl SampleTestParameters {
                 let mut accum = 0.0;
                 for sx in 0..HISTO_SUBSAMPLE {
                     for sy in 0..HISTO_SUBSAMPLE {
-                        for s in 0..NB_SAMPLES {
+                        for _ in 0..NB_SAMPLES {
                             let pixel = Vec2::new(
                                 (HISTO_SUBSAMPLE * x + sx) as f32,
                                 (HISTO_SUBSAMPLE * y + sy) as f32,
@@ -338,6 +326,7 @@ impl SampleTestParameters {
         self.print_more_statistics();
     }
 }
+
 
 fn generate_heatmap(density: &Array2d<f32>, max_value: f32) -> Image2d {
     let mut result = Image2d::new(density.size_x, density.size_y);

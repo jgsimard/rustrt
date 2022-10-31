@@ -9,10 +9,12 @@ mod samplers;
 mod sampling;
 mod scene;
 mod surfaces;
-mod testing;
 mod textures;
 mod transform;
 mod utils;
+
+#[cfg(test)]
+mod tests;
 
 mod example_scenes;
 
