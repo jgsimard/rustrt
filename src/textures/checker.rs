@@ -2,8 +2,10 @@ extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
 use crate::surfaces::surface::HitInfo;
-use crate::textures::texture::{Texture, TextureType};
-use crate::transform::Transform;
+use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::transform::{read_transform, Transform};
+use crate::utils::read;
+use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct CheckerTexture {
@@ -23,5 +25,21 @@ impl Texture for CheckerTexture {
         } else {
             self.even_texture.value(hit)
         }
+    }
+}
+
+impl CheckerTexture {
+    pub fn new(v: &Value) -> CheckerTexture {
+        let even = Box::new(create_texture(&v, "even"));
+        let odd = Box::new(create_texture(&v, "odd"));
+        let scale = read::<f32>(&v, "scale");
+        let transform = read_transform(&v);
+
+        return CheckerTexture {
+            odd_texture: odd,
+            even_texture: even,
+            scale: scale,
+            transform: transform,
+        };
     }
 }

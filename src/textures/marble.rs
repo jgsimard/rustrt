@@ -3,8 +3,10 @@ use glm::Vec3;
 
 use crate::surfaces::surface::HitInfo;
 use crate::textures::perlin;
-use crate::textures::texture::{Texture, TextureType};
-use crate::transform::Transform;
+use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::transform::{read_transform, Transform};
+use crate::utils::read;
+use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct MarbleTexture {
@@ -26,6 +28,20 @@ impl Texture for MarbleTexture {
         );
 
         Some(v)
-        // None
+    }
+}
+
+impl MarbleTexture {
+    pub fn new(v: &Value) -> MarbleTexture {
+        let veins = Box::new(create_texture(&v, "veins"));
+        let base = Box::new(create_texture(&v, "base"));
+        let scale = read::<f32>(&v, "scale");
+        let transform = read_transform(&v);
+        MarbleTexture {
+            base: base,
+            veins: veins,
+            scale: scale,
+            transform: transform,
+        }
     }
 }
