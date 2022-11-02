@@ -2,10 +2,16 @@ use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
+use crate::utils::{INTERSECTION_TEST};
+use crate::aabb::Aabb;
+
+
+
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
-use crate::aabb::Aabb;
 use glm::{Vec2, Vec3};
+use std::sync::atomic::Ordering;
+
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Quad {
@@ -16,6 +22,7 @@ pub struct Quad {
 
 impl Surface for Quad {
     fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+        INTERSECTION_TEST.fetch_add(1, Ordering::SeqCst);
         // compute ray intersection (and ray parameter), continue if not hit
         // put ray into sphere frame
         let ray_transformed = self.transform.inverse().ray(ray);

@@ -119,7 +119,9 @@ impl SurfaceTest {
             panic!("NOOOOO");
         };
 
-        let mut surface_facory = SurfaceFactory{material_factory: MaterialFactory::new()};
+        let mut surface_facory = SurfaceFactory {
+            material_factory: MaterialFactory::new(),
+        };
         let mut surfaces_vec = Vec::new();
         if let Some(mut surface) = surface_facory.make(&surface_json.clone()) {
             surfaces_vec.append(&mut surface);
@@ -326,7 +328,6 @@ impl SampleTestParameters {
         self.print_more_statistics();
     }
 }
-
 
 fn generate_heatmap(density: &Array2d<f32>, max_value: f32) -> Image2d {
     let mut result = Image2d::new(density.size_x, density.size_y);

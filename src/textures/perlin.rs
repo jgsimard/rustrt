@@ -31,7 +31,7 @@ lazy_static::lazy_static! {
     pub static ref PERM_Z: Vec<u8> = generate_perm(&mut thread_rng());
 }
 
-fn trilinear_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f32 {
+fn perlin_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f32 {
     let mut accum = 0.;
     let uvw3 = uvw
         .component_mul(&uvw)
@@ -67,17 +67,18 @@ pub fn noise(p: Vec3, scale: f32) -> f32 {
             }
         }
     }
-    trilinear_interp(&corners, uvw)
+    perlin_interp(&corners, uvw)
 }
 
-pub fn turb(p: Vec3, scale_: f32, depth: usize) -> f32 {
+pub fn turbulant_noise(p: Vec3, scale_: f32, depth: usize) -> f32 {
     let mut accum = 0.;
     let mut weight = 1.;
     let mut scale = scale_;
+
     for _ in 0..depth {
         accum += weight * noise(p, scale);
         weight *= 0.5;
         scale *= 2.0;
     }
-    accum.abs()
+    f32::abs(accum)
 }

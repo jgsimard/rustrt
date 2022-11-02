@@ -1,7 +1,7 @@
 extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
 use crate::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
+use glm::{Vec2, Vec3};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct LinearSurfaceGroup {

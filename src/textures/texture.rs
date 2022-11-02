@@ -1,12 +1,10 @@
-use enum_dispatch::enum_dispatch;
-use nalgebra_glm::Vec3;
-use serde_json::{from_value, Value};
 use crate::image2d::Image2d;
 use crate::surfaces::surface::HitInfo;
 use crate::transform::read_transform;
 use crate::utils::read;
-
-
+use enum_dispatch::enum_dispatch;
+use nalgebra_glm::Vec3;
+use serde_json::{from_value, Value};
 
 #[enum_dispatch]
 pub trait Texture {
@@ -95,8 +93,8 @@ mod tests {
     use nalgebra_glm::Vec3;
     use serde_json::json;
 
-    use crate::textures::texture::create_texture;
     use crate::textures::constant::ConstantTexture;
+    use crate::textures::texture::create_texture;
 
     use super::TextureType;
 
@@ -106,7 +104,7 @@ mod tests {
         let v = json!({
             "albedo": "XX"
         });
-        create_texture(&v, "albedo");        
+        create_texture(&v, "albedo");
     }
 
     #[test]
@@ -115,8 +113,12 @@ mod tests {
             "albedo": 1.0
         });
 
-        let texture = create_texture(&v, "albedo");        
-        assert!(TextureType::ConstantTexture( ConstantTexture{ color: Vec3::new(1.0, 1.0, 1.0) }) == texture);
+        let texture = create_texture(&v, "albedo");
+        assert!(
+            TextureType::ConstantTexture(ConstantTexture {
+                color: Vec3::new(1.0, 1.0, 1.0)
+            }) == texture
+        );
     }
 
     #[test]
@@ -125,8 +127,12 @@ mod tests {
             "albedo": [1.0, 1.0, 1.0]
         });
 
-        let texture = create_texture(&v, "albedo");        
-        assert!(TextureType::ConstantTexture( ConstantTexture{ color: Vec3::new(1.0, 1.0, 1.0) }) == texture);
+        let texture = create_texture(&v, "albedo");
+        assert!(
+            TextureType::ConstantTexture(ConstantTexture {
+                color: Vec3::new(1.0, 1.0, 1.0)
+            }) == texture
+        );
     }
 
     #[test]
@@ -138,8 +144,12 @@ mod tests {
             }
         });
 
-        let texture = create_texture(&v, "albedo");        
-        assert!(TextureType::ConstantTexture( ConstantTexture{ color: Vec3::new(0.73, 0.73, 0.73) }) == texture);
+        let texture = create_texture(&v, "albedo");
+        assert!(
+            TextureType::ConstantTexture(ConstantTexture {
+                color: Vec3::new(0.73, 0.73, 0.73)
+            }) == texture
+        );
     }
 
     #[test]
@@ -154,14 +164,16 @@ mod tests {
                     0.9, 0.9, 0.9
                 ],
                 "scale": 0.1
-            } 
+            }
         });
 
-        let texture = create_texture(&v, "albedo");    
+        let texture = create_texture(&v, "albedo");
         match texture {
-            TextureType::CheckerTexture{ .. } => {}
-            _ => {panic!("Did not work")}
-        }    
+            TextureType::CheckerTexture { .. } => {}
+            _ => {
+                panic!("Did not work")
+            }
+        }
     }
 
     #[test]
@@ -172,14 +184,16 @@ mod tests {
                 "scale": 2,
                 "veins": 0,
                 "base": 0.9
-            } 
+            }
         });
 
-        let texture = create_texture(&v, "albedo");    
+        let texture = create_texture(&v, "albedo");
         match texture {
-            TextureType::MarbleTexture{ .. } => {}
-            _ => {panic!("Did not work")}
-        }    
+            TextureType::MarbleTexture { .. } => {}
+            _ => {
+                panic!("Did not work")
+            }
+        }
     }
 
     #[test]
@@ -192,14 +206,16 @@ mod tests {
                     0.08, 0.1, 0.08
                 ],
                 "base": [0.38, 0.4, 0.38]
-            } 
+            }
         });
 
-        let texture = create_texture(&v, "albedo");    
+        let texture = create_texture(&v, "albedo");
         match texture {
-            TextureType::MarbleTexture{ .. } => {}
-            _ => {panic!("Did not work")}
-        }    
+            TextureType::MarbleTexture { .. } => {}
+            _ => {
+                panic!("Did not work")
+            }
+        }
     }
 
     #[test]
@@ -208,13 +224,15 @@ mod tests {
             "albedo": {
                 "type": "image",
                 "filename": "assets/earth.jpg"
-            } 
+            }
         });
 
-        let texture = create_texture(&v, "albedo");    
+        let texture = create_texture(&v, "albedo");
         match texture {
-            TextureType::ImageTexture{ .. } => {}
-            _ => {panic!("Did not work")}
-        }    
+            TextureType::ImageTexture { .. } => {}
+            _ => {
+                panic!("Did not work")
+            }
+        }
     }
 }

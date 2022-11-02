@@ -1,5 +1,8 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
+use std::sync::atomic::Ordering;
+
+use crate::utils::RAYS;
 
 // use nalgebra::Unit;
 
@@ -15,6 +18,7 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Vec3, direction: Vec3) -> Ray {
+        RAYS.fetch_add(1, Ordering::SeqCst);
         Ray {
             origin: origin,
             direction: direction,

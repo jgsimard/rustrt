@@ -31,12 +31,16 @@ impl Scene {
     /// parse the sampler
     pub fn get_sampler_json(map_json: Map<String, Value>) -> Value {
         if map_json.contains_key("sampler") {
-            let mut sampler_json = (*map_json.get("sampler").unwrap()).clone();
-            if !sampler_json.as_object().unwrap().contains_key("type") {
+            let mut sampler_map = (*map_json.get("sampler").unwrap()).as_object().unwrap().clone(); 
+            if !sampler_map.contains_key("type") {
                 println!("No sampler 'type' specified, assuming independent sampling.");
-                sampler_json["type"] = serde_json::from_str("independent").unwrap();
+                sampler_map.insert("type".to_string(), json!("independent"));
             }
-            sampler_json
+            if !sampler_map.contains_key("samples") {
+                println!("Number of samples is not specified, assuming 1.");
+                sampler_map.insert("samples".to_string(), json!(1));
+            }
+            serde_json::to_value(sampler_map).unwrap()
         } else {
             println!("No sampler specified, defaulting to 1 spp independent sampling.");
             json!({"type" : "independent", "samples": 1})

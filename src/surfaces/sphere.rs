@@ -5,11 +5,12 @@ use crate::ray::Ray;
 use crate::sampling::{sample_sphere_cap, sample_sphere_cap_pdf};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
-use crate::utils::direction_to_spherical_uv;
+use crate::utils::{direction_to_spherical_uv, INTERSECTION_TEST};
 
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use std::rc::Rc;
+use std::sync::atomic::Ordering;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Sphere {
@@ -29,6 +30,7 @@ impl Sphere {
 
 impl Surface for Sphere {
     fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+        INTERSECTION_TEST.fetch_add(1, Ordering::SeqCst);
         // put ray into sphere frame
         let ray_transformed = self.transform.inverse().ray(ray);
 
@@ -155,12 +157,12 @@ mod tests {
     use glm::Vec3;
     use std::rc::Rc;
 
-    use crate::textures::texture::create_texture;
     use crate::materials::lambertian::Lambertian;
     use crate::materials::material::MaterialType;
     use crate::ray::Ray;
     use crate::surfaces::sphere::Sphere;
     use crate::surfaces::surface::Surface;
+    use crate::textures::texture::create_texture;
     use crate::transform::Transform;
 
     use serde_json::json;
@@ -222,7 +224,6 @@ mod tests {
         }
     }
 
-    
     use crate::tests::sample_test::SurfaceTest;
 
     #[test]

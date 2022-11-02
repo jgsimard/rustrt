@@ -30,6 +30,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
+
 #[derive(Parser)]
 struct Cli {
     /// The filename of the JSON scenefile to load (or the string \"example_sceneN\", where N is 0, 1, 2, or 3).
@@ -63,19 +64,25 @@ fn read_scene_from_file<P: AsRef<Path>>(path: P) -> Result<Value, Box<dyn Error>
     Ok(j)
 }
 
+// static RAYS : RelaxedCounter  = RelaxedCounter::new(initial_count);
+use crate::utils::INTERSECTION_TEST;
+use crate::utils::RAYS;
+use std::sync::atomic::Ordering;
+
+
 fn main() {
     let args = Cli::parse();
 
-    println!("scene : {}", args.scene.to_string_lossy());
+    println!("scene : {:?}", args.scene);
 
     let scene_json = if args.scene.exists() {
-        println!("existing file");
+        println!("scene existing file");
         read_scene_from_file(args.scene).unwrap()
     } else if args.scene.to_string_lossy().parse::<i32>().is_ok() {
         let index = args.scene.to_string_lossy().parse::<i32>().unwrap();
         create_example_scene(index)
     } else {
-        panic!("I dont know how to parse {}", args.scene.to_string_lossy());
+        panic!("I dont know how to parse {:?}", args.scene);
     };
     // println!("{}", scene_json);
 
@@ -85,10 +92,10 @@ fn main() {
 
     let image = scene.raytrace();
 
-    // println!("Number of intersection tests: {}", intersection_tests);
-    // println!("Number of rays traced: {}", rays_traced);
-    // println!("Average number of intersection tests per ray: {}", (intersection_tests as f32) / (rays_traced as f32));
-    // println!("Writing rendered image to file \"{}\"...", outfile);
+    println!("Number of intersection tests: {:?}", INTERSECTION_TEST);
+    println!("Number of rays traced: {:?}", RAYS);
+    println!("Average number of intersection tests per ray: {}", (INTERSECTION_TEST.load(Ordering::SeqCst) as f32) / (RAYS.load(Ordering::SeqCst) as f32));
+    println!("Writing rendered image to file {:?}", args.outfile);
 
     image.save(args.outfile.to_str().unwrap().to_string());
 

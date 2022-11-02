@@ -16,8 +16,9 @@ pub struct MarbleTexture {
 
 impl Texture for MarbleTexture {
     fn value(&self, hit: &HitInfo) -> Option<Vec3> {
-        let t =
-            0.5 * (1.0 + (self.scale * hit.p.z + 10.0 * perlin::turb(hit.p, self.scale, 7)).sin());
+        let t = 0.5
+            * (1.0
+                + f32::sin(self.scale * hit.p.z + 10.0 * perlin::turbulant_noise(hit.p, 1.0, 7)));
         let v = glm::lerp(
             &self.veins.value(hit).unwrap(),
             &self.base.value(hit).unwrap(),

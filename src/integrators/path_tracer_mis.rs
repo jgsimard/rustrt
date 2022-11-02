@@ -37,7 +37,9 @@ impl Integrator for PathTracerMISIntegrator {
 
         for _ in 0..=self.max_bounces {
             if let Some(hit) = scene.intersect(&ray) {
+                // emitted contibution
                 let emitted = hit.mat.emmitted(&ray, &hit).unwrap_or(BLACK);
+                radiance += emitted.component_mul(&attenuation);
 
                 // sample material
                 let rv_mat = sampler.next2f();
@@ -79,8 +81,8 @@ impl Integrator for PathTracerMISIntegrator {
                     let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
                     if light_visible {
                         let mat_eval = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit);
-                        // let mut light = mat_eval / pdf_light;
-                        let mut light = mat_eval / pdf_avg;
+                        let mut light = mat_eval / pdf_light;
+                        // let mut light = mat_eval / pdf_avg;
 
                         light = light.component_mul(&emit_rec.emitted);
                         light = light.component_mul(&attenuation);
@@ -89,9 +91,6 @@ impl Integrator for PathTracerMISIntegrator {
                         radiance += light * weight_light;
                     }
                 }
-
-                // emitted contibution
-                radiance += emitted.component_mul(&attenuation);
 
                 // update for next bounce
                 let mut mat_attenuation = if srec.is_specular {

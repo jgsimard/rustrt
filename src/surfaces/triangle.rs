@@ -4,11 +4,13 @@ use crate::ray::Ray;
 use crate::sampling::{sample_triangle, sample_triangle_pdf};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
+use crate::utils::INTERSECTION_TEST;
 
 use nalgebra::{Vector2, Vector3};
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
+use std::sync::atomic::Ordering;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Mesh {
@@ -59,6 +61,8 @@ impl Triangle {
 
 impl Surface for Triangle {
     fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+        INTERSECTION_TEST.fetch_add(1, Ordering::SeqCst);
+
         // vertices
         let iv = self.mesh.vertex_indices[self.face_idx];
 
@@ -323,7 +327,6 @@ mod tests {
             assert!(false, "did not hit")
         }
     }
-
 
     use crate::tests::sample_test::SurfaceTest;
     #[test]
