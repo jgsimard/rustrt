@@ -1,6 +1,4 @@
-use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use serde_json::{json, Map, Value};
-use std::fmt::Write;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 
@@ -16,7 +14,7 @@ use crate::surfaces::factory::SurfaceFactory;
 use crate::surfaces::surface::EmitterRecord;
 use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
 use crate::surfaces::surface_group::LinearSurfaceGroup;
-use crate::utils::{read_v_or_f, Factory};
+use crate::utils::{get_progress_bar, read_v_or_f, Factory};
 
 pub struct Scene {
     pub surfaces: SurfaceGroupType,
@@ -31,7 +29,10 @@ impl Scene {
     /// parse the sampler
     pub fn get_sampler_json(map_json: Map<String, Value>) -> Value {
         if map_json.contains_key("sampler") {
-            let mut sampler_map = (*map_json.get("sampler").unwrap()).as_object().unwrap().clone(); 
+            let mut sampler_map = (*map_json.get("sampler").unwrap())
+                .as_object()
+                .unwrap()
+                .clone();
             if !sampler_map.contains_key("type") {
                 println!("No sampler 'type' specified, assuming independent sampling.");
                 sampler_map.insert("type".to_string(), json!("independent"));
@@ -61,7 +62,6 @@ impl Scene {
             "camera".to_string(),
             "sampler".to_string(),
             "background".to_string(),
-            "max_depth".to_string(),
         ];
 
         for key in map_json.keys() {
@@ -154,12 +154,7 @@ impl Scene {
         let sample_count = sampler.sample_count();
 
         println!("Rendering ...");
-        let progress_bar = ProgressBar::new(image.size() as u64);
-        progress_bar.set_style(
-            ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos:>7}/{len:7} ({eta})")
-            .unwrap()
-            .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
-            .progress_chars("#>-"));
+        let progress_bar = get_progress_bar(image.size());
 
         // Generate a ray for each pixel in the ray image
         for y in 0..image.size_y {

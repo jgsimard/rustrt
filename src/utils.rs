@@ -1,7 +1,9 @@
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
+use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use rand::Rng;
 use serde_json::{from_value, Value};
+use std::fmt::Write;
 use std::ops::{Add, Mul, Sub};
 
 pub const INV_FOURPI: f32 = 1.0 / (4.0 * std::f32::consts::PI);
@@ -11,6 +13,20 @@ use std::sync::atomic::AtomicUsize;
 pub static RAYS: AtomicUsize = AtomicUsize::new(0);
 pub static INTERSECTION_TEST: AtomicUsize = AtomicUsize::new(0);
 
+pub fn get_progress_bar(size: usize) -> ProgressBar {
+    let progress_bar = ProgressBar::new(size as u64);
+    progress_bar.set_style(
+        ProgressStyle::with_template(
+            "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos:>7}/{len:7} ({eta})",
+        )
+        .unwrap()
+        .with_key("eta", |state: &ProgressState, w: &mut dyn Write| {
+            write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap()
+        })
+        .progress_chars("#>-"),
+    );
+    return progress_bar;
+}
 pub fn sincos(x: f32) -> (f32, f32) {
     (f32::sin(x), f32::cos(x))
 }

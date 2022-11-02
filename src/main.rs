@@ -30,7 +30,6 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
-
 #[derive(Parser)]
 struct Cli {
     /// The filename of the JSON scenefile to load (or the string \"example_sceneN\", where N is 0, 1, 2, or 3).
@@ -69,7 +68,6 @@ use crate::utils::INTERSECTION_TEST;
 use crate::utils::RAYS;
 use std::sync::atomic::Ordering;
 
-
 fn main() {
     let args = Cli::parse();
 
@@ -94,7 +92,10 @@ fn main() {
 
     println!("Number of intersection tests: {:?}", INTERSECTION_TEST);
     println!("Number of rays traced: {:?}", RAYS);
-    println!("Average number of intersection tests per ray: {}", (INTERSECTION_TEST.load(Ordering::SeqCst) as f32) / (RAYS.load(Ordering::SeqCst) as f32));
+    println!(
+        "Average number of intersection tests per ray: {}",
+        (INTERSECTION_TEST.load(Ordering::SeqCst) as f32) / (RAYS.load(Ordering::SeqCst) as f32)
+    );
     println!("Writing rendered image to file {:?}", args.outfile);
 
     image.save(args.outfile.to_str().unwrap().to_string());

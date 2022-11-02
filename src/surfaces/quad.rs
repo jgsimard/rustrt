@@ -1,17 +1,14 @@
+use crate::aabb::Aabb;
 use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::transform::Transform;
-use crate::utils::{INTERSECTION_TEST};
-use crate::aabb::Aabb;
-
-
+use crate::utils::INTERSECTION_TEST;
 
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use std::sync::atomic::Ordering;
-
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Quad {

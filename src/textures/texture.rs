@@ -114,11 +114,10 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        assert!(
-            TextureType::ConstantTexture(ConstantTexture {
-                color: Vec3::new(1.0, 1.0, 1.0)
-            }) == texture
-        );
+        let target_texture = TextureType::from(ConstantTexture {
+            color: Vec3::new(1.0, 1.0, 1.0),
+        });
+        assert_eq!(target_texture, texture);
     }
 
     #[test]
@@ -128,11 +127,10 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        assert!(
-            TextureType::ConstantTexture(ConstantTexture {
-                color: Vec3::new(1.0, 1.0, 1.0)
-            }) == texture
-        );
+        let target_texture = TextureType::from(ConstantTexture {
+            color: Vec3::new(1.0, 1.0, 1.0),
+        });
+        assert_eq!(target_texture, texture);
     }
 
     #[test]
@@ -145,11 +143,10 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        assert!(
-            TextureType::ConstantTexture(ConstantTexture {
-                color: Vec3::new(0.73, 0.73, 0.73)
-            }) == texture
-        );
+        let target_texture = TextureType::from(ConstantTexture {
+            color: Vec3::new(0.73, 0.73, 0.73),
+        });
+        assert_eq!(target_texture, texture);
     }
 
     #[test]
@@ -168,12 +165,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        match texture {
-            TextureType::CheckerTexture { .. } => {}
-            _ => {
-                panic!("Did not work")
-            }
-        }
+        assert!(matches!(texture, TextureType::CheckerTexture { .. }));
     }
 
     #[test]
@@ -188,12 +180,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        match texture {
-            TextureType::MarbleTexture { .. } => {}
-            _ => {
-                panic!("Did not work")
-            }
-        }
+        assert!(matches!(texture, TextureType::MarbleTexture { .. }));
     }
 
     #[test]
@@ -210,12 +197,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        match texture {
-            TextureType::MarbleTexture { .. } => {}
-            _ => {
-                panic!("Did not work")
-            }
-        }
+        assert!(matches!(texture, TextureType::MarbleTexture { .. }));
     }
 
     #[test]
@@ -228,11 +210,8 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        match texture {
-            TextureType::ImageTexture { .. } => {}
-            _ => {
-                panic!("Did not work")
-            }
-        }
+
+        assert!(matches!(texture, TextureType::ImageTexture { .. }));
+    
     }
 }

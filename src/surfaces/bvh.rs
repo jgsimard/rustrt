@@ -1,12 +1,12 @@
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
-use indicatif::{ProgressBar, ProgressState, ProgressStyle};
+use indicatif::ProgressBar;
 use partition::partition;
-use std::fmt::Write;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
+use crate::utils::get_progress_bar;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Bvh {
@@ -48,12 +48,7 @@ impl Bvh {
     pub fn new(surfaces: &mut Vec<SurfaceType>) -> Bvh {
         let max_leaf_size = 3;
         println!("Building BVH...");
-        let progress_bar = ProgressBar::new(surfaces.len() as u64);
-        progress_bar.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos:>7}/{len:7} ({eta})")
-            .unwrap()
-            .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
-            .progress_chars("#>-"));
-
+        let progress_bar = get_progress_bar(surfaces.len());
         let bvh = Bvh::new_node(surfaces.as_mut_slice(), 0, max_leaf_size, &progress_bar);
         println!("Building BVH... Done in {:?}", progress_bar.elapsed());
         return bvh;
