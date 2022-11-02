@@ -10,10 +10,10 @@ use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct MarbleTexture {
-    pub base: Box<TextureType>,
-    pub veins: Box<TextureType>,
-    pub scale: f32,
-    pub transform: Transform,
+    base: Box<TextureType>,
+    veins: Box<TextureType>,
+    scale: f32,
+    transform: Transform,
 }
 
 impl Texture for MarbleTexture {

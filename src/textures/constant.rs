@@ -8,7 +8,7 @@ use crate::textures::texture::Texture;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ConstantTexture {
-    pub color: Vec3,
+    color: Vec3,
 }
 
 impl Texture for ConstantTexture {

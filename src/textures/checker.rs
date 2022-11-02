@@ -9,10 +9,10 @@ use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct CheckerTexture {
-    pub odd_texture: Box<TextureType>,
-    pub even_texture: Box<TextureType>,
-    pub scale: f32,
-    pub transform: Transform,
+    odd_texture: Box<TextureType>,
+    even_texture: Box<TextureType>,
+    scale: f32,
+    transform: Transform,
 }
 
 impl Texture for CheckerTexture {
