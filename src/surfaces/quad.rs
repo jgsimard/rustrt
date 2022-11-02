@@ -1,19 +1,20 @@
 use crate::aabb::Aabb;
 use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
-use crate::transform::Transform;
-use crate::utils::INTERSECTION_TEST;
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
+use crate::transform::{read_transform, Transform};
+use crate::utils::{read, INTERSECTION_TEST};
 
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
+use serde_json::Value;
 use std::sync::atomic::Ordering;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Quad {
-    pub size: Vec2,
-    pub transform: Transform,
+    size: Vec2,
+    transform: Transform,
     pub material: Rc<MaterialType>,
 }
 
@@ -135,6 +136,26 @@ impl Quad {
         const EPS: f32 = 1e-4 as f32;
         let v = glm::vec3(self.size.x + EPS, self.size.y + EPS, EPS);
         Aabb { min: -v, max: v }
+    }
+
+    pub fn new(v: &Value, sf: &SurfaceFactory) -> Quad {
+        let m = v.as_object().unwrap();
+        let size = if m.get("size").unwrap().is_number() {
+            let s = read(v, "size");
+            Vec2::new(s, s)
+        } else {
+            read::<Vec2>(v, "size")
+        };
+        let size = size / 2.0;
+
+        let transform = read_transform(v);
+        let material = sf.get_material(m);
+
+        Quad {
+            size,
+            transform,
+            material,
+        }
     }
 }
 

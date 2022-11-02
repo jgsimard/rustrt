@@ -3,13 +3,15 @@ use crate::materials::material::{Material, MaterialType};
 use crate::ray::Ray;
 use crate::sampling::{sample_triangle, sample_triangle_pdf};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
-use crate::transform::Transform;
-use crate::utils::INTERSECTION_TEST;
+use crate::surfaces::surface::{SurfaceFactory, SurfaceType};
+use crate::transform::{read_transform, Transform};
+use crate::utils::{read, INTERSECTION_TEST};
 
 use nalgebra::{Vector2, Vector3};
 use std::rc::Rc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
+use serde_json::Value;
 use std::sync::atomic::Ordering;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -46,10 +48,143 @@ pub struct Mesh {
     pub bbox: Aabb,
 }
 
+impl Mesh {
+    pub fn read(v: &Value, sf: &SurfaceFactory) -> Vec<SurfaceType> {
+        let transform = read_transform(v);
+        let filename: String = read(v, "filename");
+
+        let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
+
+        assert!(obj.is_ok());
+        let (models, _) = obj.expect("Failed to load OBJ file");
+        let mesh = &models[0].mesh;
+        let vs: Vec<Vec3> = mesh
+            .positions
+            .chunks(3)
+            .map(|p| transform.point(&Vec3::new(p[0], p[1], p[2])))
+            .collect();
+
+        let mut aabb = Aabb::new();
+        for vertex in vs.iter() {
+            aabb.enclose_point(&vertex);
+        }
+
+        let ns: Vec<Vec3> = mesh
+            .normals
+            .chunks(3)
+            .map(|p| Vec3::new(p[0], p[1], p[2]))
+            .collect();
+
+        let uvs: Vec<Vec2> = mesh
+            .texcoords
+            .chunks(2)
+            .map(|p| Vec2::new(p[0], p[1]))
+            .collect();
+
+        let vertex_indices: Vec<Vector3<usize>> = mesh
+            .indices
+            .chunks(3)
+            .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+            .collect();
+
+        let normal_indices: Vec<Vector3<usize>> = mesh
+            .normal_indices
+            .chunks(3)
+            .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+            .collect();
+
+        let texture_indices: Vec<Vector3<usize>> = mesh
+            .texcoord_indices
+            .chunks(3)
+            .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+            .collect();
+
+        assert!(mesh.positions.len() % 3 == 0);
+
+        let m = v.as_object().unwrap();
+        let material = sf.get_material(m);
+
+        let n_triangles = vertex_indices.len();
+        let my_mesh = Mesh {
+            vertex_positions: vs,
+            vertex_normals: ns,
+            uvs: uvs,
+            vertex_indices: vertex_indices,
+            normal_indices: normal_indices,
+            texture_indices: texture_indices,
+            material_indices: Vec::new(),
+            materials: material,
+            transform: transform,
+            bbox: aabb,
+        };
+
+        let rc_mesh = Rc::new(my_mesh);
+
+        (0..n_triangles)
+            .into_iter()
+            .map(|i| {
+                SurfaceType::from(Triangle {
+                    mesh: rc_mesh.clone(),
+                    face_idx: i,
+                })
+            })
+            .collect()
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Triangle {
     pub mesh: Rc<Mesh>,
     pub face_idx: usize,
+}
+
+impl Triangle {
+    pub fn new(v: &Value, sf: &SurfaceFactory) -> Triangle {
+        let m = v.as_object().unwrap();
+        let transform = read_transform(v);
+        let material = sf.get_material(m);
+        if !m.contains_key("positions") {
+            panic!("Triangle should have 'positions'");
+        }
+        let pos = read::<Vec<Vec3>>(v, "positions");
+
+        let mut aabb = Aabb::new();
+        for vertex in pos.iter() {
+            aabb.enclose_point(&vertex);
+        }
+
+        let (normals, normal_indices) = if m.contains_key("normals") {
+            (read::<Vec<Vec3>>(v, "normals"), vec![Vector3::new(0, 1, 2)])
+        } else {
+            println!("no normals in triangle");
+            (Vec::new(), Vec::new())
+        };
+
+        let (uvs, texture_indices) = if m.contains_key("uvs") {
+            (read::<Vec<Vec2>>(v, "uvs"), vec![Vector3::new(0, 1, 2)])
+        } else {
+            println!("no texture in triangle");
+            (Vec::new(), Vec::new())
+        };
+
+        let mesh = Mesh {
+            vertex_positions: pos,
+            vertex_normals: normals,
+            uvs: uvs,
+            vertex_indices: vec![Vector3::new(0, 1, 2)],
+            normal_indices: normal_indices,
+            texture_indices: texture_indices,
+            material_indices: Vec::new(),
+            materials: material,
+            transform: transform,
+            bbox: aabb,
+        };
+
+        Triangle {
+            mesh: Rc::new(mesh),
+            face_idx: 0,
+        }
+    }
 }
 
 impl Triangle {
@@ -282,9 +417,9 @@ mod tests {
     extern crate nalgebra_glm as glm;
     use glm::{Vec2, Vec3};
 
-    use crate::surfaces::triangle::single_triangle_intersect;
     use crate::materials::material::MaterialFactory;
     use crate::ray::Ray;
+    use crate::surfaces::triangle::single_triangle_intersect;
     use serde_json::json;
 
     extern crate approx;

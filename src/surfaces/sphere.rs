@@ -3,11 +3,13 @@ use crate::materials::material::{Material, MaterialType};
 use crate::onb::ONB;
 use crate::ray::Ray;
 use crate::sampling::{sample_sphere_cap, sample_sphere_cap_pdf};
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
-use crate::transform::Transform;
-use crate::utils::{direction_to_spherical_uv, INTERSECTION_TEST};
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
+use crate::transform::{read_transform, Transform};
+use crate::utils::{direction_to_spherical_uv, read_or, INTERSECTION_TEST};
 
 extern crate nalgebra_glm as glm;
+use serde_json::Value;
+
 use glm::{Vec2, Vec3};
 use std::rc::Rc;
 use std::sync::atomic::Ordering;
@@ -24,6 +26,17 @@ impl Sphere {
         Aabb {
             min: Vec3::new(-self.radius, -self.radius, -self.radius),
             max: Vec3::new(self.radius, self.radius, self.radius),
+        }
+    }
+    pub fn new(v: &Value, sf: &SurfaceFactory) -> Sphere {
+        let radius = read_or(v, "radius", 1.0);
+        let transform = read_transform(v);
+        let material = sf.get_material(v.as_object().unwrap());
+
+        Sphere {
+            radius,
+            transform,
+            material,
         }
     }
 }
@@ -162,7 +175,6 @@ mod tests {
     use crate::ray::Ray;
     use crate::surfaces::sphere::Sphere;
     use crate::surfaces::surface::Surface;
-    use crate::textures::texture::create_texture;
     use crate::transform::Transform;
 
     use serde_json::json;
@@ -172,13 +184,12 @@ mod tests {
     #[test]
     fn ray_sphere_intersection() {
         // Let's check if your implementation was correct:
-        let material: Rc<MaterialType> = Rc::new(MaterialType::from(Lambertian {
-            albedo: create_texture(&json!({"albedo": 1.0}), "albedo"),
-        }));
+
+        let material = Rc::new(MaterialType::from(Lambertian::new(&json!({"albedo": 1.0}))));
         let test_sphere = Sphere {
             radius: 1.0,
             transform: Default::default(),
-            material: Rc::clone(&material),
+            material: material.clone(),
         };
 
         println!("Testing untransformed sphere intersection");
@@ -206,7 +217,7 @@ mod tests {
         let transformed_sphere = Sphere {
             radius: 1.0,
             transform: transform,
-            material: Rc::clone(&material),
+            material: material.clone(),
         };
         let test_ray = Ray::new(Vec3::new(1.0, 0.5, 8.0), Vec3::new(0.0, 0.0, -1.0));
 

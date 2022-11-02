@@ -5,9 +5,8 @@ use serde_json::Value;
 use std::fs;
 
 use crate::image2d::{Array2d, Image2d};
-use crate::materials::material::{Material, MaterialType, MaterialFactory};
-use crate::surfaces::factory::SurfaceFactory;
-use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
+use crate::materials::material::{Material, MaterialFactory, MaterialType};
+use crate::surfaces::surface::{HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 use crate::surfaces::surface_group::LinearSurfaceGroup;
 use crate::utils::{
     direction_to_spherical_coordinates, inferno, read, read_or, spherical_coordinates_to_direction,

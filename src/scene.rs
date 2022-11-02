@@ -7,13 +7,10 @@ use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
 use crate::integrators::integrator::{create_integrator, Integrator, IntegratorType};
 use crate::materials::material::MaterialFactory;
-
 use crate::ray::Ray;
 use crate::samplers::sampler::{create_sampler, Sampler};
 use crate::surfaces::bvh::Bvh;
-use crate::surfaces::factory::SurfaceFactory;
-use crate::surfaces::surface::EmitterRecord;
-use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
+use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 use crate::surfaces::surface_group::LinearSurfaceGroup;
 use crate::utils::{get_progress_bar, read_v_or_f, Factory};
 

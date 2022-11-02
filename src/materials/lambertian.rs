@@ -12,7 +12,7 @@ use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Lambertian {
-    pub albedo: TextureType,
+    albedo: TextureType,
 }
 
 impl Lambertian {

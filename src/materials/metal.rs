@@ -11,8 +11,8 @@ use crate::utils::{luminance, random_in_unit_sphere, reflect};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Metal {
-    pub albedo: TextureType,
-    pub roughness: TextureType,
+    albedo: TextureType,
+    roughness: TextureType,
 }
 
 impl Metal {

@@ -1,5 +1,4 @@
 pub mod bvh;
-pub mod factory;
 pub mod quad;
 pub mod sphere;
 pub mod surface;
