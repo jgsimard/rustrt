@@ -3,15 +3,25 @@ use crate::onb::ONB;
 use crate::ray::Ray;
 use crate::sampling::{sample_hemisphere_cosine_power, sample_hemisphere_cosine_power_pdf};
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
-use crate::textures::texture::{Texture, TextureType};
-use crate::utils::reflect;
+use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::utils::{read_or, reflect};
+
+use serde_json::Value;
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Phong {
-    pub albedo: TextureType,
-    pub exponent: f32,
+    albedo: TextureType,
+    exponent: f32,
+}
+
+impl Phong {
+    pub fn new(v: &Value) -> Phong {
+        let albedo = create_texture(v, "albedo");
+        let exponent = read_or(v, "exponent", 1.0);
+        Phong { albedo, exponent }
+    }
 }
 
 impl Material for Phong {

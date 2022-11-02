@@ -1,3 +1,4 @@
+use serde_json::Value;
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
@@ -5,13 +6,21 @@ use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::ScatterRecord;
-use crate::textures::texture::{Texture, TextureType};
+use crate::textures::texture::{create_texture, Texture, TextureType};
 use crate::utils::{luminance, random_in_unit_sphere, reflect};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Metal {
     pub albedo: TextureType,
     pub roughness: TextureType,
+}
+
+impl Metal {
+    pub fn new(v: &Value) -> Metal {
+        let albedo = create_texture(&v, "albedo");
+        let roughness = create_texture(&v, "roughness");
+        Metal { albedo, roughness }
+    }
 }
 
 impl Material for Metal {
@@ -69,8 +78,7 @@ mod tests {
     use serde_json::json;
     use std::rc::Rc;
 
-    use crate::materials::factory::MaterialFactory;
-    use crate::materials::material::Material;
+    use crate::materials::material::{Material, MaterialFactory};
     use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
 

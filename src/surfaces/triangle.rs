@@ -283,7 +283,8 @@ mod tests {
     use glm::{Vec2, Vec3};
 
     use crate::surfaces::triangle::single_triangle_intersect;
-    use crate::{materials::factory::MaterialFactory, ray::Ray};
+    use crate::materials::material::MaterialFactory;
+    use crate::ray::Ray;
     use serde_json::json;
 
     extern crate approx;

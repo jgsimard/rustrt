@@ -1,6 +1,5 @@
 use crate::aabb::Aabb;
-use crate::materials::factory::MaterialFactory;
-use crate::materials::material::MaterialType;
+use crate::materials::material::{MaterialFactory, MaterialType};
 use crate::surfaces::quad::Quad;
 use crate::surfaces::sphere::Sphere;
 use crate::surfaces::surface::SurfaceType;

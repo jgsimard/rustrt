@@ -32,3 +32,57 @@ impl ConstantTexture {
         ConstantTexture { color }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use nalgebra_glm::Vec3;
+    use serde_json::json;
+
+    use crate::textures::constant::ConstantTexture;
+    use crate::textures::texture::create_texture;
+
+    use crate::textures::texture::TextureType;
+
+    #[test]
+    fn create_texture_number() {
+        let v = json!({
+            "albedo": 1.0
+        });
+
+        let texture = create_texture(&v, "albedo");
+        let target_texture = TextureType::from(ConstantTexture {
+            color: Vec3::new(1.0, 1.0, 1.0),
+        });
+        assert_eq!(target_texture, texture);
+    }
+
+    #[test]
+    fn create_texture_vector() {
+        let v = json!({
+            "albedo": [1.0, 1.0, 1.0]
+        });
+
+        let texture = create_texture(&v, "albedo");
+        let target_texture = TextureType::from(ConstantTexture {
+            color: Vec3::new(1.0, 1.0, 1.0),
+        });
+        assert_eq!(target_texture, texture);
+    }
+
+    #[test]
+    fn create_texture_constant() {
+        let v = json!({
+            "albedo": {
+                "type": "constant",
+                "color": [0.73, 0.73, 0.73]
+            }
+        });
+
+        let texture = create_texture(&v, "albedo");
+        let target_texture = TextureType::from(ConstantTexture {
+            color: Vec3::new(0.73, 0.73, 0.73),
+        });
+        assert_eq!(target_texture, texture);
+    }
+}

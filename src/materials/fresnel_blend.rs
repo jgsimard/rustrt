@@ -1,12 +1,12 @@
 use std::rc::Rc;
 
-use crate::materials::material::Material;
+use crate::materials::material::{Material, MaterialFactory};
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
-use crate::textures::texture::{Texture, TextureType};
-use crate::utils::luminance;
-use crate::utils::reflectance;
-// use crate::utils::random_in_unit_sphere;
+use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::utils::{luminance, reflectance};
+
+use serde_json::{from_value, Value};
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 use rand::Rng;
@@ -15,9 +15,45 @@ use super::material::MaterialType;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FresnelBlend {
-    pub ior: TextureType,
-    pub refracted: Rc<MaterialType>,
-    pub reflected: Rc<MaterialType>,
+    ior: TextureType,
+    refracted: Rc<MaterialType>,
+    reflected: Rc<MaterialType>,
+}
+
+impl FresnelBlend {
+    pub fn new(v: &Value, mf: &MaterialFactory) -> FresnelBlend {
+        let ior = create_texture(&v, "ior");
+        let refracted_v = v.get("refr").unwrap().clone();
+        let refracted = if refracted_v.is_string() {
+            let refracted_name: String = from_value(refracted_v).unwrap();
+            (*mf.materials
+                .get(&refracted_name)
+                .expect("doesnt contain refr"))
+            .clone()
+        } else if v.is_object() {
+            mf.create_material(refracted_v)
+        } else {
+            panic!("NOOOOOO refr : {}", refracted_v);
+        };
+
+        let reflected_v = v.get("refl").expect("no refl").clone();
+        let reflected = if reflected_v.is_string() {
+            let reflected_name: String = from_value(reflected_v).unwrap();
+            (*mf.materials
+                .get(&reflected_name)
+                .expect("doesnt contain refl"))
+            .clone()
+        } else if v.is_object() {
+            mf.create_material(reflected_v)
+        } else {
+            panic!("NOOOOOO refl : {}", reflected_v);
+        };
+        FresnelBlend {
+            ior: ior,
+            refracted: refracted,
+            reflected: reflected,
+        }
+    }
 }
 
 impl Material for FresnelBlend {

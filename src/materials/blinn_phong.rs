@@ -3,15 +3,17 @@ use crate::onb::ONB;
 use crate::ray::Ray;
 use crate::sampling::{sample_hemisphere_cosine_power, sample_hemisphere_cosine_power_pdf};
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
-use crate::textures::texture::{Texture, TextureType};
-use crate::utils::reflect;
+use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::utils::{read_or, reflect};
+use serde_json::Value;
+
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BlinnPhong {
-    pub albedo: TextureType,
-    pub exponent: f32,
+    albedo: TextureType,
+    exponent: f32,
 }
 
 impl Material for BlinnPhong {
@@ -58,6 +60,14 @@ impl Material for BlinnPhong {
             0.0
         };
         return ouput_pdf;
+    }
+}
+
+impl BlinnPhong {
+    pub fn new(v: &Value) -> BlinnPhong {
+        let albedo = create_texture(v, "albedo");
+        let exponent = read_or(v, "exponent", 1.0);
+        BlinnPhong { albedo, exponent }
     }
 }
 

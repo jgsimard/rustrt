@@ -3,14 +3,23 @@ use crate::onb::ONB;
 use crate::ray::Ray;
 use crate::sampling::sample_hemisphere_cosine;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
-use crate::textures::texture::{Texture, TextureType};
+use crate::textures::texture::{create_texture, Texture, TextureType};
 use crate::utils::random_in_unit_sphere;
+
+use serde_json::Value;
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Lambertian {
     pub albedo: TextureType,
+}
+
+impl Lambertian {
+    pub fn new(v: &Value) -> Lambertian {
+        let albedo = create_texture(&v, "albedo");
+        Lambertian { albedo }
+    }
 }
 
 impl Material for Lambertian {
@@ -63,8 +72,7 @@ mod tests {
     use serde_json::json;
     use std::rc::Rc;
 
-    use crate::materials::factory::MaterialFactory;
-    use crate::materials::material::Material;
+    use crate::materials::material::{Material, MaterialFactory};
     use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
 

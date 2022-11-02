@@ -5,8 +5,7 @@ use serde_json::Value;
 use std::fs;
 
 use crate::image2d::{Array2d, Image2d};
-use crate::materials::factory::MaterialFactory;
-use crate::materials::material::{Material, MaterialType};
+use crate::materials::material::{Material, MaterialType, MaterialFactory};
 use crate::surfaces::factory::SurfaceFactory;
 use crate::surfaces::surface::{HitInfo, Surface, SurfaceGroupType};
 use crate::surfaces::surface_group::LinearSurfaceGroup;

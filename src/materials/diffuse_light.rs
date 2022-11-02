@@ -1,14 +1,24 @@
 use crate::materials::material::Material;
-use crate::ray::Ray;
-use crate::surfaces::surface::{HitInfo, ScatterRecord};
-extern crate nalgebra_glm as glm;
 use crate::onb::ONB;
+use crate::ray::Ray;
 use crate::sampling::{sample_hemisphere, sample_hemisphere_pdf};
+use crate::surfaces::surface::{HitInfo, ScatterRecord};
+use crate::utils::read_v_or_f;
+
+use serde_json::Value;
+extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct DiffuseLight {
-    pub emit: Vec3,
+    emit: Vec3,
+}
+
+impl DiffuseLight {
+    pub fn new(v: &Value) -> DiffuseLight {
+        let emit = read_v_or_f(&v, "emit");
+        DiffuseLight { emit }
+    }
 }
 
 impl Material for DiffuseLight {

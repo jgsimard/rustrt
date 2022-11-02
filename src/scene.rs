@@ -6,7 +6,8 @@ use crate::aabb::Aabb;
 use crate::camera::PinholeCamera;
 use crate::image2d::Image2d;
 use crate::integrators::integrator::{create_integrator, Integrator, IntegratorType};
-use crate::materials::factory::MaterialFactory;
+use crate::materials::material::MaterialFactory;
+
 use crate::ray::Ray;
 use crate::samplers::sampler::{create_sampler, Sampler};
 use crate::surfaces::bvh::Bvh;

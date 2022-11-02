@@ -1,17 +1,25 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 use rand::Rng;
+use serde_json::Value;
 
 use crate::materials::material::Material;
 use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::ScatterRecord;
-use crate::textures::texture::{Texture, TextureType};
+use crate::textures::texture::{create_texture, Texture, TextureType};
 use crate::utils::{luminance, reflect, reflectance, refract};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Dielectric {
-    pub ior: TextureType,
+    ior: TextureType,
+}
+
+impl Dielectric {
+    pub fn new(v: &Value) -> Dielectric {
+        let ior = create_texture(&v, "ior");
+        Dielectric { ior }
+    }
 }
 
 impl Material for Dielectric {

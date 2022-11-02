@@ -2,9 +2,13 @@ extern crate nalgebra_glm as glm;
 use enum_dispatch::enum_dispatch;
 use glm::{Vec2, Vec3};
 
-use crate::surfaces::surface::{HitInfo, ScatterRecord};
+use serde_json::Value;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 use crate::ray::Ray;
+use crate::surfaces::surface::{HitInfo, ScatterRecord};
+use crate::utils::Factory;
 
 #[enum_dispatch]
 pub trait Material {
@@ -64,4 +68,51 @@ pub enum MaterialType {
     FresnelBlend,
     Phong,
     BlinnPhong,
+}
+
+pub struct MaterialFactory {
+    pub materials: HashMap<String, Rc<MaterialType>>,
+}
+
+impl MaterialFactory {
+    pub fn new() -> MaterialFactory {
+        MaterialFactory {
+            materials: HashMap::new(),
+        }
+    }
+
+    pub fn create_material(&self, v: Value) -> Rc<MaterialType> {
+        let type_material = v
+            .get("type")
+            .expect("material should have a type")
+            .as_str()
+            .expect("material type should be a string");
+
+        let material = match type_material {
+            "lambertian" => MaterialType::from(Lambertian::new(&v)),
+            "metal" => MaterialType::from(Metal::new(&v)),
+            "dielectric" => MaterialType::from(Dielectric::new(&v)),
+            "diffuse_light" => MaterialType::from(DiffuseLight::new(&v)),
+            "fresnel_blend" => MaterialType::from(FresnelBlend::new(&v, self)),
+            "phong" => MaterialType::from(Phong::new(&v)),
+            "blinn_phong" => MaterialType::from(BlinnPhong::new(&v)),
+            _ => unimplemented!("The material type '{}' ", type_material),
+        };
+        Rc::new(material)
+    }
+}
+
+impl Factory<Rc<MaterialType>> for MaterialFactory {
+    fn make(&mut self, v: &Value) -> Option<Vec<Rc<MaterialType>>> {
+        let m = v.as_object().unwrap();
+        let name = m
+            .get("name")
+            .expect("Feature doesnt have name")
+            .to_string()
+            .trim_matches('"')
+            .to_string();
+        let material = self.create_material((*v).clone());
+        self.materials.insert(name, material.clone());
+        Some(vec![material])
+    }
 }
