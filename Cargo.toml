@@ -16,7 +16,6 @@ serde_derive = "1.0"
 image = "0.24"
 enum_dispatch = "0.3"
 indicatif = "0.17"
-atomic-counter = "1.0"
 tobj = "3.2"
 approx = "0.5"
 partition = "0.1"
@@ -25,3 +24,6 @@ lazy_static = "1.4"
 
 [profile.test]
 opt-level = 3 # otherwise sampling tests take forever
+
+[profile.release]
+debug = true # for profiling
