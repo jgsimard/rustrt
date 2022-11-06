@@ -112,8 +112,8 @@ mod tests {
 
         println!("Testing metal scatter");
         if let Some((metal_attenuation, metal_scattered)) = metal_material.scatter(&ray, &hit) {
-            let correct_origin = surface_point.clone();
-            let correct_attenuation = surface_color.clone();
+            let correct_origin = surface_point;
+            let correct_attenuation = surface_color;
             // let correct_direction = Vec3::new(2.697650e-01, 9.322242e-01, -2.421507e-01);
 
             approx::assert_abs_diff_eq!(correct_origin, metal_scattered.origin, epsilon = 1e-5);

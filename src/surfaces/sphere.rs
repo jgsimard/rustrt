@@ -216,8 +216,8 @@ mod tests {
         );
         let transformed_sphere = Sphere {
             radius: 1.0,
-            transform: transform,
-            material: material.clone(),
+            transform,
+            material: material,
         };
         let test_ray = Ray::new(Vec3::new(1.0, 0.5, 8.0), Vec3::new(0.0, 0.0, -1.0));
 

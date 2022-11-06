@@ -58,18 +58,18 @@ impl MaterialTest {
         let num_samples = read_or(&v, "num_samples", 50) * image_width * image_height;
 
         let test = MaterialTest {
-            material: material.clone(),
+            material: material,
             // normal: normal,
-            incoming: incoming,
-            hit: hit,
+            incoming,
+            hit,
         };
         let parameters = SampleTestParameters {
             any_specular: false,
             any_below_hemisphere: false,
-            name: name,
-            image_width: image_width,
-            image_height: image_height,
-            num_samples: num_samples,
+            name,
+            image_width,
+            image_height,
+            num_samples,
         };
         (test, parameters)
     }
@@ -91,9 +91,9 @@ impl SampleTest for MaterialTest {
                 params.any_below_hemisphere = true;
                 return None;
             }
-            return Some(dir);
+            Some(dir)
         } else {
-            return None;
+            None
         }
     }
 }
@@ -121,7 +121,7 @@ impl SurfaceTest {
             material_factory: MaterialFactory::new(),
         };
         let mut surfaces_vec = Vec::new();
-        if let Some(mut surface) = surface_facory.make(&surface_json.clone()) {
+        if let Some(mut surface) = surface_facory.make(&surface_json) {
             surfaces_vec.append(&mut surface);
         } else {
             panic!(
@@ -134,7 +134,7 @@ impl SurfaceTest {
         });
 
         let test = SurfaceTest {
-            surface_group: surface_group,
+            surface_group,
         };
 
         let name = read(&v, "name");
@@ -145,10 +145,10 @@ impl SurfaceTest {
         let parameters = SampleTestParameters {
             any_specular: false,
             any_below_hemisphere: false,
-            name: name,
-            image_width: image_width,
-            image_height: image_height,
-            num_samples: num_samples,
+            name,
+            image_width,
+            image_height,
+            num_samples,
         };
         (test, parameters)
     }
@@ -156,8 +156,8 @@ impl SurfaceTest {
 
 impl SampleTest for SurfaceTest {
     fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3, rv: f32) -> f32 {
-        let pdf_child = self.surface_group.pdf_child(&Vec3::zeros(), dir, rv);
-        pdf_child
+        
+        self.surface_group.pdf_child(&Vec3::zeros(), dir, rv)
     }
 
     fn sample(&self, _params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3> {
@@ -187,7 +187,7 @@ impl SampleTestParameters {
         let image_height = self.image_height as f32;
         let a: Vec2 = pixel.add_scalar(0.5);
         let b: Vec2 = Vec2::new(2.0 * PI / image_width, PI / image_height);
-        return spherical_coordinates_to_direction(&a.component_mul(&b));
+        spherical_coordinates_to_direction(&a.component_mul(&b))
     }
 
     fn direction_to_pixel(&self, dir: &Vec3) -> Vec2 {
@@ -195,7 +195,7 @@ impl SampleTestParameters {
         let image_height = self.image_height as f32;
         let a = direction_to_spherical_coordinates(dir);
         let b = Vec2::new(image_width * FRAC_1_TWOPI, image_height * FRAC_1_PI);
-        return a.component_mul(&b);
+        a.component_mul(&b)
     }
 
     pub fn run(&mut self, sample_test: &dyn SampleTest, target: f32, epsilon: f32) {
@@ -335,5 +335,5 @@ fn generate_heatmap(density: &Array2d<f32>, max_value: f32) -> Image2d {
             result[(x, y)] = inferno(density[(x, y)] / max_value);
         }
     }
-    return result;
+    result
 }

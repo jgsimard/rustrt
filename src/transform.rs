@@ -205,9 +205,9 @@ mod tests {
 
         let transform = Transform::new(transformation_matrix);
 
-        let vector = Vector3::new(-0.997497, 0.127171, -0.6133920);
+        let vector = Vector3::new(-0.997497, 0.127171, -0.613_392);
         let point = Vector3::new(0.617481, 0.170019, -0.0402539);
-        let normal = Vector3::new(-0.281208, 0.743764, 0.6064130);
+        let normal = Vector3::new(-0.281208, 0.743764, 0.606_413);
         let ray = Ray::new(
             Vector3::new(-0.997497, 0.127171, -0.613392),
             Vector3::new(0.962222, 0.264941, -0.0627278),
@@ -220,8 +220,8 @@ mod tests {
         let transformed_ray = transform.ray(&ray);
 
         // Test Transform
-        let correct_transformed_vector = Vector3::new(0.904467, -0.6918370, 0.301205);
-        let correct_transformed_point = Vector3::new(-1.596190, 0.0703303, -0.837324);
+        let correct_transformed_vector = Vector3::new(0.904467, -0.691_837, 0.301205);
+        let correct_transformed_point = Vector3::new(-1.596_19, 0.0703303, -0.837324);
         let correct_transformed_normal = Vector3::new(-0.249534, 0.0890737, 0.96426);
         let correct_transformed_ray_position = Vector3::new(-0.0930302, -0.564666, -0.312187);
         let correct_transformed_ray_direction = Vector3::new(-0.932945, -0.088575, -0.348953);

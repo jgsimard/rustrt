@@ -109,8 +109,8 @@ mod tests {
         // Now, let's test your implementation!
         if let Some((lambert_attenuation, lambert_scattered)) = lambert_material.scatter(&ray, &hit)
         {
-            let correct_origin = surface_point.clone();
-            let correct_attenuation = surface_color.clone();
+            let correct_origin = surface_point;
+            let correct_attenuation = surface_color;
             // let correct_direction = Vec3::new(1.206627e+00, 3.683379e-01, -8.104229e-01);
 
             approx::assert_abs_diff_eq!(correct_origin, lambert_scattered.origin, epsilon = 1e-5);
