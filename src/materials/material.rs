@@ -12,8 +12,8 @@ use crate::utils::Factory;
 
 #[enum_dispatch]
 pub trait Material {
-    ///Compute the scattered direction scattered at a surface hitpoint.
-    ///The base Material does not scatter any light, so it simply returns false.
+    /// Compute the scattered direction scattered at a surface hitpoint.
+    /// The base Material does not scatter any light, so it simply returns false.
     fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)>;
 
     /// Compute the amount of emitted light at the surface hitpoint.

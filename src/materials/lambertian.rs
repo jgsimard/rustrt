@@ -72,7 +72,7 @@ mod tests {
     use serde_json::json;
     use std::rc::Rc;
 
-    use crate::materials::material::{Material, MaterialFactory};
+    use crate::materials::material::{Material, MaterialFactory, MaterialType};
     use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
 
@@ -86,6 +86,10 @@ mod tests {
         });
         let mf = MaterialFactory::new();
         let lambert_material = mf.create_material(lambert_json);
+        assert!(matches!(
+            lambert_material.as_ref(),
+            MaterialType::Lambertian { .. }
+        ));
 
         // Let's create a fictitious hitpoint
         let surface_point = Vec3::new(1.0, 2.0, 0.0);

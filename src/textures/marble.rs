@@ -18,15 +18,9 @@ pub struct MarbleTexture {
 
 impl Texture for MarbleTexture {
     fn value(&self, hit: &HitInfo) -> Option<Vec3> {
-        let t = 0.5
-            * (1.0
-                + f32::sin(self.scale * hit.p.z + 10.0 * perlin::turbulant_noise(hit.p, 1.0, 7)));
-        let v = glm::lerp(
-            &self.veins.value(hit).unwrap(),
-            &self.base.value(hit).unwrap(),
-            t,
-        );
-
+        let perlin_noise = perlin::turbulant_noise(hit.p, 1.0, 7);
+        let t = 0.5 * (1.0 + f32::sin(self.scale * hit.p.z + 10.0 * perlin_noise));
+        let v = glm::lerp(&self.veins.value(hit)?, &self.base.value(hit)?, t);
         Some(v)
     }
 }
@@ -35,7 +29,7 @@ impl MarbleTexture {
     pub fn new(v: &Value) -> MarbleTexture {
         let veins = Box::new(create_texture(&v, "veins"));
         let base = Box::new(create_texture(&v, "base"));
-        let scale = read::<f32>(&v, "scale");
+        let scale = read(&v, "scale");
         let transform = read_transform(&v);
         MarbleTexture {
             base: base,

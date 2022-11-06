@@ -50,12 +50,8 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
 
 #[cfg(test)]
 mod tests {
-
+    use crate::textures::texture::{create_texture, TextureType};
     use serde_json::json;
-
-    use crate::textures::texture::create_texture;
-
-    use super::TextureType;
 
     #[test]
     #[should_panic]

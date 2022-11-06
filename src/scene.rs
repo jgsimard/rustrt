@@ -52,18 +52,18 @@ impl Scene {
 
         // check if all fields are expeted ones (no all implemented)
         let toplevel_fields = [
-            "integrator".to_string(),
-            "media".to_string(),
-            "materials".to_string(),
-            "surfaces".to_string(),
-            "accelerator".to_string(),
-            "camera".to_string(),
-            "sampler".to_string(),
-            "background".to_string(),
+            "integrator",
+            "media",
+            "materials",
+            "surfaces",
+            "accelerator",
+            "camera",
+            "sampler",
+            "background",
         ];
 
         for key in map_json.keys() {
-            if !toplevel_fields.contains(key) {
+            if !toplevel_fields.contains(&key.as_str()) {
                 panic!("Unsupported field '{key}' here:\n");
             }
         }
@@ -79,6 +79,7 @@ impl Scene {
         let integrator = create_integrator(&scene_json);
 
         // scene background
+        // TODO replace by let background = create_texture(&scene_json, "background")
         let background = read_v_or_f(&scene_json, "background");
 
         // materials
