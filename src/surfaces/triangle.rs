@@ -332,6 +332,7 @@ impl Surface for Triangle {
 /// * `t1` - Optional per vertex texture coordinates
 /// * `t2` - Optional per vertex texture coordinates
 /// * `material` - Triangle Materisl
+#[allow(clippy::too_many_arguments)]
 pub fn single_triangle_intersect(
     ray: &Ray,
     v0: &Vec3,
