@@ -77,7 +77,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        assert!(matches!(texture, TextureType::CheckerTexture { .. }));
+        assert!(matches!(texture, TextureType::Checker { .. }));
     }
 
     #[test]
@@ -92,7 +92,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        assert!(matches!(texture, TextureType::MarbleTexture { .. }));
+        assert!(matches!(texture, TextureType::Marble { .. }));
     }
 
     #[test]
@@ -109,7 +109,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        assert!(matches!(texture, TextureType::MarbleTexture { .. }));
+        assert!(matches!(texture, TextureType::Marble { .. }));
     }
 
     #[test]
@@ -123,6 +123,6 @@ mod tests {
 
         let texture = create_texture(&v, "albedo");
 
-        assert!(matches!(texture, TextureType::ImageTexture { .. }));
+        assert!(matches!(texture, TextureType::Image { .. }));
     }
 }
