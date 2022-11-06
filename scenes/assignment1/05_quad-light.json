@@ -13,7 +13,14 @@
     },
     "sampler": {
         "type": "independent",
-        "samples": 256
+        "samples": 32
+    },
+    "integrator": {
+        "type": "path_tracer_mis",
+        "max_bounces": 64,
+        "recursive": false,
+        "russian roulette": true,
+        "power": 1
     },
     "background": [
         0, 0, 0

@@ -11,11 +11,11 @@
         },
         "vfov": 40,
         "fdist": 6,
-        "resolution": [512, 512]
+        "resolution": [256, 256]
     },
     "sampler": {
         "type": "independent",
-        "samples": 128
+        "samples": 100
     },
     "background": [
         0.6, 0.6, 0.8
@@ -38,7 +38,7 @@
             "name": "floor",
             "albedo": {
                 "type": "marble",
-                "scale": 3,
+                "scale": 0.3,
                 "veins": [
                     0.08, 0.1, 0.08
                 ],

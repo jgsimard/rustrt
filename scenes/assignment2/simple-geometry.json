@@ -13,7 +13,7 @@
         "fdist": 800
     },
     "sampler": {
-        "samples": 64
+        "samples": 16
     },
     "background": [
         0, 0, 0

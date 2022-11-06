@@ -15,7 +15,7 @@
     },
     "sampler": {
         "type": "independent",
-        "samples": 64
+        "samples": 8
     },
     "background": 1,
     "accelerator": {
@@ -59,9 +59,16 @@
             ]
         }, {
             "type": "quad",
-            "transform": {
-                "translate": [0.0, 0.0, 0.01]
+            "transform": [{
+                "axis": [
+                    1, 0, 0
+                ],
+                "angle": -0
             },
+                {
+                    "translate": [0.0, 0.0, 0.01]
+                }
+            ],
             "size": 100,
             "material": "checker"
         }

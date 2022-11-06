@@ -11,7 +11,7 @@
         },
         "vfov": 20,
         "fdist": 800,
-        "resolution": [720, 1280]
+        "resolution": [360, 640]
     },
     "sampler": {
         "type": "independent",

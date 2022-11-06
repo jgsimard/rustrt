@@ -11,11 +11,11 @@
         },
         "vfov": 20,
         "fdist": 800,
-        "resolution": [720, 1280]
+        "resolution": [360, 640]
     },
     "sampler": {
         "type": "independent",
-        "samples": 16
+        "samples": 8
     },
     "background": 1,
     "accelerator": {
