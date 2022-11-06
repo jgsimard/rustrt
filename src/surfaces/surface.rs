@@ -158,7 +158,7 @@ impl SurfaceFactory {
         } else {
             panic!("Invalid material");
         };
-        return material;
+        material
     }
 }
 

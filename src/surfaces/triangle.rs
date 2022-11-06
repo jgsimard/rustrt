@@ -66,7 +66,7 @@ impl Mesh {
 
         let mut aabb = Aabb::new();
         for vertex in vs.iter() {
-            aabb.enclose_point(&vertex);
+            aabb.enclose_point(vertex);
         }
 
         let ns: Vec<Vec3> = mesh
@@ -108,13 +108,13 @@ impl Mesh {
         let my_mesh = Mesh {
             vertex_positions: vs,
             vertex_normals: ns,
-            uvs: uvs,
-            vertex_indices: vertex_indices,
-            normal_indices: normal_indices,
-            texture_indices: texture_indices,
+            uvs,
+            vertex_indices,
+            normal_indices,
+            texture_indices,
             material_indices: Vec::new(),
             materials: material,
-            transform: transform,
+            transform,
             bbox: aabb,
         };
 
@@ -150,7 +150,7 @@ impl Triangle {
 
         let mut aabb = Aabb::new();
         for vertex in pos.iter() {
-            aabb.enclose_point(&vertex);
+            aabb.enclose_point(vertex);
         }
 
         let (normals, normal_indices) = if m.contains_key("normals") {
@@ -170,13 +170,13 @@ impl Triangle {
         let mesh = Mesh {
             vertex_positions: pos,
             vertex_normals: normals,
-            uvs: uvs,
+            uvs,
             vertex_indices: vec![Vector3::new(0, 1, 2)],
-            normal_indices: normal_indices,
-            texture_indices: texture_indices,
+            normal_indices,
+            texture_indices,
             material_indices: Vec::new(),
             materials: material,
-            transform: transform,
+            transform,
             bbox: aabb,
         };
 
@@ -228,9 +228,7 @@ impl Surface for Triangle {
             t2.replace(self.mesh.uvs[it.z]);
         }
         let material = self.mesh.materials.clone();
-        return single_triangle_intersect(
-            ray, &v0, &v1, &v2, &n0, &n1, &n2, &t0, &t1, &t2, material,
-        );
+        single_triangle_intersect(ray, &v0, &v1, &v2, &n0, &n1, &n2, &t0, &t1, &t2, material)
     }
 
     fn bounds(&self) -> Aabb {
@@ -260,13 +258,13 @@ impl Surface for Triangle {
 
             let pdf = sample_triangle_pdf(&v0, &v1, &v2);
 
-            let distance2 = hit.t * hit.t * glm::length2(&dir);
-            let cosine = f32::abs(glm::dot(&dir, &hit.gn) / glm::length(&dir));
+            let distance2 = hit.t * hit.t * glm::length2(dir);
+            let cosine = f32::abs(glm::dot(dir, &hit.gn) / glm::length(dir));
             let geometry_factor = distance2 / cosine;
 
             return geometry_factor * pdf;
         }
-        return 0.0;
+        0.0
     }
 
     fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
@@ -287,8 +285,8 @@ impl Surface for Triangle {
         let pdf = geometry_factor * pdf;
 
         let hit = HitInfo {
-            t: t,
-            p: p,
+            t,
+            p,
             mat: self.mesh.materials.clone(),
             gn: normal,
             sn: normal,
@@ -298,15 +296,15 @@ impl Surface for Triangle {
         let emitted = self
             .mesh
             .materials
-            .emmitted(&Ray::new(origin.clone(), wi), &hit)
+            .emmitted(&Ray::new(*origin, wi), &hit)
             .unwrap_or_default();
 
         let erec = EmitterRecord {
-            o: origin.clone(),
-            wi: wi,
-            pdf: pdf,
-            hit: hit,
-            emitted: emitted,
+            o: *origin,
+            wi,
+            pdf,
+            hit,
+            emitted,
         };
 
         Some(erec)
@@ -362,7 +360,7 @@ pub fn single_triangle_intersect(
     let s = ray.origin - v0;
     let u = glm::dot(&s, &h) * inv_det;
 
-    if u < 0.0 || u > 1.0 {
+    if !(0.0..=1.0).contains(&u) {
         return None;
     }
 
@@ -402,11 +400,11 @@ pub fn single_triangle_intersect(
     };
 
     let hit = HitInfo {
-        t: t,
+        t,
         p: ray.at(t),
-        gn: gn,
-        sn: sn,
-        uv: uv,
+        gn,
+        sn,
+        uv,
         mat: material,
     };
     Some(hit)

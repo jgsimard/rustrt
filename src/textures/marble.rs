@@ -27,15 +27,15 @@ impl Texture for MarbleTexture {
 
 impl MarbleTexture {
     pub fn new(v: &Value) -> MarbleTexture {
-        let veins = Box::new(create_texture(&v, "veins"));
-        let base = Box::new(create_texture(&v, "base"));
-        let scale = read(&v, "scale");
-        let transform = read_transform(&v);
+        let veins = Box::new(create_texture(v, "veins"));
+        let base = Box::new(create_texture(v, "base"));
+        let scale = read(v, "scale");
+        let transform = read_transform(v);
         MarbleTexture {
-            base: base,
-            veins: veins,
-            scale: scale,
-            transform: transform,
+            base,
+            veins,
+            scale,
+            transform,
         }
     }
 }

@@ -49,17 +49,12 @@ impl Bvh {
         let max_leaf_size = 3;
         println!("Building BVH...");
         let progress_bar = get_progress_bar(surfaces.len());
-        let bvh = Bvh::new_node(surfaces.as_mut_slice(), 0, max_leaf_size, &progress_bar);
+        let bvh = Bvh::new_node(surfaces.as_mut_slice(), max_leaf_size, &progress_bar);
         println!("Building BVH... Done in {:?}", progress_bar.elapsed());
-        return bvh;
+        bvh
     }
 
-    fn new_node(
-        surfaces: &mut [SurfaceType],
-        depth: i32,
-        max_leaf_size: usize,
-        pb: &ProgressBar,
-    ) -> Bvh {
+    fn new_node(surfaces: &mut [SurfaceType], max_leaf_size: usize, pb: &ProgressBar) -> Bvh {
         let n_surfaces = surfaces.len();
         if n_surfaces <= max_leaf_size {
             // println!("depth : {}, number of children {}", depth, n_surfaces);
@@ -69,7 +64,7 @@ impl Bvh {
                 bbox.enclose(&child.bounds());
             }
             return Bvh {
-                bbox: bbox,
+                bbox,
                 children: Vec::from(surfaces),
             };
         }
@@ -96,28 +91,16 @@ impl Bvh {
         let (left, right) = partition(surfaces, |x| center(x) >= middle);
 
         // add the two children => recursion
-        let mut children: Vec<SurfaceType> = Vec::new();
-        children.push(SurfaceType::from(Bvh::new_node(
-            left,
-            depth + 1,
-            max_leaf_size,
-            pb,
-        )));
-        children.push(SurfaceType::from(Bvh::new_node(
-            right,
-            depth + 1,
-            max_leaf_size,
-            pb,
-        )));
+        let children = vec![
+            SurfaceType::from(Bvh::new_node(left, max_leaf_size, pb)),
+            SurfaceType::from(Bvh::new_node(right, max_leaf_size, pb)),
+        ];
 
         let mut bbox = Aabb::new();
         for child in children.iter() {
             bbox.enclose(&child.bounds());
         }
 
-        Bvh {
-            bbox: bbox,
-            children: children,
-        }
+        Bvh { bbox, children }
     }
 }

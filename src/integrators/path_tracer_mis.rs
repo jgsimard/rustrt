@@ -19,13 +19,13 @@ fn power_heuristic(pdf1: f32, pdf2: f32, power: f32) -> (f32, f32) {
     let pdf1_pow = pdf1.powf(power);
     let pdf2_pow = pdf2.powf(power);
     let den = pdf1_pow + pdf2_pow;
-    return (pdf1_pow / den, pdf2_pow / den);
+    (pdf1_pow / den, pdf2_pow / den)
 }
 
 #[allow(unused)]
 fn balance_heuristic(pdf1: f32, pdf2: f32) -> (f32, f32) {
     let den = pdf1 + pdf2;
-    return (pdf1 / den, pdf2 / den);
+    (pdf1 / den, pdf2 / den)
 }
 
 impl Integrator for PathTracerMISIntegrator {
@@ -119,6 +119,6 @@ impl Integrator for PathTracerMISIntegrator {
             ray.origin = hit.p;
             ray.direction = srec.wo;
         }
-        return radiance;
+        radiance
     }
 }

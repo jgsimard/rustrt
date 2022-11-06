@@ -1,5 +1,5 @@
 use crate::materials::material::Material;
-use crate::onb::ONB;
+use crate::onb::Onb;
 use crate::ray::Ray;
 use crate::sampling::{sample_hemisphere, sample_hemisphere_pdf};
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
@@ -16,7 +16,7 @@ pub struct DiffuseLight {
 
 impl DiffuseLight {
     pub fn new(v: &Value) -> DiffuseLight {
-        let emit = read_v_or_f(&v, "emit");
+        let emit = read_v_or_f(v, "emit");
         DiffuseLight { emit }
     }
 }
@@ -40,7 +40,7 @@ impl Material for DiffuseLight {
     }
 
     fn eval(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> Vec3 {
-        let emited_color = if glm::dot(&wi, &hit.sn) > 0.0 {
+        let emited_color = if glm::dot(wi, &hit.sn) > 0.0 {
             Vec3::zeros()
         } else {
             self.emit
@@ -49,7 +49,7 @@ impl Material for DiffuseLight {
     }
 
     fn sample(&self, _wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
-        let uvw = ONB::build_from_w(&hit.gn);
+        let uvw = Onb::build_from_w(&hit.gn);
         let srec = ScatterRecord {
             attenuation: Vec3::zeros(), // FIXME
             wo: uvw.local(&sample_hemisphere(rv)),

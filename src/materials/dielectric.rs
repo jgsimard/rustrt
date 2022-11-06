@@ -17,7 +17,7 @@ pub struct Dielectric {
 
 impl Dielectric {
     pub fn new(v: &Value) -> Dielectric {
-        let ior = create_texture(&v, "ior");
+        let ior = create_texture(v, "ior");
         Dielectric { ior }
     }
 }
@@ -69,7 +69,7 @@ impl Material for Dielectric {
         let ray = Ray::new(hit.p - wi, *wi);
         let (attenuation, ray_out) = self.scatter(&ray, hit)?;
         let srec = ScatterRecord {
-            attenuation: attenuation,
+            attenuation,
             wo: ray_out.direction,
             is_specular: true,
         };

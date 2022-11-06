@@ -63,11 +63,11 @@ impl PinholeCamera {
         let size = Vec2::new(width, -height);
 
         PinholeCamera {
-            transform: transform,
-            size: size,
-            focal_distance: focal_distance,
-            resolution: resolution,
-            aperture_radius: aperture_radius,
+            transform,
+            size,
+            focal_distance,
+            resolution,
+            aperture_radius,
         }
     }
 
@@ -76,7 +76,7 @@ impl PinholeCamera {
         let origin = Vec3::zeros();
         let xy = self
             .size
-            .component_mul(&pixel)
+            .component_mul(pixel)
             .component_div(&self.resolution)
             - self.size / 2.0;
         let direction = Vec3::new(xy.x, xy.y, -self.focal_distance);

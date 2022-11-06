@@ -22,7 +22,7 @@ pub struct Transform {
 impl Transform {
     pub fn new(m: Mat4) -> Transform {
         Transform {
-            m: m,
+            m,
             m_inv: m.try_inverse().expect("Matrix not invertible"),
         }
     }
@@ -74,7 +74,7 @@ impl Transform {
         bb.enclose_point(&self.point(&box3.min));
         bb.enclose_point(&self.point(&box3.max));
 
-        return bb;
+        bb
     }
 
     pub fn axis_offset(x: &Vec3, y: &Vec3, z: &Vec3, o: &Vec3) -> Transform {
@@ -85,7 +85,7 @@ impl Transform {
     }
 
     pub fn translate(t: &Vec3) -> Transform {
-        Transform::new(Mat4::new_translation(&t))
+        Transform::new(Mat4::new_translation(t))
     }
 }
 
@@ -114,7 +114,7 @@ pub fn parse_transform(json: &Value) -> Transform {
     if json.is_array() {
         let mut t: Transform = Default::default();
         for sub_t in json.as_array().unwrap() {
-            t = parse_transform(&sub_t) * t;
+            t = parse_transform(sub_t) * t;
         }
         return t;
     }
@@ -138,7 +138,7 @@ pub fn parse_transform(json: &Value) -> Transform {
         let left = glm::normalize(&glm::cross(&up, &dir));
         let new_up = glm::normalize(&glm::cross(&dir, &left));
 
-        return Transform::axis_offset(&left, &new_up, &dir, &from);
+        Transform::axis_offset(&left, &new_up, &dir, &from)
     } else if kv.contains_key("o")
         || kv.contains_key("x")
         || kv.contains_key("y")
@@ -149,10 +149,10 @@ pub fn parse_transform(json: &Value) -> Transform {
         let y = read("y", Vec3::y());
         let z = read("z", Vec3::z());
 
-        return Transform::axis_offset(&x, &y, &z, &o);
+        Transform::axis_offset(&x, &y, &z, &o)
     } else if kv.contains_key("translate") {
         let t = read("translate", Vec3::zeros());
-        return Transform::translate(&t);
+        Transform::translate(&t)
     } else if kv.contains_key("scale") {
         let scale = kv.get("scale").unwrap().clone();
         if scale.is_number() {
@@ -160,7 +160,7 @@ pub fn parse_transform(json: &Value) -> Transform {
             return Transform::new(Mat4::new_scaling(sn));
         }
         let sv: Vec3 = from_value(scale).expect("could not load 'scale' vector Transform");
-        return Transform::new(Mat4::new_nonuniform_scaling(&sv));
+        Transform::new(Mat4::new_nonuniform_scaling(&sv))
     } else if kv.contains_key("axis") || kv.contains_key("angle") {
         let axis = read("axis", Vec3::x());
         let angle = kv
@@ -168,7 +168,7 @@ pub fn parse_transform(json: &Value) -> Transform {
             .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
 
         let angle = deg2rad(angle);
-        return Transform::new(Mat4::from_scaled_axis(axis * angle));
+        Transform::new(Mat4::from_scaled_axis(axis * angle))
     } else if kv.contains_key("matrix") {
         unimplemented!();
     } else {

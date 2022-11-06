@@ -16,10 +16,10 @@ use crate::textures::marble::MarbleTexture;
 #[enum_dispatch(Texture)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum TextureType {
-    ConstantTexture,
-    CheckerTexture,
-    ImageTexture,
-    MarbleTexture,
+    Constant(ConstantTexture),
+    Checker(CheckerTexture),
+    Image(ImageTexture),
+    Marble(MarbleTexture),
 }
 
 pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {

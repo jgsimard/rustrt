@@ -25,7 +25,7 @@ pub fn get_progress_bar(size: usize) -> ProgressBar {
         })
         .progress_chars("#>-"),
     );
-    return progress_bar;
+    progress_bar
 }
 pub fn sincos(x: f32) -> (f32, f32) {
     (f32::sin(x), f32::cos(x))
@@ -40,7 +40,7 @@ fn modulo(a_: f32, b: f32) -> f32 {
         a += b;
     }
 
-    return a;
+    a
 }
 
 #[allow(unused)]
@@ -70,15 +70,15 @@ pub fn spherical_coordinates_to_direction(phi_theta: &Vec2) -> Vec3 {
     let (sin_theta, cos_theta) = sincos(phi_theta.y);
     let (sin_phi, cos_phi) = sincos(phi_theta.x);
 
-    return Vec3::new(sin_theta * cos_phi, sin_theta * sin_phi, cos_theta);
+    Vec3::new(sin_theta * cos_phi, sin_theta * sin_phi, cos_theta)
 }
 
 #[allow(unused)]
 pub fn spherical_uv_to_direction(uv: &Vec2) -> Vec3 {
-    return spherical_coordinates_to_direction(&Vec2::new(
+    spherical_coordinates_to_direction(&Vec2::new(
         (uv.x - 0.5) * 2.0 * std::f32::consts::PI,
         (1.0 - uv.y) * std::f32::consts::PI,
-    ));
+    ))
 }
 
 pub fn read<T: for<'de> serde::de::Deserialize<'de>>(v: &Value, name: &str) -> T {
@@ -97,14 +97,12 @@ pub fn read_or<T: for<'de> serde::de::Deserialize<'de>>(v: &Value, name: &str, d
 
 pub fn read_v_or_f(j: &Value, thing_name: &str) -> Vec3 {
     let v = j.get(thing_name).unwrap().clone();
-    let thing: Vec3;
     if v.is_number() {
         let thing_number: f32 = from_value(v).unwrap();
-        thing = Vec3::new(thing_number, thing_number, thing_number);
+        Vec3::new(thing_number, thing_number, thing_number)
     } else {
-        thing = read::<Vec3>(j, thing_name);
+        read::<Vec3>(j, thing_name)
     }
-    thing
 }
 
 pub trait Factory<T> {
@@ -156,52 +154,52 @@ pub fn reflectance(cosine: f32, ref_idx: f32) -> f32 {
 // COLORS
 #[allow(unused)]
 pub fn viridis(t: f32) -> Vec3 {
-    const C0: Vec3 = Vec3::new(0.2777273272234177, 0.005407344544966578, 0.3340998053353061);
-    const C1: Vec3 = Vec3::new(0.1050930431085774, 1.404613529898575, 1.384590162594685);
-    const C2: Vec3 = Vec3::new(-0.3308618287255563, 0.214847559468213, 0.09509516302823659);
-    const C3: Vec3 = Vec3::new(-4.634230498983486, -5.799100973351585, -19.33244095627987);
-    const C4: Vec3 = Vec3::new(6.228269936347081, 14.17993336680509, 56.69055260068105);
-    const C5: Vec3 = Vec3::new(4.776384997670288, -13.74514537774601, -65.35303263337234);
-    const C6: Vec3 = Vec3::new(-5.435455855934631, 4.645852612178535, 26.3124352495832);
+    const C0: Vec3 = Vec3::new(0.277_727, 0.005_407, 0.334_099);
+    const C1: Vec3 = Vec3::new(0.105_093, 1.404_613, 1.384_59);
+    const C2: Vec3 = Vec3::new(-0.330_861, 0.214_847, 0.095_095);
+    const C3: Vec3 = Vec3::new(-4.634_23, -5.799_1, -19.332_44);
+    const C4: Vec3 = Vec3::new(6.228_269, 14.179_933, 56.690_55);
+    const C5: Vec3 = Vec3::new(4.776_384, -13.745_145, -65.353_032);
+    const C6: Vec3 = Vec3::new(-5.435_455, 4.645_852, 26.312_435);
 
-    return C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))));
+    C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))))
 }
 
 #[allow(unused)]
 pub fn inferno(t: f32) -> Vec3 {
-    const C0: Vec3 = Vec3::new(0.00021894036911922, 0.0016510046310010, -0.019480898437091);
-    const C1: Vec3 = Vec3::new(0.1065134194856116, 0.5639564367884091, 3.932712388889277);
-    const C2: Vec3 = Vec3::new(11.60249308247187, -3.972853965665698, -15.9423941062914);
-    const C3: Vec3 = Vec3::new(-41.70399613139459, 17.43639888205313, 44.35414519872813);
-    const C4: Vec3 = Vec3::new(77.162935699427, -33.40235894210092, -81.80730925738993);
-    const C5: Vec3 = Vec3::new(-71.31942824499214, 32.62606426397723, 73.20951985803202);
-    const C6: Vec3 = Vec3::new(25.13112622477341, -12.24266895238567, -23.07032500287172);
+    const C0: Vec3 = Vec3::new(0.000_218, 0.001_651, -0.019_480);
+    const C1: Vec3 = Vec3::new(0.106_513, 0.563_956, 3.932_712);
+    const C2: Vec3 = Vec3::new(11.602_49, -3.972_853, -15.942_39);
+    const C3: Vec3 = Vec3::new(-41.703_99, 17.436_39, 44.354_14);
+    const C4: Vec3 = Vec3::new(77.162_93, -33.402_35, -81.807_3);
+    const C5: Vec3 = Vec3::new(-71.319_42, 32.626_06, 73.209_51);
+    const C6: Vec3 = Vec3::new(25.131_12, -12.242_66, -23.070_32);
 
-    return C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))));
+    C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))))
 }
 
 #[allow(unused)]
 pub fn magma(t: f32) -> Vec3 {
-    const C0: Vec3 = Vec3::new(-0.002136485053939, -0.000749655052795, -0.005386127855323);
-    const C1: Vec3 = Vec3::new(0.2516605407371642, 0.6775232436837668, 2.494026599312351);
-    const C2: Vec3 = Vec3::new(8.353717279216625, -3.577719514958484, 0.3144679030132573);
-    const C3: Vec3 = Vec3::new(-27.66873308576866, 14.26473078096533, -13.64921318813922);
-    const C4: Vec3 = Vec3::new(52.17613981234068, -27.94360607168351, 12.94416944238394);
-    const C5: Vec3 = Vec3::new(-50.76852536473588, 29.04658282127291, 4.23415299384598);
-    const C6: Vec3 = Vec3::new(18.65570506591883, -11.48977351997711, -5.601961508734096);
+    const C0: Vec3 = Vec3::new(-0.002_136, -0.000_749, -0.005_386);
+    const C1: Vec3 = Vec3::new(0.251_660, 0.677_523, 2.494_026);
+    const C2: Vec3 = Vec3::new(8.353_717, -3.577_719, 0.314_467);
+    const C3: Vec3 = Vec3::new(-27.668_733, 14.264_73, -13.649_213);
+    const C4: Vec3 = Vec3::new(52.176_13, -27.943_606, 12.944_169);
+    const C5: Vec3 = Vec3::new(-50.768_525, 29.046_582, 4.234_152);
+    const C6: Vec3 = Vec3::new(18.655_705, -11.489_773, -5.601_961);
 
-    return C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))));
+    C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))))
 }
 
 #[allow(unused)]
 pub fn plasma(t: f32) -> Vec3 {
-    const C0: Vec3 = Vec3::new(0.05873234392399702, 0.02333670892565664, 0.5433401826748754);
-    const C1: Vec3 = Vec3::new(2.176514634195958, 0.2383834171260182, 0.7539604599784036);
-    const C2: Vec3 = Vec3::new(-2.689460476458034, -7.455851135738909, 3.110799939717086);
-    const C3: Vec3 = Vec3::new(6.130348345893603, 42.3461881477227, -28.51885465332158);
-    const C4: Vec3 = Vec3::new(-11.10743619062271, -82.66631109428045, 60.13984767418263);
-    const C5: Vec3 = Vec3::new(10.02306557647065, 71.41361770095349, -54.07218655560067);
-    const C6: Vec3 = Vec3::new(-3.658713842777788, -22.93153465461149, 18.19190778539828);
+    const C0: Vec3 = Vec3::new(0.058_732, 0.023_336, 0.543_340);
+    const C1: Vec3 = Vec3::new(2.176_514, 0.238_383, 0.753_960);
+    const C2: Vec3 = Vec3::new(-2.689_46, -7.455_851, 3.110_799);
+    const C3: Vec3 = Vec3::new(6.130_348, 42.346_18, -28.518_85);
+    const C4: Vec3 = Vec3::new(-11.107_43, -82.666_31, 60.139_84);
+    const C5: Vec3 = Vec3::new(10.023_06, 71.413_61, -54.072_18);
+    const C6: Vec3 = Vec3::new(-3.658_714, -22.931_53, 18.191_9);
 
-    return C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))));
+    C0 + t * (C1 + t * (C2 + t * (C3 + t * (C4 + t * (C5 + t * C6)))))
 }

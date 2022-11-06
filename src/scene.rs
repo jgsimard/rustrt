@@ -92,9 +92,9 @@ impl Scene {
                 .expect("Materials should be in an array")
                 .iter()
                 .for_each(|mat| {
-                    material_factory.make(mat).expect(
-                        format!("surface of type : {} not yet supported", mat["type"]).as_str(),
-                    );
+                    material_factory.make(mat).unwrap_or_else(|| {
+                        panic!("surface of type : {} not yet supported", mat["type"])
+                    });
                 });
         }
 
@@ -135,12 +135,12 @@ impl Scene {
         };
 
         Scene {
-            integrator: integrator,
-            emitters: emitters,
+            integrator,
+            emitters,
             sampler_value: Scene::get_sampler_json((*map_json).clone()),
-            surfaces: surfaces,
-            camera: camera,
-            background: background,
+            surfaces,
+            camera,
+            background,
         }
     }
 
@@ -173,7 +173,7 @@ impl Scene {
         }
 
         println!("Rendering time : {:?}", progress_bar.elapsed());
-        return image;
+        image
     }
 }
 

@@ -39,8 +39,8 @@ impl Aabb {
     }
 
     pub fn enclose_point(&mut self, point: &Vec3) {
-        self.min = glm::min2(&self.min, &point);
-        self.max = glm::max2(&self.max, &point);
+        self.min = glm::min2(&self.min, point);
+        self.max = glm::max2(&self.max, point);
     }
 
     pub fn center(&self) -> Vec3 {
@@ -77,8 +77,8 @@ impl Aabb {
     // }
 
     pub fn intersect(&self, ray: &Ray) -> bool {
-        let mut min_t = ray.mint.clone();
-        let mut max_t = ray.maxt.clone();
+        let mut min_t = ray.mint;
+        let mut max_t = ray.maxt;
         for i in 0..3 {
             let inv_d = 1.0 / ray.direction[i];
             let mut t0 = (self.min[i] - ray.origin[i]) * inv_d;
@@ -92,6 +92,6 @@ impl Aabb {
                 return false;
             }
         }
-        return true;
+        true
     }
 }

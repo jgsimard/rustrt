@@ -67,7 +67,7 @@ fn create_sphere_plane_scene() -> Value {
     // BVH
     j["accelerator"] = json!({"type": "bbh"});
 
-    return j;
+    j
 }
 
 fn create_steinbach_scene() -> Value {
@@ -148,7 +148,7 @@ fn create_steinbach_scene() -> Value {
     // BVH
     j["accelerator"] = json!({"type": "bbh"});
 
-    return j;
+    j
 }
 
 fn create_shirley_scene() -> Value {
@@ -272,5 +272,5 @@ fn create_shirley_scene() -> Value {
 
     j["surfaces"] = serde_json::Value::Array(surfaces);
 
-    return j;
+    j
 }

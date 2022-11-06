@@ -1,6 +1,6 @@
 use crate::aabb::Aabb;
 use crate::materials::material::{Material, MaterialType};
-use crate::onb::ONB;
+use crate::onb::Onb;
 use crate::ray::Ray;
 use crate::sampling::{sample_sphere_cap, sample_sphere_cap_pdf};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
@@ -75,10 +75,10 @@ impl Surface for Sphere {
 
         let hit = HitInfo {
             t: root,
-            p: p,
+            p,
             gn: n,
             sn: n,
-            uv: uv,
+            uv,
             mat: Rc::clone(&self.material),
         };
         Some(hit)
@@ -98,7 +98,7 @@ impl Surface for Sphere {
             let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
             return pdf;
         }
-        return 0.0;
+        0.0
     }
 
     fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
@@ -113,10 +113,10 @@ impl Surface for Sphere {
             return None;
         }
         // sample from p
-        let uvw = ONB::build_from_w(&direction_centre);
+        let uvw = Onb::build_from_w(&direction_centre);
         let sample_direction = uvw.local(&sample_sphere_cap(rv, cos_theta_max_from_p));
 
-        let sample_ray = Ray::new(o.clone(), sample_direction);
+        let sample_ray = Ray::new(*o, sample_direction);
 
         let hit = self.intersect(&sample_ray)?;
         // // TODO : REPLACE THIS, not stable at all :(
@@ -149,11 +149,11 @@ impl Surface for Sphere {
             .unwrap_or_default();
 
         let erec = EmitterRecord {
-            o: o.clone(),
+            o: *o,
             wi: sample_direction,
-            pdf: pdf,
-            hit: hit,
-            emitted: emitted,
+            pdf,
+            hit,
+            emitted,
         };
 
         Some(erec)

@@ -15,10 +15,10 @@ pub struct PathTracerNEEIntegrator {
 }
 
 impl Integrator for PathTracerNEEIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray, _depth: i32) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray, _depth: i32) -> Vec3 {
         let mut radiance = Vec3::zeros();
         let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
-        let mut ray = Ray::new(ray_.origin, ray_.direction);
+        let mut ray = ray.clone();
 
         for _ in 0..self.max_bounces {
             // find next intersection
@@ -52,11 +52,9 @@ impl Integrator for PathTracerNEEIntegrator {
                 }
             }
 
-
             // sample material
             let rv_mat = sampler.next2f();
             let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_mat) else {break;};
-
 
             // update for next bounce
             let a = if srec.is_specular {
@@ -71,6 +69,6 @@ impl Integrator for PathTracerNEEIntegrator {
             ray.origin = hit.p;
             ray.direction = srec.wo;
         }
-        return radiance;
+        radiance
     }
 }

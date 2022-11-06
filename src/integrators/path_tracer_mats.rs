@@ -15,10 +15,10 @@ pub struct PathTracerMatsIntegrator {
 
 // iterative version
 impl Integrator for PathTracerMatsIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray, _depth: i32) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray, _depth: i32) -> Vec3 {
         let mut radiance = Vec3::zeros();
         let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
-        let mut ray = Ray::new(ray_.origin, ray_.direction);
+        let mut ray = ray.clone();
 
         for _ in 0..=self.max_bounces {
             // find next intersection
@@ -48,6 +48,6 @@ impl Integrator for PathTracerMatsIntegrator {
             ray.origin = hit.p;
             ray.direction = srec.wo;
         }
-        return radiance;
+        radiance
     }
 }

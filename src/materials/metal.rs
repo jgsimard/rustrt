@@ -17,8 +17,8 @@ pub struct Metal {
 
 impl Metal {
     pub fn new(v: &Value) -> Metal {
-        let albedo = create_texture(&v, "albedo");
-        let roughness = create_texture(&v, "roughness");
+        let albedo = create_texture(v, "albedo");
+        let roughness = create_texture(v, "roughness");
         Metal { albedo, roughness }
     }
 }
@@ -57,13 +57,13 @@ impl Material for Metal {
         let ray = Ray::new(hit.p - wi, *wi);
         if let Some((attenuation, ray_out)) = self.scatter(&ray, hit) {
             let srec = ScatterRecord {
-                attenuation: attenuation,
+                attenuation,
                 wo: ray_out.direction,
                 is_specular: true,
             };
             return Some(srec);
         }
-        return None;
+        None
     }
 
     fn pdf(&self, _wi: &Vec3, _scattered: &Vec3, _hit: &HitInfo) -> f32 {

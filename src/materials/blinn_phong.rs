@@ -1,5 +1,5 @@
 use crate::materials::material::Material;
-use crate::onb::ONB;
+use crate::onb::Onb;
 use crate::ray::Ray;
 use crate::sampling::{sample_hemisphere_cosine_power, sample_hemisphere_cosine_power_pdf};
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
@@ -33,7 +33,7 @@ impl Material for BlinnPhong {
     }
 
     fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
-        let uvw = ONB::build_from_w(&hit.gn);
+        let uvw = Onb::build_from_w(&hit.gn);
         let normal = uvw.local(&sample_hemisphere_cosine_power(self.exponent, rv));
 
         let mirror_dir = glm::normalize(&reflect(wi, &normal));
@@ -54,12 +54,11 @@ impl Material for BlinnPhong {
         let cosine = f32::max(glm::dot(&random_normal, &hit.gn), 0.0);
         let normal_pdf = sample_hemisphere_cosine_power_pdf(self.exponent, cosine);
         let final_pdf = normal_pdf / (4.0 * glm::dot(&(-wi), &random_normal));
-        let ouput_pdf = if glm::dot(scattered, &hit.gn) >= 0.0 {
+        if glm::dot(scattered, &hit.gn) >= 0.0 {
             final_pdf
         } else {
             0.0
-        };
-        return ouput_pdf;
+        }
     }
 }
 

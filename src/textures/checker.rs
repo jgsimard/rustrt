@@ -30,16 +30,16 @@ impl Texture for CheckerTexture {
 
 impl CheckerTexture {
     pub fn new(v: &Value) -> CheckerTexture {
-        let even = Box::new(create_texture(&v, "even"));
-        let odd = Box::new(create_texture(&v, "odd"));
-        let scale = read::<f32>(&v, "scale");
-        let transform = read_transform(&v);
+        let even_texture = Box::new(create_texture(v, "even"));
+        let odd_texture = Box::new(create_texture(v, "odd"));
+        let scale = read::<f32>(v, "scale");
+        let transform = read_transform(v);
 
-        return CheckerTexture {
-            odd_texture: odd,
-            even_texture: even,
-            scale: scale,
-            transform: transform,
-        };
+        CheckerTexture {
+            odd_texture,
+            even_texture,
+            scale,
+            transform,
+        }
     }
 }

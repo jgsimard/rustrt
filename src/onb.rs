@@ -2,13 +2,13 @@ extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
 /// OrthoNormal Basis
-pub struct ONB {
+pub struct Onb {
     axis: [Vec3; 3],
 }
 
-impl ONB {
+impl Onb {
     pub fn build_from_w(n: &Vec3) -> Self {
-        let w = glm::normalize(&n);
+        let w = glm::normalize(n);
         let a = if w.x.abs() > 0.9 {
             Vec3::new(0.0, 1.0, 0.0)
         } else {
@@ -16,7 +16,7 @@ impl ONB {
         };
         let v = glm::normalize(&glm::cross(&w, &a));
         let u = glm::cross(&w, &v);
-        ONB { axis: [u, v, w] }
+        Onb { axis: [u, v, w] }
     }
 
     pub fn u(&self) -> Vec3 {

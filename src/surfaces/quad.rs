@@ -50,11 +50,11 @@ impl Surface for Quad {
 
         // if hit, set intersection record values
         let hit = HitInfo {
-            t: t,
+            t,
             p: self.transform.point(&p),
             gn: n,
             sn: n,
-            uv: uv,
+            uv,
             mat: Rc::clone(&self.material),
         };
         Some(hit)
@@ -70,14 +70,14 @@ impl Surface for Quad {
             let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
 
             let area = 4.0 * glm::length(&glm::cross(&v0, &v1));
-            let distance2 = hit.t * hit.t * glm::length2(&dir);
-            let cosine = f32::abs(glm::dot(&dir, &hit.gn) / glm::length(&dir));
+            let distance2 = hit.t * hit.t * glm::length2(dir);
+            let cosine = f32::abs(glm::dot(dir, &hit.gn) / glm::length(dir));
             let geometry_factor = distance2 / cosine;
             let pdf = 1.0 / area;
 
             return geometry_factor * pdf;
         }
-        return 0.0;
+        0.0
     }
 
     fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
@@ -102,8 +102,8 @@ impl Surface for Quad {
         let pdf = 1.0 / area * geometry_factor;
 
         let hit = HitInfo {
-            t: t,
-            p: p,
+            t,
+            p,
             mat: self.material.clone(),
             gn: normal,
             sn: normal,
@@ -112,15 +112,15 @@ impl Surface for Quad {
 
         let emitted = self
             .material
-            .emmitted(&Ray::new(o.clone(), wi), &hit)
+            .emmitted(&Ray::new(*o, wi), &hit)
             .unwrap_or_default();
 
         let erec = EmitterRecord {
-            o: o.clone(),
-            wi: wi,
-            pdf: pdf,
-            hit: hit,
-            emitted: emitted,
+            o: *o,
+            wi,
+            pdf,
+            hit,
+            emitted,
         };
 
         Some(erec)
@@ -133,7 +133,7 @@ impl Surface for Quad {
 
 impl Quad {
     fn local_bounds(&self) -> Aabb {
-        const EPS: f32 = 1e-4 as f32;
+        const EPS: f32 = 1e-4_f32;
         let v = glm::vec3(self.size.x + EPS, self.size.y + EPS, EPS);
         Aabb { min: -v, max: v }
     }

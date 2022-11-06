@@ -22,7 +22,7 @@ pub struct FresnelBlend {
 
 impl FresnelBlend {
     pub fn new(v: &Value, mf: &MaterialFactory) -> FresnelBlend {
-        let ior = create_texture(&v, "ior");
+        let ior = create_texture(v, "ior");
         let refracted_v = v.get("refr").unwrap().clone();
         let refracted = if refracted_v.is_string() {
             let refracted_name: String = from_value(refracted_v).unwrap();
@@ -49,9 +49,9 @@ impl FresnelBlend {
             panic!("NOOOOOO refl : {}", reflected_v);
         };
         FresnelBlend {
-            ior: ior,
-            refracted: refracted,
-            reflected: reflected,
+            ior,
+            refracted,
+            reflected,
         }
     }
 }
@@ -90,13 +90,13 @@ impl Material for FresnelBlend {
         let ray = Ray::new(hit.p - wi, *wi);
         if let Some((attenuation, ray_out)) = self.scatter(&ray, hit) {
             let srec = ScatterRecord {
-                attenuation: attenuation,
+                attenuation,
                 wo: ray_out.direction,
                 is_specular: true,
             };
             return Some(srec);
         }
-        return None;
+        None
     }
 
     fn pdf(&self, _wi: &Vec3, _scattered: &Vec3, _hit: &HitInfo) -> f32 {

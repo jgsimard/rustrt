@@ -43,9 +43,8 @@ fn perlin_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f32 {
                 let ijk = Vec3::new(i as f32, j as f32, k as f32);
                 let weight = glm::dot(&corners[i][j][k], &(uvw - ijk));
                 let ijk_inv = Vec3::new(1., 1., 1.) - ijk;
-                accum = accum
-                    + (ijk.component_mul(&uvw3) + ijk_inv.component_mul(&uvw3_inv)).product()
-                        * weight;
+                accum += (ijk.component_mul(&uvw3) + ijk_inv.component_mul(&uvw3_inv)).product()
+                    * weight;
             }
         }
     }

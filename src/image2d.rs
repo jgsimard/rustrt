@@ -5,7 +5,7 @@ use std::ops::{Index, IndexMut};
 
 use image::Rgb;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Array2d<T> {
     pub data: Vec<T>,
     pub size_x: usize,
@@ -24,8 +24,8 @@ impl<T: std::clone::Clone + std::default::Default> Array2d<T> {
     pub fn new(size_x: usize, size_y: usize) -> Array2d<T> {
         Array2d::<T> {
             data: vec![T::default(); size_x * size_y],
-            size_x: size_x,
-            size_y: size_y,
+            size_x,
+            size_y,
         }
     }
 }
@@ -61,7 +61,7 @@ fn to_srgb(c: &Vec3) -> Vec3 {
         }
     }
 
-    return result;
+    result
 }
 
 impl Image2d {
@@ -111,6 +111,6 @@ impl Image2d {
                 image2d[(x, y)] = Vec3::new(r, g, b);
             }
         }
-        return image2d;
+        image2d
     }
 }

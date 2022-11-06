@@ -20,8 +20,8 @@ impl Ray {
     pub fn new(origin: Vec3, direction: Vec3) -> Ray {
         RAYS.fetch_add(1, Ordering::SeqCst);
         Ray {
-            origin: origin,
-            direction: direction,
+            origin,
+            direction,
             mint: 0.0001, // TODO : maybe change this
             maxt: f32::INFINITY,
         }

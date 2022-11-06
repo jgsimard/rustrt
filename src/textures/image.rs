@@ -23,7 +23,7 @@ impl Texture for ImageTexture {
 
 impl ImageTexture {
     pub fn new(v: &Value) -> ImageTexture {
-        let filename: String = read(&v, "filename");
+        let filename: String = read(v, "filename");
         let image = Image2d::load(filename);
 
         ImageTexture { image }

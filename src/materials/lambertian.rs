@@ -1,5 +1,5 @@
 use crate::materials::material::Material;
-use crate::onb::ONB;
+use crate::onb::Onb;
 use crate::ray::Ray;
 use crate::sampling::sample_hemisphere_cosine;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
@@ -17,7 +17,7 @@ pub struct Lambertian {
 
 impl Lambertian {
     pub fn new(v: &Value) -> Lambertian {
-        let albedo = create_texture(&v, "albedo");
+        let albedo = create_texture(v, "albedo");
         Lambertian { albedo }
     }
 }
@@ -51,7 +51,7 @@ impl Material for Lambertian {
     }
 
     fn sample(&self, _wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
-        let uvw = ONB::build_from_w(&hit.gn);
+        let uvw = Onb::build_from_w(&hit.gn);
         let srec = ScatterRecord {
             attenuation: self.albedo.value(hit).unwrap(),
             wo: uvw.local(&sample_hemisphere_cosine(rv)),
@@ -61,7 +61,7 @@ impl Material for Lambertian {
     }
 
     fn pdf(&self, _wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
-        f32::max(0.0, glm::dot(&scattered, &hit.gn)) * std::f32::consts::FRAC_1_PI
+        f32::max(0.0, glm::dot(scattered, &hit.gn)) * std::f32::consts::FRAC_1_PI
     }
 }
 

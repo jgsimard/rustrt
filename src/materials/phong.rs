@@ -1,5 +1,5 @@
 use crate::materials::material::Material;
-use crate::onb::ONB;
+use crate::onb::Onb;
 use crate::ray::Ray;
 use crate::sampling::{sample_hemisphere_cosine_power, sample_hemisphere_cosine_power_pdf};
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
@@ -42,7 +42,7 @@ impl Material for Phong {
 
     fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
         let mirror_dir = glm::normalize(&reflect(wi, &hit.gn));
-        let uvw = ONB::build_from_w(&mirror_dir);
+        let uvw = Onb::build_from_w(&mirror_dir);
         let srec = ScatterRecord {
             attenuation: self.albedo.value(hit).unwrap(),
             wo: uvw.local(&sample_hemisphere_cosine_power(self.exponent, rv)),
@@ -58,12 +58,11 @@ impl Material for Phong {
         let mirror_dir = glm::normalize(&reflect(wi, &hit.gn));
         let cosine = f32::max(glm::dot(&glm::normalize(scattered), &mirror_dir), 0.0);
         let pdf = sample_hemisphere_cosine_power_pdf(self.exponent, cosine);
-        let final_pdf = if glm::dot(scattered, &hit.gn) >= 0.0 {
+        if glm::dot(scattered, &hit.gn) >= 0.0 {
             pdf
         } else {
             0.0
-        };
-        return final_pdf;
+        }
     }
 }
 

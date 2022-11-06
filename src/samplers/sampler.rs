@@ -89,7 +89,7 @@ pub fn create_sampler(j: &Value) -> SamplerType {
 
     match sampler_type {
         "independent" => {
-            let samples = read_or(&j, "samples", 1);
+            let samples = read_or(j, "samples", 1);
             SamplerType::from(IndependentSampler {
                 base_seed: 123,
                 sample_count: samples,

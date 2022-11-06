@@ -24,11 +24,11 @@ pub trait Integrator {
 #[enum_dispatch(Integrator)]
 #[derive(Debug, Clone)]
 pub enum IntegratorType {
-    NormalsIntegrator,
-    AmbientOcclusionIntegrator,
-    PathTracerMatsIntegrator,
-    PathTracerNEEIntegrator,
-    PathTracerMISIntegrator,
+    Normals(NormalsIntegrator),
+    AmbientOcclusion(AmbientOcclusionIntegrator),
+    PathTracerMats(PathTracerMatsIntegrator),
+    PathTracerNEE(PathTracerNEEIntegrator),
+    PathTracerMIS(PathTracerMISIntegrator),
 }
 
 pub fn create_integrator(v: &Value) -> IntegratorType {

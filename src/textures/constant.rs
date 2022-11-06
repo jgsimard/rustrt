@@ -25,7 +25,7 @@ impl ConstantTexture {
         } else if v.is_array() {
             from_value::<Vec3>(v.clone()).unwrap()
         } else if v.is_object() {
-            read::<Vec3>(&v, "color")
+            read::<Vec3>(v, "color")
         } else {
             panic!("unable to read texture {:?}", v);
         };
