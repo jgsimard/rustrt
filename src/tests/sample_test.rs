@@ -160,7 +160,7 @@ impl SampleTest for SurfaceTest {
     fn sample(&self, _params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3> {
         let erec = self
             .surface_group
-            .sample_from_group(&Vec3::zeros(), rv, rv1)?;
+            .sample_from_group(&Vec3::zeros(), *rv, rv1)?;
         let dir = glm::normalize(&erec.wi);
         Some(dir)
     }
@@ -184,7 +184,7 @@ impl SampleTestParameters {
         let image_height = self.image_height as f32;
         let a: Vec2 = pixel.add_scalar(0.5);
         let b: Vec2 = Vec2::new(2.0 * PI / image_width, PI / image_height);
-        spherical_coordinates_to_direction(&a.component_mul(&b))
+        spherical_coordinates_to_direction(a.component_mul(&b))
     }
 
     fn direction_to_pixel(&self, dir: &Vec3) -> Vec2 {
