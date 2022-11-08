@@ -42,7 +42,7 @@ fn create_sphere_plane_scene() -> Value {
         "camera":
         {
             "transform": { "o": [0,0,4] },
-            "resolution": [ 51, 51 ],
+            "resolution": [ 512, 512 ],
             "vfov": 45
         },
         "surfaces": [

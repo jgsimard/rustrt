@@ -1,5 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
+use std::sync::{Arc, Mutex};
 
 use crate::integrators::integrator::Integrator;
 use crate::ray::Ray;

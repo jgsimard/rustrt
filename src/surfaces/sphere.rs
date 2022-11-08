@@ -11,14 +11,14 @@ extern crate nalgebra_glm as glm;
 use serde_json::Value;
 
 use glm::{Vec2, Vec3};
-use std::rc::Rc;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Sphere {
     pub radius: f32,
     pub transform: Transform,
-    pub material: Rc<MaterialType>,
+    pub material: Arc<MaterialType>,
 }
 
 impl Sphere {
@@ -79,7 +79,7 @@ impl Surface for Sphere {
             gn: n,
             sn: n,
             uv,
-            mat: Rc::clone(&self.material),
+            mat: Arc::clone(&self.material),
         };
         Some(hit)
     }

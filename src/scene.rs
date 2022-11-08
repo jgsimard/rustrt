@@ -1,6 +1,8 @@
 use serde_json::{json, Map, Value};
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
+use rayon::prelude::*;
+use std::sync::{Arc, Mutex};
 
 use crate::aabb::Aabb;
 use crate::camera::PinholeCamera;
@@ -152,6 +154,9 @@ impl Scene {
         );
         let mut sampler = create_sampler(&self.sampler_value);
         let sample_count = sampler.sample_count();
+
+        // let mut sampler = Arc::new(Mutex::new(create_sampler(&self.sampler_value)));
+        // let sample_count = sampler.lock().unwrap().sample_count();
 
         println!("Rendering ...");
         let progress_bar = get_progress_bar(image.size());

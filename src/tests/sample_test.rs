@@ -15,6 +15,7 @@ use crate::utils::{
 use std::f32::consts::FRAC_1_PI;
 use std::f32::consts::PI;
 use std::rc::Rc;
+use std::sync::Arc;
 
 pub trait SampleTest {
     fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3>;
@@ -22,7 +23,7 @@ pub trait SampleTest {
 }
 
 pub struct MaterialTest {
-    material: Rc<MaterialType>,
+    material: Arc<MaterialType>,
     // normal: Vec3,
     incoming: Vec3,
     hit: HitInfo,

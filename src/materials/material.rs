@@ -4,7 +4,7 @@ use glm::{Vec2, Vec3};
 
 use serde_json::Value;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
@@ -71,7 +71,7 @@ pub enum MaterialType {
 }
 
 pub struct MaterialFactory {
-    pub materials: HashMap<String, Rc<MaterialType>>,
+    pub materials: HashMap<String, Arc<MaterialType>>,
 }
 
 impl MaterialFactory {
@@ -81,7 +81,7 @@ impl MaterialFactory {
         }
     }
 
-    pub fn create_material(&self, v: Value) -> Rc<MaterialType> {
+    pub fn create_material(&self, v: Value) -> Arc<MaterialType> {
         let type_material = v
             .get("type")
             .expect("material should have a type")
@@ -98,12 +98,12 @@ impl MaterialFactory {
             "blinn_phong" => MaterialType::from(BlinnPhong::new(&v)),
             _ => unimplemented!("The material type '{}' ", type_material),
         };
-        Rc::new(material)
+        Arc::new(material)
     }
 }
 
-impl Factory<Rc<MaterialType>> for MaterialFactory {
-    fn make(&mut self, v: &Value) -> Option<Vec<Rc<MaterialType>>> {
+impl Factory<Arc<MaterialType>> for MaterialFactory {
+    fn make(&mut self, v: &Value) -> Option<Vec<Arc<MaterialType>>> {
         let m = v.as_object().unwrap();
         let name = m
             .get("name")

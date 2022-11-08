@@ -3,7 +3,8 @@ extern crate nalgebra_glm as glm;
 use crate::utils::read_or;
 use enum_dispatch::enum_dispatch;
 use glm::Vec2;
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::{rngs::StdRng, Rng, SeedableRng, rngs::ThreadRng};
+use rand::prelude::*;
 
 use serde_json::Value;
 
@@ -79,8 +80,6 @@ impl Sampler for IndependentSampler {
 }
 
 pub fn create_sampler(j: &Value) -> SamplerType {
-    // println!("sampler {:?}", j);
-    // let v = j.get("sampler").unwrap().clone();
     let sampler_type = j
         .get("type")
         .expect("no sampler type")
@@ -89,6 +88,7 @@ pub fn create_sampler(j: &Value) -> SamplerType {
 
     match sampler_type {
         "independent" => {
+            // ThreadRng::from(_)
             let samples = read_or(j, "samples", 1);
             SamplerType::from(IndependentSampler {
                 base_seed: 123,
