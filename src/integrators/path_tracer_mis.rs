@@ -29,7 +29,7 @@ fn balance_heuristic(pdf1: f32, pdf2: f32) -> (f32, f32) {
 }
 
 impl Integrator for PathTracerMISIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray, _depth: i32) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray) -> Vec3 {
         let mut radiance = Vec3::zeros();
         let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
         let mut ray = ray_.clone();

@@ -11,7 +11,7 @@ use crate::surfaces::surface::Surface;
 pub struct NormalsIntegrator;
 
 impl Integrator for NormalsIntegrator {
-    fn li(&self, scene: &Scene, _sampler: &mut SamplerType, ray: &Ray, _depth: i32) -> Vec3 {
+    fn li(&self, scene: &Scene, _sampler: &mut SamplerType, ray: &Ray) -> Vec3 {
         if let Some(hit) = scene.intersect(ray) {
             glm::abs(&hit.sn)
         } else {

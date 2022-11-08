@@ -164,7 +164,7 @@ impl Scene {
                     .map(|_| {
                         let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f();
                         let ray = self.camera.generate_ray(&pixel);
-                        self.integrator.li(self, &mut sampler, &ray, 0)
+                        self.integrator.li(self, &mut sampler, &ray)
                     })
                     .sum::<Vec3>()
                     / (sample_count as f32);

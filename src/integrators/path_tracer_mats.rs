@@ -15,7 +15,7 @@ pub struct PathTracerMatsIntegrator {
 
 // iterative version
 impl Integrator for PathTracerMatsIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray, _depth: i32) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray) -> Vec3 {
         let mut radiance = Vec3::zeros();
         let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
         let mut ray = ray.clone();
