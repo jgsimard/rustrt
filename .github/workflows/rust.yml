@@ -13,11 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust:
-          - stable
-          - 1.65.0
 
     steps:
     - uses: actions/checkout@v3
