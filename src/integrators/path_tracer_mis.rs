@@ -56,17 +56,7 @@ impl Integrator for PathTracerMISIntegrator {
             let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
             let pdf_light = select_probability * emit_rec.pdf;
 
-            // let pdf_avg = (pdf_mat + pdf_light) / 2.0;
-
-            // let (weight_mat, weight_light) = if srec.is_specular {
-            //     (1.0, 1.0)
-            //     // power_heuristic(1.0, pdf_light, 2.0)
-            //     // balance_heuristic(1.0, pdf_light)
-            // } else {
-            //     // (1.0, 1.0)
-            //     power_heuristic(pdf_mat, pdf_light, 2.0)
-            //     // balance_heuristic(pdf_mat, pdf_light)
-            // };
+            let pdf_avg = (pdf_mat + pdf_light) / 2.0;
 
             // light contibution
             let visibility_ray = Ray::new(hit.p, emit_rec.wi);
@@ -74,14 +64,12 @@ impl Integrator for PathTracerMISIntegrator {
                 let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
                 if light_visible {
                     let mat_eval = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit);
-                    let mut light = mat_eval / pdf_light;
-                    // let mut light = mat_eval / pdf_avg;
-
+                    // let mut light = mat_eval / pdf_light;
+                    let mut light = mat_eval / pdf_avg;
                     light = light.component_mul(&emit_rec.emitted);
                     light = light.component_mul(&attenuation);
-                    // light *= 0.5;
-                    // light *= weight_light;
-
+                    light = light * emit_rec.pdf;
+                    light *= 0.5;
                     radiance += light;
                 }
             }
@@ -99,8 +87,7 @@ impl Integrator for PathTracerMISIntegrator {
                 mat_eval / pdf_mat
                 // mat_eval / pdf_avg
             };
-            // mat_attenuation *= weight_mat;
-            // mat_attenuation *= 0.5;
+
             attenuation = attenuation.component_mul(&mat_attenuation);
 
             // update the ray for the next bounce

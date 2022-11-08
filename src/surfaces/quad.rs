@@ -113,7 +113,8 @@ impl Surface for Quad {
         let emitted = self
             .material
             .emmitted(&Ray::new(*o, wi), &hit)
-            .unwrap_or_default();
+            .unwrap_or_default()
+            / pdf;
 
         let erec = EmitterRecord {
             o: *o,

@@ -55,7 +55,7 @@ impl FresnelBlend {
         }
     }
 
-    fn _scatter(&self, ray: &Ray, hit: &HitInfo, rv: &Vec2) -> Option<(Vec3, Ray)> {
+    fn _scatter(&self, ray: &Ray, hit: &HitInfo, rv: f32) -> Option<(Vec3, Ray)> {
         let interior_ior = luminance(&self.ior.value(hit).unwrap());
         let normal = if glm::dot(&hit.gn, &ray.direction) < 0.0 {
             hit.sn
@@ -64,7 +64,7 @@ impl FresnelBlend {
         };
         let cos_theta = f32::min(glm::dot(&(-ray.direction), &normal), 1.0);
 
-        let will_reflect = rv.x < reflectance(cos_theta, interior_ior);
+        let will_reflect = rv < reflectance(cos_theta, interior_ior);
 
         if will_reflect {
             self.reflected.scatter(ray, hit)
@@ -77,8 +77,8 @@ impl FresnelBlend {
 impl Material for FresnelBlend {
     fn scatter(&self, ray: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
         let mut rng = rand::thread_rng();
-        let rv = Vec2::new(rng.gen(), rng.gen());
-        self._scatter(ray, hit, &rv)
+        let rv = rng.gen();
+        self._scatter(ray, hit, rv)
     }
 
     fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vec3> {
@@ -93,7 +93,7 @@ impl Material for FresnelBlend {
 
     fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
-        let (attenuation, ray_out) = self._scatter(&ray, hit, rv)?;
+        let (attenuation, ray_out) = self._scatter(&ray, hit, rv.x)?;
         let srec = ScatterRecord {
             attenuation,
             wo: ray_out.direction,

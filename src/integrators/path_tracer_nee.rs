@@ -47,6 +47,7 @@ impl Integrator for PathTracerNEEIntegrator {
                         let light = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit) / light_pdf;
                         let light = light.component_mul(&emit_rec.emitted);
                         let light = light.component_mul(&attenuation);
+                        let light = light * emit_rec.pdf;
                         radiance += light;
                     }
                 }

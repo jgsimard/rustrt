@@ -1,5 +1,5 @@
 extern crate nalgebra_glm as glm;
-use glm::Vec3;
+use glm::{Vec2, Vec3};
 use rand::Rng;
 use serde_json::Value;
 
@@ -20,10 +20,8 @@ impl Dielectric {
         let ior = create_texture(v, "ior");
         Dielectric { ior }
     }
-}
 
-impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
+    fn _scatter(&self, r_in: &Ray, hit: &HitInfo, rv: f32) -> Option<(Vec3, Ray)> {
         let front_face = glm::dot(&hit.gn, &r_in.direction) < 0.0;
         let ior = luminance(&self.ior.value(hit).unwrap());
         let (normal, ratio_index_of_refraction) = if front_face {
@@ -39,8 +37,7 @@ impl Material for Dielectric {
 
         let total_intern_reflection = ratio_index_of_refraction * sin_theta >= 1.0;
 
-        let mut rng = rand::thread_rng();
-        let will_reflect = rng.gen::<f32>() < reflectance(cos_theta, ratio_index_of_refraction);
+        let will_reflect = rv < reflectance(cos_theta, ratio_index_of_refraction);
 
         let direction = if total_intern_reflection || will_reflect {
             reflect(&unit_direction, &normal)
@@ -51,6 +48,14 @@ impl Material for Dielectric {
         let scattered = Ray::new(hit.p, direction);
 
         Some((Vec3::new(1.0, 1.0, 1.0), scattered))
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, ray: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
+        let mut rng = rand::thread_rng();
+        let rv = rng.gen();
+        self._scatter(ray, hit, rv)
     }
 
     fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vec3> {
@@ -65,9 +70,9 @@ impl Material for Dielectric {
         Vec3::zeros()
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, _rv: &glm::Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
-        let (attenuation, ray_out) = self.scatter(&ray, hit)?;
+        let (attenuation, ray_out) = self._scatter(&ray, hit, rv.x)?;
         let srec = ScatterRecord {
             attenuation,
             wo: ray_out.direction,

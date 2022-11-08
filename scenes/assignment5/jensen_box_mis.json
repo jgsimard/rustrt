@@ -25,7 +25,7 @@
     },
     "sampler": {
         "type": "independent",
-        "samples": 54
+        "samples": 64
     },
     "background": [
         0,

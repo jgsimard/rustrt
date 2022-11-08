@@ -123,7 +123,8 @@ impl Surface for Sphere {
         let emitted = self
             .material
             .emmitted(&sample_ray, &hit)
-            .unwrap_or_default();
+            .unwrap_or_default()
+            / pdf;
 
         let erec = EmitterRecord {
             o: *o,
