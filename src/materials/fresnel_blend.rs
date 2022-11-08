@@ -8,7 +8,7 @@ use crate::utils::{luminance, reflectance};
 
 use serde_json::{from_value, Value};
 extern crate nalgebra_glm as glm;
-use glm::Vec3;
+use glm::{Vec2, Vec3};
 use rand::Rng;
 
 use super::material::MaterialType;
@@ -54,26 +54,31 @@ impl FresnelBlend {
             reflected,
         }
     }
-}
 
-impl Material for FresnelBlend {
-    fn scatter(&self, ray_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
+    fn _scatter(&self, ray: &Ray, hit: &HitInfo, rv: &Vec2) -> Option<(Vec3, Ray)> {
         let interior_ior = luminance(&self.ior.value(hit).unwrap());
-        let normal = if glm::dot(&hit.gn, &ray_in.direction) < 0.0 {
+        let normal = if glm::dot(&hit.gn, &ray.direction) < 0.0 {
             hit.sn
         } else {
             -hit.sn
         };
-        let cos_theta = f32::min(glm::dot(&(-ray_in.direction), &normal), 1.0);
+        let cos_theta = f32::min(glm::dot(&(-ray.direction), &normal), 1.0);
 
-        let mut rng = rand::thread_rng();
-        let will_reflect = rng.gen::<f32>() < reflectance(cos_theta, interior_ior);
+        let will_reflect = rv.x < reflectance(cos_theta, interior_ior);
 
         if will_reflect {
-            self.reflected.scatter(ray_in, hit)
+            self.reflected.scatter(ray, hit)
         } else {
-            self.refracted.scatter(ray_in, hit)
+            self.refracted.scatter(ray, hit)
         }
+    }
+}
+
+impl Material for FresnelBlend {
+    fn scatter(&self, ray: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
+        let mut rng = rand::thread_rng();
+        let rv = Vec2::new(rng.gen(), rng.gen());
+        self._scatter(ray, hit, &rv)
     }
 
     fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vec3> {
@@ -86,17 +91,15 @@ impl Material for FresnelBlend {
         Vec3::zeros()
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, _rv: &glm::Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
-        if let Some((attenuation, ray_out)) = self.scatter(&ray, hit) {
-            let srec = ScatterRecord {
-                attenuation,
-                wo: ray_out.direction,
-                is_specular: true,
-            };
-            return Some(srec);
-        }
-        None
+        let (attenuation, ray_out) = self._scatter(&ray, hit, rv)?;
+        let srec = ScatterRecord {
+            attenuation,
+            wo: ray_out.direction,
+            is_specular: true,
+        };
+        Some(srec)
     }
 
     fn pdf(&self, _wi: &Vec3, _scattered: &Vec3, _hit: &HitInfo) -> f32 {

@@ -84,7 +84,7 @@ fn main() {
     };
     // println!("{}", scene_json);
 
-    let scene = Scene::new(scene_json);
+    let scene = Scene::new(&scene_json);
 
     // let outfile = "something".to_string();
 

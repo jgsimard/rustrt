@@ -1,10 +1,9 @@
 use crate::materials::material::Material;
 use crate::onb::Onb;
 use crate::ray::Ray;
-use crate::sampling::sample_hemisphere_cosine;
+use crate::sampling::{random_in_unit_sphere, sample_hemisphere_cosine};
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{create_texture, Texture, TextureType};
-use crate::utils::random_in_unit_sphere;
 
 use serde_json::Value;
 extern crate nalgebra_glm as glm;

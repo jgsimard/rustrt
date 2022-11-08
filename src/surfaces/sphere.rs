@@ -60,9 +60,9 @@ impl Surface for Sphere {
         // Find the nearest root that lies in the acceptable range
         let discriminant_sqrt = discriminant.sqrt();
         let mut root = (-half_b - discriminant_sqrt) / a;
-        if root < ray_transformed.mint || root > ray_transformed.maxt {
+        if root < ray_transformed.min_t || root > ray_transformed.max_t {
             root = (-half_b + discriminant_sqrt) / a;
-            if root < ray_transformed.mint || root > ray_transformed.maxt {
+            if root < ray_transformed.min_t || root > ray_transformed.max_t {
                 return None;
             }
         }
@@ -101,7 +101,7 @@ impl Surface for Sphere {
         0.0
     }
 
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
+    fn sample(&self, o: &Vec3, rv: Vec2) -> Option<EmitterRecord> {
         let center = self.transform.point(&Vec3::zeros());
         let direction_centre: Vec3 = center - o;
         let dist = glm::length(&(o - center));
@@ -119,30 +119,7 @@ impl Surface for Sphere {
         let sample_ray = Ray::new(*o, sample_direction);
 
         let hit = self.intersect(&sample_ray)?;
-        // // TODO : REPLACE THIS, not stable at all :(
-        // let hit = self.intersect(&sample_ray).unwrap_or_else(|| {
-        //     panic!(
-        //         "cos {} theta{}, dist : {}, radius:{:?}, sample_ray:{:?}, self:{:?}",
-        //         cos_theta_max_from_p, cos_theta_max_from_p.acos(), dist, radius, sample_ray, self
-        //     )
-        // });
-
-        // // sample point on sphere directly
-        // let cos_theta_max_from_center = dist / radius;
-        // let uvw_sphere = ONB::build_from_w(&(-direction_centre));
-        // let sample_direction_from_center = uvw_sphere.local(&sample_sphere_cap(rv, cos_theta_max_from_center));
-
-        // let p = center + sample_direction_from_center * radius;
-        // let sample_direction = p - o;
-        // let t = glm::length(&sample_direction);
-        // let sample_direction = sample_direction / t;
-        // let sample_ray = Ray::new(o.clone(), sample_direction);
-        // let normal = glm::normalize(&sample_direction_from_center);
-        // let uv = direction_to_spherical_uv(&self.transform.inverse().point(&p));
-        // let hit = HitInfo { t: t, p: p, gn: normal, sn: normal, uv: uv, mat: self.material.clone() };
-
         let pdf = sample_sphere_cap_pdf(cos_theta_max_from_p, cos_theta_max_from_p);
-
         let emitted = self
             .material
             .emmitted(&sample_ray, &hit)

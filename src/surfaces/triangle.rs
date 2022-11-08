@@ -143,9 +143,11 @@ impl Triangle {
         let m = v.as_object().unwrap();
         let transform = read_transform(v);
         let material = sf.get_material(m);
-        if !m.contains_key("positions") {
-            panic!("Triangle should have 'positions'");
-        }
+
+        assert!(
+            m.contains_key("positions"),
+            "Triangle should have 'positions'"
+        );
         let pos = read::<Vec<Vec3>>(v, "positions");
 
         let mut aabb = Aabb::new();
@@ -267,7 +269,7 @@ impl Surface for Triangle {
         0.0
     }
 
-    fn sample(&self, origin: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
+    fn sample(&self, origin: &Vec3, rv: Vec2) -> Option<EmitterRecord> {
         let v0 = self.vertex(0);
         let v1 = self.vertex(1);
         let v2 = self.vertex(2);
@@ -374,7 +376,7 @@ pub fn single_triangle_intersect(
 
     // hit time
     let t = inv_det * glm::dot(&edge2, &q);
-    if t < ray.mint || t > ray.maxt {
+    if t < ray.min_t || t > ray.max_t {
         return None;
     }
 

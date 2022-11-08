@@ -105,9 +105,9 @@ impl Image2d {
             for y in 0..image2d.size_y {
                 let pixel = img.get_pixel(x as u32, y as u32);
                 let pixel = pixel.to_rgb();
-                let r = (pixel[0] as f32) / 255.0;
-                let g = (pixel[1] as f32) / 255.0;
-                let b = (pixel[2] as f32) / 255.0;
+                let r = f32::from(pixel[0]) / 255.0;
+                let g = f32::from(pixel[1]) / 255.0;
+                let b = f32::from(pixel[2]) / 255.0;
                 image2d[(x, y)] = Vec3::new(r, g, b);
             }
         }

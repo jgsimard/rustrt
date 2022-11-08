@@ -44,7 +44,7 @@ pub struct EmitterRecord {
     pub emitted: Vec3,
 }
 
-/// Data record for querying the scatter ray is_specular is for backward compatibility
+/// Data record for querying the scatter ray `is_specular` is for backward compatibility
 pub struct ScatterRecord {
     /// Attenuation to apply to the traced ray
     pub attenuation: Vec3,
@@ -74,10 +74,10 @@ pub trait Surface {
     ///
     /// Store result in `rec`, and return important weight (i.e. the color of the Surface divided by the probability
     /// density of the sample with respect to solid angle).
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<EmitterRecord>;
+    fn sample(&self, o: &Vec3, rv: Vec2) -> Option<EmitterRecord>;
 
     /// TODO
-    fn sample_from_group(&self, _o: &Vec3, _rv: &Vec2, _rv1: f32) -> Option<EmitterRecord> {
+    fn sample_from_group(&self, _o: &Vec3, _rv: Vec2, _rv1: f32) -> Option<EmitterRecord> {
         unimplemented!()
     }
 

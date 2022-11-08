@@ -12,8 +12,8 @@ use crate::utils::RAYS;
 pub struct Ray {
     pub origin: Vec3,
     pub direction: Vec3,
-    pub mint: f32,
-    pub maxt: f32,
+    pub min_t: f32,
+    pub max_t: f32,
 }
 
 impl Ray {
@@ -22,8 +22,8 @@ impl Ray {
         Ray {
             origin,
             direction,
-            mint: 0.0001, // TODO : maybe change this
-            maxt: f32::INFINITY,
+            min_t: 0.0001, // TODO : maybe change this
+            max_t: f32::INFINITY,
         }
     }
 

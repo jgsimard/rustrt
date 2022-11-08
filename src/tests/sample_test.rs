@@ -133,9 +133,7 @@ impl SurfaceTest {
             surfaces: surfaces_vec,
         });
 
-        let test = SurfaceTest {
-            surface_group,
-        };
+        let test = SurfaceTest { surface_group };
 
         let name = read(&v, "name");
         let image_width = read_or(&v, "image_width", 512);
@@ -156,7 +154,6 @@ impl SurfaceTest {
 
 impl SampleTest for SurfaceTest {
     fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3, rv: f32) -> f32 {
-        
         self.surface_group.pdf_child(&Vec3::zeros(), dir, rv)
     }
 

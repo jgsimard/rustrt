@@ -25,7 +25,7 @@ pub struct Scene {
 
 impl Scene {
     /// parse the sampler
-    pub fn get_sampler_json(map_json: Map<String, Value>) -> Value {
+    pub fn get_sampler_json(map_json: &Map<String, Value>) -> Value {
         if map_json.contains_key("sampler") {
             let mut sampler_map = (*map_json.get("sampler").unwrap())
                 .as_object()
@@ -46,7 +46,7 @@ impl Scene {
         }
     }
 
-    pub fn new(scene_json: Value) -> Scene {
+    pub fn new(scene_json: &Value) -> Scene {
         println!("Parsing...");
         let map_json = scene_json.as_object().unwrap();
 
@@ -63,9 +63,10 @@ impl Scene {
         ];
 
         for key in map_json.keys() {
-            if !toplevel_fields.contains(&key.as_str()) {
-                panic!("Unsupported field '{key}' here:\n");
-            }
+            assert!(
+                toplevel_fields.contains(&key.as_str()),
+                "Unsupported field '{key}' here:\n"
+            );
         }
 
         // camera
@@ -76,11 +77,11 @@ impl Scene {
         );
 
         // integrator
-        let integrator = create_integrator(&scene_json);
+        let integrator = create_integrator(scene_json);
 
         // scene background
         // TODO replace by let background = create_texture(&scene_json, "background")
-        let background = read_v_or_f(&scene_json, "background");
+        let background = read_v_or_f(scene_json, "background");
 
         // materials
         let mut material_factory = MaterialFactory::new();
@@ -137,7 +138,7 @@ impl Scene {
         Scene {
             integrator,
             emitters,
-            sampler_value: Scene::get_sampler_json((*map_json).clone()),
+            sampler_value: Scene::get_sampler_json(map_json),
             surfaces,
             camera,
             background,
@@ -190,7 +191,7 @@ impl Surface for Scene {
         unimplemented!()
     }
 
-    fn sample(&self, _o: &Vec3, _rv: &Vec2) -> Option<EmitterRecord> {
+    fn sample(&self, _o: &Vec3, _rv: Vec2) -> Option<EmitterRecord> {
         unimplemented!()
     }
 

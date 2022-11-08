@@ -77,8 +77,8 @@ impl Aabb {
     // }
 
     pub fn intersect(&self, ray: &Ray) -> bool {
-        let mut min_t = ray.mint;
-        let mut max_t = ray.maxt;
+        let mut min_t = ray.min_t;
+        let mut max_t = ray.max_t;
         for i in 0..3 {
             let inv_d = 1.0 / ray.direction[i];
             let mut t0 = (self.min[i] - ray.origin[i]) * inv_d;

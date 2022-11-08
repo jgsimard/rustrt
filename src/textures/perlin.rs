@@ -1,6 +1,6 @@
 use rand::prelude::*;
 // extern crate lazy_static;
-use crate::utils::random_in_unit_sphere;
+use crate::sampling::random_in_unit_sphere;
 
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
@@ -19,7 +19,7 @@ fn generate_perm(rng: &mut impl Rng) -> Vec<u8> {
 fn generate_vecs(rng: &mut impl Rng) -> Vec<Vec3> {
     let mut f = Vec::with_capacity(256);
     for _ in 0..256 {
-        f.push(random_in_unit_sphere(rng))
+        f.push(random_in_unit_sphere(rng));
     }
     f
 }
@@ -31,6 +31,7 @@ lazy_static::lazy_static! {
     pub static ref PERM_Z: Vec<u8> = generate_perm(&mut thread_rng());
 }
 
+#[allow(clippy::needless_range_loop)]
 fn perlin_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f32 {
     let mut accum = 0.;
     let uvw3 = uvw
@@ -62,7 +63,7 @@ pub fn noise(p: Vec3, scale: f32) -> f32 {
                 let ix = PERM_X[((ijk.x as i32 + di as i32) & 255) as usize];
                 let iy = PERM_Y[((ijk.y as i32 + dj as i32) & 255) as usize];
                 let iz = PERM_Z[((ijk.z as i32 + dk as i32) & 255) as usize];
-                corners[di][dj][dk] = VECS[(ix ^ iy ^ iz) as usize]
+                corners[di][dj][dk] = VECS[(ix ^ iy ^ iz) as usize];
             }
         }
     }

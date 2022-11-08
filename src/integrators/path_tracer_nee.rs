@@ -35,7 +35,7 @@ impl Integrator for PathTracerNEEIntegrator {
             if let Some(emit_rec) =
                 scene
                     .emitters
-                    .sample_from_group(&hit.p, &rv_light, sampler.next1f())
+                    .sample_from_group(&hit.p, rv_light, sampler.next1f())
             {
                 // visibility
                 let visibility_ray = Ray::new(hit.p, emit_rec.wi);
@@ -43,10 +43,10 @@ impl Integrator for PathTracerNEEIntegrator {
                     let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
                     if light_visible {
                         let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
-                        let mut light = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit)
-                            / (select_probability * emit_rec.pdf);
-                        light = light.component_mul(&emit_rec.emitted);
-                        light = light.component_mul(&attenuation);
+                        let light_pdf = select_probability * emit_rec.pdf;
+                        let light = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit) / light_pdf;
+                        let light = light.component_mul(&emit_rec.emitted);
+                        let light = light.component_mul(&attenuation);
                         radiance += light;
                     }
                 }

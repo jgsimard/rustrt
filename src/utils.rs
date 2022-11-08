@@ -1,7 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use rand::Rng;
 use serde_json::{from_value, Value};
 use std::fmt::Write;
 use std::ops::{Add, Mul, Sub};
@@ -21,7 +20,7 @@ pub fn get_progress_bar(size: usize) -> ProgressBar {
         )
         .unwrap()
         .with_key("eta", |state: &ProgressState, w: &mut dyn Write| {
-            write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap()
+            write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap();
         })
         .progress_chars("#>-"),
     );
@@ -66,7 +65,7 @@ pub fn direction_to_spherical_uv(p: &Vec3) -> Vec2 {
     )
 }
 
-pub fn spherical_coordinates_to_direction(phi_theta: &Vec2) -> Vec3 {
+pub fn spherical_coordinates_to_direction(phi_theta: Vec2) -> Vec3 {
     let (sin_theta, cos_theta) = sincos(phi_theta.y);
     let (sin_phi, cos_phi) = sincos(phi_theta.x);
 
@@ -74,8 +73,8 @@ pub fn spherical_coordinates_to_direction(phi_theta: &Vec2) -> Vec3 {
 }
 
 #[allow(unused)]
-pub fn spherical_uv_to_direction(uv: &Vec2) -> Vec3 {
-    spherical_coordinates_to_direction(&Vec2::new(
+pub fn spherical_uv_to_direction(uv: Vec2) -> Vec3 {
+    spherical_coordinates_to_direction(Vec2::new(
         (uv.x - 0.5) * 2.0 * std::f32::consts::PI,
         (1.0 - uv.y) * std::f32::consts::PI,
     ))
@@ -120,17 +119,6 @@ pub fn deg2rad(rad: f32) -> f32 {
 
 pub fn luminance(c: &Vec3) -> f32 {
     glm::dot(c, &Vec3::new(0.212671, 0.715160, 0.072169))
-}
-
-pub fn random_in_unit_sphere(rng: &mut impl Rng) -> Vec3 {
-    const ONES: Vec3 = Vec3::new(1.0, 1.0, 1.0);
-    loop {
-        let rand_vec = Vec3::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>());
-        let p = 2.0 * rand_vec - ONES;
-        if p.norm_squared() < 1.0 {
-            return p;
-        }
-    }
 }
 
 pub fn reflect(direction: &Vec3, normal: &Vec3) -> Vec3 {

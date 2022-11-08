@@ -38,12 +38,12 @@ impl Material for BlinnPhong {
 
         let mirror_dir = glm::normalize(&reflect(wi, &normal));
 
-        let srec = ScatterRecord {
-            attenuation: self.albedo.value(hit).unwrap(),
-            wo: mirror_dir,
-            is_specular: false,
-        };
-        if glm::dot(&srec.wo, &hit.gn) >= 0.0 {
+        if glm::dot(&mirror_dir, &hit.gn) >= 0.0 {
+            let srec = ScatterRecord {
+                attenuation: self.albedo.value(hit).unwrap(),
+                wo: mirror_dir,
+                is_specular: false,
+            };
             return Some(srec);
         }
         None

@@ -170,8 +170,6 @@ fn create_shirley_scene() -> Value {
     });
 
     // compose the image properties
-    // j["sampler"]["samples"] = 10;
-    // j["background"]         = {1, 1, 1};
     j["sampler"] = json!({"samples": 10});
     j["background"] = serde_json::to_value([1.0, 1.0, 1.0]).unwrap();
 

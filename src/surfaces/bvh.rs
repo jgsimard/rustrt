@@ -22,7 +22,7 @@ impl Surface for Bvh {
 
             for child in &self.children {
                 if let Some(hit) = child.intersect(&ray) {
-                    ray.maxt = hit.t;
+                    ray.max_t = hit.t;
                     option_hit.replace(hit);
                 }
             }
@@ -37,7 +37,7 @@ impl Surface for Bvh {
     fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
         unimplemented!()
     }
-    fn sample(&self, _o: &Vec3, _rv: &Vec2) -> Option<EmitterRecord> {
+    fn sample(&self, _o: &Vec3, _rv: Vec2) -> Option<EmitterRecord> {
         unimplemented!()
     }
     fn is_emissive(&self) -> bool {

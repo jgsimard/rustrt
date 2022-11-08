@@ -37,7 +37,7 @@ impl Surface for Quad {
         }
 
         // check if computed param is within ray.mint and ray.maxt
-        if t < ray_transformed.mint || t > ray_transformed.maxt {
+        if t < ray_transformed.min_t || t > ray_transformed.max_t {
             return None;
         }
 
@@ -80,7 +80,7 @@ impl Surface for Quad {
         0.0
     }
 
-    fn sample(&self, o: &Vec3, rv: &Vec2) -> Option<EmitterRecord> {
+    fn sample(&self, o: &Vec3, rv: Vec2) -> Option<EmitterRecord> {
         let new_rv = (rv * 2.0).add_scalar(-1.0);
         let temp = new_rv.component_mul(&self.size);
         let raw_p = Vec3::new(temp.x, temp.y, 0.0);

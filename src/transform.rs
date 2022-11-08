@@ -57,8 +57,8 @@ impl Transform {
         Ray {
             origin: self.point(&r.origin),
             direction: self.vector(&r.direction),
-            mint: r.mint,
-            maxt: r.maxt,
+            min_t: r.min_t,
+            max_t: r.max_t,
         }
     }
 
@@ -112,7 +112,7 @@ impl Default for Transform {
 pub fn parse_transform(json: &Value) -> Transform {
     // multiple transforms
     if json.is_array() {
-        let mut t: Transform = Default::default();
+        let mut t: Transform = Transform::default();
         for sub_t in json.as_array().unwrap() {
             t = parse_transform(sub_t) * t;
         }
@@ -181,7 +181,7 @@ pub fn read_transform(v: &Value) -> Transform {
     if m.contains_key("transform") {
         parse_transform(&v["transform"])
     } else {
-        Default::default()
+        Transform::default()
     }
 }
 

@@ -4,10 +4,11 @@ use glm::Vec3;
 
 use crate::materials::material::Material;
 use crate::ray::Ray;
+use crate::sampling::random_in_unit_sphere;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::ScatterRecord;
 use crate::textures::texture::{create_texture, Texture, TextureType};
-use crate::utils::{luminance, random_in_unit_sphere, reflect};
+use crate::utils::{luminance, reflect};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Metal {
