@@ -1,5 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
+use rand::Rng;
 use std::sync::{Arc, Mutex};
 
 use crate::integrators::integrator::Integrator;
@@ -16,7 +17,7 @@ pub struct PathTracerNEEIntegrator {
 }
 
 impl Integrator for PathTracerNEEIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: &mut SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3 {
         let mut radiance = Vec3::zeros();
         let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
         let mut ray = ray.clone();
@@ -33,16 +34,16 @@ impl Integrator for PathTracerNEEIntegrator {
             }
 
             // sample material
-            let rv_mat = sampler.next2f();
+            let rv_mat = sampler.next2f(rng);
             let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_mat) else {break;};
 
             if !srec.is_specular {
                 // no need to sample light for specular materials
-                let rv_light = sampler.next2f();
+                let rv_light = sampler.next2f(rng);
                 if let Some(emit_rec) =
                     scene
                         .emitters
-                        .sample_from_group(&hit.p, rv_light, sampler.next1f())
+                        .sample_from_group(&hit.p, rv_light, sampler.next1f(rng))
                 {
                     // visibility
                     let visibility_ray = Ray::new(hit.p, emit_rec.wi);

@@ -1,4 +1,5 @@
-use rand::Rng;
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 use serde_json::Value;
 use serde_json::{self, json};
 extern crate nalgebra_glm as glm;
@@ -152,7 +153,7 @@ fn create_steinbach_scene() -> Value {
 }
 
 fn create_shirley_scene() -> Value {
-    let mut rng = rand::thread_rng();
+    let mut rng = ChaCha8Rng::seed_from_u64(420);
 
     // Compose the camera
     let mut j = json!({

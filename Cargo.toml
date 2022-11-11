@@ -22,6 +22,7 @@ approx = "0.5"
 partition = "0.1"
 lazy_static = "1.4"
 rayon = "1.5"
+rand_chacha = "0.3"
 
 
 [profile.test]

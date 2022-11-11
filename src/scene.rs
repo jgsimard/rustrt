@@ -1,6 +1,8 @@
 use serde_json::{json, Map, Value};
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
+use rand::{rngs::StdRng, rngs::ThreadRng, Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 
@@ -10,7 +12,7 @@ use crate::image2d::Image2d;
 use crate::integrators::integrator::{create_integrator, Integrator, IntegratorType};
 use crate::materials::material::MaterialFactory;
 use crate::ray::Ray;
-use crate::samplers::sampler::{create_sampler, Sampler};
+use crate::samplers::sampler::{create_sampler, Sampler, SamplerType};
 use crate::surfaces::bvh::Bvh;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 use crate::surfaces::surface_group::LinearSurfaceGroup;
@@ -161,15 +163,38 @@ impl Scene {
         println!("Rendering ...");
         let progress_bar = get_progress_bar(image.size());
 
-        // Generate a ray for each pixel in the ray image
+        // // Generate multiple rays for each pixel in the image
+        // let mut rng = ChaCha8Rng::seed_from_u64(self.sampler.seed());
+        // for y in 0..image.size_y {
+        //     for x in 0..image.size_x {
+        //         image[(x, y)] = (0..sample_count)
+        //             .into_iter()
+        //             .map(|_| {
+        //                 // let mut sampler_ = sampler.clone();
+        //                 // let mut rng = ChaCha8Rng::seed_from_u64(self.sampler.seed());
+        //                 // rng.set_stream(i as u64);
+        //                 // sampler_.set_rng(rng);
+        //                 let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
+        //                 let ray = self.camera.generate_ray(&pixel);
+        //                 self.integrator.li(self, &mut sampler, &mut rng, &ray)
+        //             })
+        //             .sum::<Vec3>()
+        //             / (sample_count as f32);
+
+        //         progress_bar.inc(1);
+        //     }
+        // }
+
+        // original
+        // Generate multiple rays for each pixel in the image
+        let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
         for y in 0..image.size_y {
             for x in 0..image.size_x {
                 image[(x, y)] = (0..sample_count)
-                    .into_iter()
                     .map(|_| {
-                        let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f();
+                        let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
                         let ray = self.camera.generate_ray(&pixel);
-                        self.integrator.li(self, &mut sampler, &ray)
+                        self.integrator.li(self, &mut sampler, &mut rng, &ray)
                     })
                     .sum::<Vec3>()
                     / (sample_count as f32);

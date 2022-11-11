@@ -727,6 +727,7 @@ dependencies = [
  "nalgebra-glm",
  "partition",
  "rand",
+ "rand_chacha",
  "rayon",
  "serde",
  "serde_derive",
