@@ -31,31 +31,34 @@ impl Integrator for PathTracerNEEIntegrator {
                 radiance += emitted.component_mul(&attenuation);
             }
 
-            let rv_light = sampler.next2f();
-            if let Some(emit_rec) =
-                scene
-                    .emitters
-                    .sample_from_group(&hit.p, rv_light, sampler.next1f())
-            {
-                // visibility
-                let visibility_ray = Ray::new(hit.p, emit_rec.wi);
-                if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
-                    let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
-                    if light_visible {
-                        let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
-                        let light_pdf = select_probability * emit_rec.pdf;
-                        let light = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit) / light_pdf;
-                        let light = light.component_mul(&emit_rec.emitted);
-                        let light = light.component_mul(&attenuation);
-                        let light = light * emit_rec.pdf;
-                        radiance += light;
-                    }
-                }
-            }
-
             // sample material
             let rv_mat = sampler.next2f();
             let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_mat) else {break;};
+
+            if !srec.is_specular {
+                // no need to sample light for specular materials
+                let rv_light = sampler.next2f();
+                if let Some(emit_rec) =
+                    scene
+                        .emitters
+                        .sample_from_group(&hit.p, rv_light, sampler.next1f())
+                {
+                    // visibility
+                    let visibility_ray = Ray::new(hit.p, emit_rec.wi);
+                    if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
+                        let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
+                        if light_visible {
+                            let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
+                            let light_pdf = select_probability * emit_rec.pdf;
+                            let light =
+                                hit.mat.eval(&ray.direction, &emit_rec.wi, &hit) / light_pdf;
+                            let light = light.component_mul(&emit_rec.emitted);
+                            let light = light.component_mul(&attenuation);
+                            radiance += light;
+                        }
+                    }
+                }
+            }
 
             // update for next bounce
             let a = if srec.is_specular {

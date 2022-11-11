@@ -299,8 +299,7 @@ impl Surface for Triangle {
             .mesh
             .materials
             .emmitted(&Ray::new(*origin, wi), &hit)
-            .unwrap_or_default()
-            / pdf;
+            .unwrap_or_default();
 
         let erec = EmitterRecord {
             o: *origin,

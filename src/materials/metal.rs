@@ -1,10 +1,11 @@
 use serde_json::Value;
 extern crate nalgebra_glm as glm;
-use glm::Vec3;
+use glm::{Vec2, Vec3};
+use rand::Rng;
 
 use crate::materials::material::Material;
 use crate::ray::Ray;
-use crate::sampling::random_in_unit_sphere;
+use crate::sampling::sample_sphere;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::ScatterRecord;
 use crate::textures::texture::{create_texture, Texture, TextureType};
@@ -22,16 +23,11 @@ impl Metal {
         let roughness = create_texture(v, "roughness");
         Metal { albedo, roughness }
     }
-}
 
-impl Material for Metal {
-    fn scatter(&self, r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
-        let mut rng = rand::thread_rng();
-
+    fn _scatter(&self, r_in: &Ray, hit: &HitInfo, rv: &Vec2) -> Option<(Vec3, Ray)> {
         let reflected = reflect(&r_in.direction, &hit.sn);
         let roughness = luminance(&self.roughness.value(hit).unwrap());
-        let rand_vec = random_in_unit_sphere(&mut rng).normalize();
-        let scatter_direction = reflected + roughness * rand_vec;
+        let scatter_direction = reflected + roughness * sample_sphere(rv);
 
         if scatter_direction.dot(&hit.sn) < 0.0 {
             return None;
@@ -40,6 +36,14 @@ impl Material for Metal {
         let ray_out = Ray::new(hit.p, scatter_direction.normalize());
 
         Some((attenuation, ray_out))
+    }
+}
+
+impl Material for Metal {
+    fn scatter(&self, ray: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
+        let mut rng = rand::thread_rng();
+        let rv = Vec2::new(rng.gen(), rng.gen());
+        self._scatter(ray, hit, &rv)
     }
 
     fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vec3> {
@@ -54,21 +58,19 @@ impl Material for Metal {
         Vec3::zeros()
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, _rv: &glm::Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
-        if let Some((attenuation, ray_out)) = self.scatter(&ray, hit) {
-            let srec = ScatterRecord {
-                attenuation,
-                wo: ray_out.direction,
-                is_specular: true,
-            };
-            return Some(srec);
-        }
-        None
+        let (attenuation, ray_out) = self._scatter(&ray, hit, rv)?;
+        let srec = ScatterRecord {
+            attenuation,
+            wo: ray_out.direction,
+            is_specular: true,
+        };
+        Some(srec)
     }
 
     fn pdf(&self, _wi: &Vec3, _scattered: &Vec3, _hit: &HitInfo) -> f32 {
-        1.0
+        0.0
     }
 }
 

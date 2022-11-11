@@ -96,11 +96,11 @@ impl Surface for Quad {
         let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
 
         let area = 4.0 * glm::length(&glm::cross(&v0, &v1));
-        // let distance2 = hit.t * hit.t * glm::length2(&dir);
         let cosine = f32::abs(glm::dot(&wi, &normal));
         let geometry_factor = distance2 / cosine;
         let pdf = 1.0 / area * geometry_factor;
 
+        // println!("quad: pdf={}, distance2={}, area={}", pdf, distance2, area);
         let hit = HitInfo {
             t,
             p,
@@ -113,8 +113,7 @@ impl Surface for Quad {
         let emitted = self
             .material
             .emmitted(&Ray::new(*o, wi), &hit)
-            .unwrap_or_default()
-            / pdf;
+            .unwrap_or_default();
 
         let erec = EmitterRecord {
             o: *o,
