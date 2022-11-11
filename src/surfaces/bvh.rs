@@ -69,11 +69,7 @@ impl Bvh {
         bvh
     }
 
-    fn new_node(
-        surfaces: &mut [SurfaceType],
-        max_leaf_size: usize,
-        pb: &ProgressBar,
-    ) -> Bvh {
+    fn new_node(surfaces: &mut [SurfaceType], max_leaf_size: usize, pb: &ProgressBar) -> Bvh {
         let n_surfaces = surfaces.len();
         if n_surfaces <= max_leaf_size {
             pb.inc(n_surfaces as u64);
