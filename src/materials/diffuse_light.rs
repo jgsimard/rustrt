@@ -45,6 +45,7 @@ impl Material for DiffuseLight {
         } else {
             self.emit
         };
+        // emited_color
         emited_color * self.pdf(wi, scattered, hit)
     }
 

@@ -5,7 +5,7 @@ use rand::Rng;
 
 /// Uniformly sample a vector on a 2D disk with radius 1, centered around the origin
 #[allow(unused)]
-fn sample_disk(rv: &Vec2) -> Vec2 {
+pub fn sample_disk(rv: &Vec2) -> Vec2 {
     let r = f32::sqrt(rv.y);
     let (sin_phi, cos_phi) = sincos(std::f32::consts::TAU * rv.x);
     Vec2::new(cos_phi * r, sin_phi * r)
@@ -13,7 +13,7 @@ fn sample_disk(rv: &Vec2) -> Vec2 {
 
 /// Probability density of `sample_disk`()
 #[allow(unused)]
-fn sample_disk_pdf(p: &Vec2) -> f32 {
+pub fn sample_disk_pdf(p: &Vec2) -> f32 {
     if glm::length2(p) <= 1.0 {
         std::f32::consts::FRAC_1_PI
     } else {
@@ -22,8 +22,7 @@ fn sample_disk_pdf(p: &Vec2) -> f32 {
 }
 
 /// Uniformly sample a vector on the unit sphere with respect to solid angles
-#[allow(unused)]
-fn sample_sphere(rv: &Vec2) -> Vec3 {
+pub fn sample_sphere(rv: &Vec2) -> Vec3 {
     let cos_theta = 2.0 * rv.y - 1.0;
     let sin_theta = f32::sqrt(1.0 - cos_theta * cos_theta);
     let (sin_phi, cos_phi) = sincos(std::f32::consts::TAU * rv.x);

@@ -34,8 +34,9 @@ impl Integrator for PathTracerMISIntegrator {
         let mut radiance = Vec3::zeros();
         let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
         let mut ray = ray_.clone();
+        let mut previous_weight_mat = 1.0;
 
-        for _ in 0..=self.max_bounces {
+        for bounce in 0..=self.max_bounces {
             // find next intersection hit point
             let Some(hit) = scene.intersect(&ray) else {
                 return radiance + scene.background.component_mul(&attenuation);
@@ -57,27 +58,38 @@ impl Integrator for PathTracerMISIntegrator {
             let select_probability = scene.emitters.pdf(&hit.p, &emit_rec.wi);
             let pdf_light = select_probability * emit_rec.pdf;
 
-            let pdf_avg = (pdf_mat + pdf_light) / 2.0;
+            let (weight_mat, weight_light) = if srec.is_specular {
+                (1.0, 0.0)
+            } else {
+                power_heuristic(pdf_mat, pdf_light, 2.0)
+            };
 
             // light contibution
-            let visibility_ray = Ray::new(hit.p, emit_rec.wi);
-            if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
-                let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
-                if light_visible {
-                    let mat_eval = hit.mat.eval(&ray.direction, &emit_rec.wi, &hit);
-                    // let mut light = mat_eval / pdf_light;
-                    let mut light = mat_eval / pdf_avg;
-                    light = light.component_mul(&emit_rec.emitted);
-                    light = light.component_mul(&attenuation);
-                    light = light * emit_rec.pdf;
-                    light *= 0.5;
-                    radiance += light;
+            if !srec.is_specular {
+                // no light samples from specular materials
+                let visibility_ray = Ray::new(hit.p, emit_rec.wi);
+                if let Some(visibility_hit) = scene.intersect(&visibility_ray) {
+                    let light_visible = (visibility_hit.t - emit_rec.hit.t).abs() < 1e-5;
+                    if light_visible {
+                        let light = hit
+                            .mat
+                            .eval(&ray.direction, &emit_rec.wi, &hit)
+                            .component_mul(&emit_rec.emitted)
+                            .component_mul(&attenuation)
+                            / pdf_light
+                            * weight_light;
+                        radiance += light;
+                    }
                 }
             }
 
             // emitted contibution
             if let Some(emitted) = hit.mat.emmitted(&ray, &hit) {
-                radiance += emitted.component_mul(&attenuation);
+                if bounce == 0 || srec.is_specular {
+                    radiance += emitted.component_mul(&attenuation);
+                } else {
+                    radiance += emitted.component_mul(&attenuation) * previous_weight_mat;
+                }
             }
 
             // update for next bounce
@@ -86,7 +98,6 @@ impl Integrator for PathTracerMISIntegrator {
             } else {
                 let mat_eval = hit.mat.eval(&ray.direction, &srec.wo, &hit);
                 mat_eval / pdf_mat
-                // mat_eval / pdf_avg
             };
 
             attenuation = attenuation.component_mul(&mat_attenuation);
@@ -94,6 +105,7 @@ impl Integrator for PathTracerMISIntegrator {
             // update the ray for the next bounce
             ray.origin = hit.p;
             ray.direction = srec.wo;
+            previous_weight_mat = weight_mat;
         }
         radiance
     }

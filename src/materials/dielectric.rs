@@ -82,6 +82,6 @@ impl Material for Dielectric {
     }
 
     fn pdf(&self, _wi: &Vec3, _scattered: &Vec3, _hit: &HitInfo) -> f32 {
-        1.0
+        0.0
     }
 }
