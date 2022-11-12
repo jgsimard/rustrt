@@ -23,12 +23,11 @@ use crate::scene::Scene;
 
 use clap::Parser;
 use serde_json::Value;
-use std::path::PathBuf;
 
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 struct Cli {
@@ -87,7 +86,7 @@ fn main() {
     );
     println!("Writing rendered image to file {:?}", args.outfile);
 
-    image.save(PathBuf::from(args.outfile).as_path());
+    image.save(&PathBuf::from(args.outfile));
 
     println!("Done");
 }
