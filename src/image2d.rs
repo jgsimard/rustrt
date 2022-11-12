@@ -3,6 +3,8 @@ use glm::Vec3;
 use image::{io::Reader as ImageReader, GenericImageView, Pixel};
 use std::iter::IntoIterator;
 use std::ops::{Index, IndexMut};
+use std::path::Path;
+
 
 use image::Rgb;
 
@@ -75,7 +77,7 @@ fn to_srgb(c: &Vec3) -> Vec3 {
 }
 
 impl Image2d {
-    pub fn save(&self, path: String) {
+    pub fn save(&self, path: &Path) {
         // let mut img_buffer = image::Rgb32FImage::new(self.size_x as u32, self.size_y as u32);
         let mut img_buffer = image::RgbImage::new(self.size_x as u32, self.size_y as u32);
         let mut max = f32::MIN;

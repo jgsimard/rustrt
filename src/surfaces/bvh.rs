@@ -1,12 +1,26 @@
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use indicatif::ProgressBar;
-use partition::partition;
+use partition::partition_index;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
 use crate::utils::get_progress_bar;
+
+/// small modification of partition to include edge case of partioning at start or end of array
+pub fn partition<T, P>(data: &mut [T], predicate: P, max_leaf_size: usize) -> (&mut [T], &mut [T])
+where
+    P: Fn(&T) -> bool,
+{
+    let mut idx = partition_index(data, predicate);
+    if idx == 0 {
+        idx += max_leaf_size;
+    } else if idx == data.len() {
+        idx -= max_leaf_size;
+    }
+    data.split_at_mut(idx)
+}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Bvh {
@@ -44,6 +58,7 @@ impl Surface for Bvh {
         unimplemented!()
     }
 }
+
 impl Bvh {
     pub fn new(surfaces: &mut Vec<SurfaceType>) -> Bvh {
         let max_leaf_size = 3;
@@ -57,7 +72,6 @@ impl Bvh {
     fn new_node(surfaces: &mut [SurfaceType], max_leaf_size: usize, pb: &ProgressBar) -> Bvh {
         let n_surfaces = surfaces.len();
         if n_surfaces <= max_leaf_size {
-            // println!("depth : {}, number of children {}", depth, n_surfaces);
             pb.inc(n_surfaces as u64);
             let mut bbox = Aabb::new();
             for child in surfaces.iter() {
@@ -81,14 +95,14 @@ impl Bvh {
         let (split_axis, _) = (max - min).argmax();
         let center = |a: &SurfaceType| a.bounds().center()[split_axis];
 
-        // Equal method
+        // // Equal method
         // let mid = n_surfaces / 2;
         // surfaces.select_nth_unstable_by(mid, |a, b| center(a).total_cmp(&center(b)));
         // let (left, right) = surfaces.split_at_mut(mid);
 
         // Middle Method
         let middle = (max + min)[split_axis] / 2.0;
-        let (left, right) = partition(surfaces, |x| center(x) >= middle);
+        let (left, right) = partition(surfaces, |x| center(x) >= middle, max_leaf_size);
 
         // add the two children => recursion
         let children = vec![
@@ -97,7 +111,7 @@ impl Bvh {
         ];
 
         let mut bbox = Aabb::new();
-        for child in children.iter() {
+        for child in &children {
             bbox.enclose(&child.bounds());
         }
 

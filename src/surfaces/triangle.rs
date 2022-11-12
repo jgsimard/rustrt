@@ -54,81 +54,84 @@ impl Mesh {
         let filename: String = read(v, "filename");
 
         let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
-
-        assert!(obj.is_ok());
         let (models, _) = obj.expect("Failed to load OBJ file");
-        let mesh = &models[0].mesh;
-        let vs: Vec<Vec3> = mesh
-            .positions
-            .chunks(3)
-            .map(|p| transform.point(&Vec3::new(p[0], p[1], p[2])))
-            .collect();
+        let mut output = Vec::new();
+        for model in models {
+            let mesh = &model.mesh;
+            let vs: Vec<Vec3> = mesh
+                .positions
+                .chunks(3)
+                .map(|p| transform.point(&Vec3::new(p[0], p[1], p[2])))
+                .collect();
 
-        let mut aabb = Aabb::new();
-        for vertex in vs.iter() {
-            aabb.enclose_point(vertex);
-        }
+            let mut aabb = Aabb::new();
+            for vertex in &vs {
+                aabb.enclose_point(vertex);
+            }
 
-        let ns: Vec<Vec3> = mesh
-            .normals
-            .chunks(3)
-            .map(|p| Vec3::new(p[0], p[1], p[2]))
-            .collect();
+            let ns: Vec<Vec3> = mesh
+                .normals
+                .chunks(3)
+                .map(|p| Vec3::new(p[0], p[1], p[2]))
+                .collect();
 
-        let uvs: Vec<Vec2> = mesh
-            .texcoords
-            .chunks(2)
-            .map(|p| Vec2::new(p[0], p[1]))
-            .collect();
+            let uvs: Vec<Vec2> = mesh
+                .texcoords
+                .chunks(2)
+                .map(|p| Vec2::new(p[0], p[1]))
+                .collect();
 
-        let vertex_indices: Vec<Vector3<usize>> = mesh
-            .indices
-            .chunks(3)
-            .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
-            .collect();
+            let vertex_indices: Vec<Vector3<usize>> = mesh
+                .indices
+                .chunks(3)
+                .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+                .collect();
 
-        let normal_indices: Vec<Vector3<usize>> = mesh
-            .normal_indices
-            .chunks(3)
-            .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
-            .collect();
+            let normal_indices: Vec<Vector3<usize>> = mesh
+                .normal_indices
+                .chunks(3)
+                .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+                .collect();
 
-        let texture_indices: Vec<Vector3<usize>> = mesh
-            .texcoord_indices
-            .chunks(3)
-            .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
-            .collect();
+            let texture_indices: Vec<Vector3<usize>> = mesh
+                .texcoord_indices
+                .chunks(3)
+                .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
+                .collect();
 
-        assert!(mesh.positions.len() % 3 == 0);
+            assert!(mesh.positions.len() % 3 == 0);
 
-        let m = v.as_object().unwrap();
-        let material = sf.get_material(m);
+            let m = v.as_object().unwrap();
+            let material = sf.get_material(m);
 
-        let n_triangles = vertex_indices.len();
-        let my_mesh = Mesh {
-            vertex_positions: vs,
-            vertex_normals: ns,
-            uvs,
-            vertex_indices,
-            normal_indices,
-            texture_indices,
-            material_indices: Vec::new(),
-            materials: material,
-            transform,
-            bbox: aabb,
-        };
+            let n_triangles = vertex_indices.len();
+            let my_mesh = Mesh {
+                vertex_positions: vs,
+                vertex_normals: ns,
+                uvs,
+                vertex_indices,
+                normal_indices,
+                texture_indices,
+                material_indices: Vec::new(),
+                materials: material,
+                transform: transform.clone(),
+                bbox: aabb,
+            };
 
-        let rc_mesh = Arc::new(my_mesh);
+            let rc_mesh = Arc::new(my_mesh);
 
-        (0..n_triangles)
-            .into_iter()
-            .map(|i| {
-                SurfaceType::from(Triangle {
-                    mesh: rc_mesh.clone(),
-                    face_idx: i,
+            let mut triangles = (0..n_triangles)
+                .into_iter()
+                .map(|i| {
+                    SurfaceType::from(Triangle {
+                        mesh: rc_mesh.clone(),
+                        face_idx: i,
+                    })
                 })
-            })
-            .collect()
+                .collect();
+            output.append(&mut triangles);
+        }
+        output
     }
 }
 
@@ -151,7 +154,7 @@ impl Triangle {
         let pos = read::<Vec<Vec3>>(v, "positions");
 
         let mut aabb = Aabb::new();
-        for vertex in pos.iter() {
+        for vertex in &pos {
             aabb.enclose_point(vertex);
         }
 
