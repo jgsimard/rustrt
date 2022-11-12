@@ -16,7 +16,6 @@ use crate::utils::{
 };
 use std::f32::consts::FRAC_1_PI;
 use std::f32::consts::PI;
-use std::rc::Rc;
 use std::sync::Arc;
 
 pub trait SampleTest {
@@ -304,7 +303,8 @@ impl SampleTestParameters {
 
         // Generate heat maps
         fs::create_dir_all("tests").expect("unable to create tests dir");
-        generate_heatmap(&pdf_fullres, max_value).save(&PathBuf::from(format!("tests/{}-pdf.png", self.name)));
+        generate_heatmap(&pdf_fullres, max_value)
+            .save(&PathBuf::from(format!("tests/{}-pdf.png", self.name)));
         generate_heatmap(&histo_fullres, max_value)
             .save(&PathBuf::from(format!("tests/{}-sampled.png", self.name)));
 

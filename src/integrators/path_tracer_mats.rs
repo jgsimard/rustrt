@@ -1,7 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 use rand::Rng;
-use std::sync::{Arc, Mutex};
 
 use crate::integrators::integrator::Integrator;
 use crate::materials::material::Material;
@@ -17,7 +16,7 @@ pub struct PathTracerMatsIntegrator {
 
 // iterative version
 impl Integrator for PathTracerMatsIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: & SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3 {
         let mut radiance = Vec3::zeros();
         let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
         let mut ray = ray.clone();

@@ -19,7 +19,7 @@ use crate::integrators::path_tracer_nee::PathTracerNEEIntegrator;
 #[enum_dispatch]
 pub trait Integrator {
     /// Sample the incident radiance along a ray
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3;
+    fn li(&self, scene: &Scene, sampler: &SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3;
 }
 
 #[enum_dispatch(Integrator)]

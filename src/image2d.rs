@@ -1,7 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 use image::{io::Reader as ImageReader, GenericImageView, Pixel};
-use std::iter::IntoIterator;
 use std::ops::{Index, IndexMut};
 use std::path::Path;
 
@@ -48,16 +47,6 @@ impl<T: std::clone::Clone + std::default::Default> IndexMut<(usize, usize)> for 
         &mut self.data[index]
     }
 }
-
-// impl <'a, T> IntoIterator for Image2d{
-//     type Item = &'a mut T;
-//     type IntoIter =  slice::IterMut<'a, T>;;
-
-//     fn into_iter(self) -> Self::IntoIter {
-
-//     }
-
-// }
 pub type Image2d = Array2d<Vec3>;
 
 /// Convert from linear RGB to sRGB

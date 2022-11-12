@@ -13,7 +13,7 @@ use crate::surfaces::surface::Surface;
 pub struct AmbientOcclusionIntegrator;
 
 impl Integrator for AmbientOcclusionIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: &SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3 {
         if let Some(hit) = scene.intersect(ray) {
             let rv = sampler.next2f(rng);
             if let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv) {
