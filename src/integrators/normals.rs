@@ -1,5 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
+use rand::Rng;
 
 use crate::integrators::integrator::Integrator;
 use crate::ray::Ray;
@@ -11,7 +12,7 @@ use crate::surfaces::surface::Surface;
 pub struct NormalsIntegrator;
 
 impl Integrator for NormalsIntegrator {
-    fn li(&self, scene: &Scene, _sampler: &mut SamplerType, ray: &Ray) -> Vec3 {
+    fn li(&self, scene: &Scene, _sampler: &SamplerType, _rng: &mut impl Rng, ray: &Ray) -> Vec3 {
         if let Some(hit) = scene.intersect(ray) {
             glm::abs(&hit.sn)
         } else {

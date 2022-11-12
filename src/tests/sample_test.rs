@@ -3,6 +3,8 @@ use glm::{Vec2, Vec3};
 use rand::Rng;
 use serde_json::Value;
 use std::fs;
+use std::path::PathBuf;
+
 
 use crate::image2d::{Array2d, Image2d};
 use crate::materials::material::{Material, MaterialFactory, MaterialType};
@@ -14,7 +16,7 @@ use crate::utils::{
 };
 use std::f32::consts::FRAC_1_PI;
 use std::f32::consts::PI;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub trait SampleTest {
     fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3>;
@@ -22,7 +24,7 @@ pub trait SampleTest {
 }
 
 pub struct MaterialTest {
-    material: Rc<MaterialType>,
+    material: Arc<MaterialType>,
     // normal: Vec3,
     incoming: Vec3,
     hit: HitInfo,
@@ -301,9 +303,10 @@ impl SampleTestParameters {
 
         // Generate heat maps
         fs::create_dir_all("tests").expect("unable to create tests dir");
-        generate_heatmap(&pdf_fullres, max_value).save(format!("tests/{}-pdf.png", self.name));
+        generate_heatmap(&pdf_fullres, max_value)
+            .save(&PathBuf::from(format!("tests/{}-pdf.png", self.name)));
         generate_heatmap(&histo_fullres, max_value)
-            .save(format!("tests/{}-sampled.png", self.name));
+            .save(&PathBuf::from(format!("tests/{}-sampled.png", self.name)));
 
         // Output statistics
         println!("Integral of PDF (should be close to 1): {}\n", integral);

@@ -6,6 +6,7 @@ use crate::scene::Scene;
 use crate::utils::read_or;
 use enum_dispatch::enum_dispatch;
 use glm::Vec3;
+use rand::Rng;
 
 use serde_json::Value;
 
@@ -18,7 +19,7 @@ use crate::integrators::path_tracer_nee::PathTracerNEEIntegrator;
 #[enum_dispatch]
 pub trait Integrator {
     /// Sample the incident radiance along a ray
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray: &Ray) -> Vec3;
+    fn li(&self, scene: &Scene, sampler: &SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3;
 }
 
 #[enum_dispatch(Integrator)]
@@ -34,6 +35,7 @@ pub enum IntegratorType {
 pub fn create_integrator(v: &Value) -> IntegratorType {
     let m = v.as_object().unwrap();
     if !m.contains_key("integrator") {
+        println!("No integrator mentioned : using PathTracerMatsIntegrator");
         return IntegratorType::from(PathTracerMatsIntegrator { max_bounces: 64 });
     }
     let integrator_json = v.get("integrator").unwrap();
@@ -47,15 +49,15 @@ pub fn create_integrator(v: &Value) -> IntegratorType {
         "normals" => IntegratorType::from(NormalsIntegrator {}),
         "ao" => IntegratorType::from(AmbientOcclusionIntegrator {}),
         "path_tracer_mats" => {
-            let max_bounces = read_or(integrator_json, "max_bounces", 1);
+            let max_bounces = read_or(integrator_json, "max_bounces", 64);
             IntegratorType::from(PathTracerMatsIntegrator { max_bounces })
         }
         "path_tracer_nee" => {
-            let max_bounces = read_or(integrator_json, "max_bounces", 1);
+            let max_bounces = read_or(integrator_json, "max_bounces", 64);
             IntegratorType::from(PathTracerNEEIntegrator { max_bounces })
         }
         "path_tracer_mis" => {
-            let max_bounces = read_or(integrator_json, "max_bounces", 1);
+            let max_bounces = read_or(integrator_json, "max_bounces", 64);
             IntegratorType::from(PathTracerMISIntegrator { max_bounces })
         }
         _ => {

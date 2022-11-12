@@ -1,6 +1,9 @@
 use serde_json::{json, Map, Value};
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
+use rand::SeedableRng;
+use rand_chacha::ChaCha8Rng;
+use rayon::prelude::*;
 
 use crate::aabb::Aabb;
 use crate::camera::PinholeCamera;
@@ -150,28 +153,62 @@ impl Scene {
             self.camera.resolution.x as usize,
             self.camera.resolution.y as usize,
         );
-        let mut sampler = create_sampler(&self.sampler_value);
+        let sampler = create_sampler(&self.sampler_value);
         let sample_count = sampler.sample_count();
 
         println!("Rendering ...");
         let progress_bar = get_progress_bar(image.size());
 
-        // Generate a ray for each pixel in the ray image
-        for y in 0..image.size_y {
-            for x in 0..image.size_x {
-                image[(x, y)] = (0..sample_count)
-                    .into_iter()
-                    .map(|_| {
-                        let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f();
-                        let ray = self.camera.generate_ray(&pixel);
-                        self.integrator.li(self, &mut sampler, &ray)
+        // Generate multiple rays for each pixel in the image
+        let size_x = image.size_x;
+        let img: Vec<Vec<Vec3>> = (0..image.size_y)
+            .into_par_iter()
+            .map(|y| {
+                (0..image.size_x)
+                    .into_par_iter()
+                    .map(|x| {
+                        let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
+                        rng.set_stream((y * size_x + x) as u64);
+                        let v = (0..sample_count)
+                            .into_iter()
+                            .map(|_| {
+                                let pixel =
+                                    Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
+                                let ray = self.camera.generate_ray(&pixel);
+                                self.integrator.li(self, &sampler, &mut rng, &ray)
+                            })
+                            .sum::<Vec3>()
+                            / (sample_count as f32);
+                        progress_bar.inc(1);
+                        v
                     })
-                    .sum::<Vec3>()
-                    / (sample_count as f32);
+                    .collect()
+            })
+            .collect();
 
-                progress_bar.inc(1);
+        for (y, row) in img.into_iter().enumerate() {
+            for (x, p) in row.into_iter().enumerate() {
+                image[(x, y)] = p;
             }
         }
+
+        // // original
+        // // Generate multiple rays for each pixel in the image
+        // let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
+        // for y in 0..image.size_y {
+        //     for x in 0..image.size_x {
+        //         image[(x, y)] = (0..sample_count)
+        //             .map(|_| {
+        //                 let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
+        //                 let ray = self.camera.generate_ray(&pixel);
+        //                 self.integrator.li(self, &mut sampler, &mut rng, &ray)
+        //             })
+        //             .sum::<Vec3>()
+        //             / (sample_count as f32);
+
+        //         progress_bar.inc(1);
+        //     }
+        // }
 
         println!("Rendering time : {:?}", progress_bar.elapsed());
         image

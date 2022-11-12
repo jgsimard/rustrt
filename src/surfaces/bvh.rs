@@ -111,7 +111,7 @@ impl Bvh {
         ];
 
         let mut bbox = Aabb::new();
-        for child in children.iter() {
+        for child in &children {
             bbox.enclose(&child.bounds());
         }
 

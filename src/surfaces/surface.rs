@@ -8,7 +8,7 @@ extern crate nalgebra_glm as glm;
 use enum_dispatch::enum_dispatch;
 use glm::{Vec2, Vec3};
 use serde_json::{Map, Value};
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// Contains information about a ray intersection hit point.
 ///
@@ -27,7 +27,7 @@ pub struct HitInfo {
     /// UV texture coordinates
     pub uv: Vec2,
     /// Material at the hit point
-    pub mat: Rc<MaterialType>,
+    pub mat: Arc<MaterialType>,
 }
 
 /// Data record for conveniently querying and sampling emitters
@@ -143,7 +143,7 @@ impl Factory<SurfaceType> for SurfaceFactory {
 }
 
 impl SurfaceFactory {
-    pub fn get_material(&self, m: &Map<String, Value>) -> Rc<MaterialType> {
+    pub fn get_material(&self, m: &Map<String, Value>) -> Arc<MaterialType> {
         let material = if let Some(mat) = m.get("material") {
             if mat.is_string() {
                 (*self

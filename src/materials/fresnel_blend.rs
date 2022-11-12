@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::materials::material::{Material, MaterialFactory};
 use crate::ray::Ray;
@@ -16,8 +16,8 @@ use super::material::MaterialType;
 #[derive(Debug, PartialEq, Clone)]
 pub struct FresnelBlend {
     ior: TextureType,
-    refracted: Rc<MaterialType>,
-    reflected: Rc<MaterialType>,
+    refracted: Arc<MaterialType>,
+    reflected: Arc<MaterialType>,
 }
 
 impl FresnelBlend {

@@ -8,7 +8,7 @@ use crate::transform::{read_transform, Transform};
 use crate::utils::{read, INTERSECTION_TEST};
 
 use nalgebra::{Vector2, Vector3};
-use std::rc::Rc;
+use std::sync::Arc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use serde_json::Value;
@@ -39,7 +39,7 @@ pub struct Mesh {
 
     /// All materials in the mesh
     // materials: Vec<Rc<dyn Material>>,
-    pub materials: Rc<MaterialType>, // TODO : change this if multiple materials !
+    pub materials: Arc<MaterialType>, // TODO : change this if multiple materials !
 
     /// Transformation that the data has already been transformed by
     pub transform: Transform,
@@ -54,8 +54,6 @@ impl Mesh {
         let filename: String = read(v, "filename");
 
         let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
-
-        assert!(obj.is_ok());
         let (models, _) = obj.expect("Failed to load OBJ file");
         let mut output = Vec::new();
         for model in models {
@@ -67,7 +65,7 @@ impl Mesh {
                 .collect();
 
             let mut aabb = Aabb::new();
-            for vertex in vs.iter() {
+            for vertex in &vs {
                 aabb.enclose_point(vertex);
             }
 
@@ -120,7 +118,7 @@ impl Mesh {
                 bbox: aabb,
             };
 
-            let rc_mesh = Rc::new(my_mesh);
+            let rc_mesh = Arc::new(my_mesh);
 
             let mut triangles = (0..n_triangles)
                 .into_iter()
@@ -139,7 +137,7 @@ impl Mesh {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Triangle {
-    pub mesh: Rc<Mesh>,
+    pub mesh: Arc<Mesh>,
     pub face_idx: usize,
 }
 
@@ -156,7 +154,7 @@ impl Triangle {
         let pos = read::<Vec<Vec3>>(v, "positions");
 
         let mut aabb = Aabb::new();
-        for vertex in pos.iter() {
+        for vertex in &pos {
             aabb.enclose_point(vertex);
         }
 
@@ -188,7 +186,7 @@ impl Triangle {
         };
 
         Triangle {
-            mesh: Rc::new(mesh),
+            mesh: Arc::new(mesh),
             face_idx: 0,
         }
     }
@@ -351,7 +349,7 @@ pub fn single_triangle_intersect(
     t0: &Option<Vec2>,
     t1: &Option<Vec2>,
     t2: &Option<Vec2>,
-    material: Rc<MaterialType>,
+    material: Arc<MaterialType>,
 ) -> Option<HitInfo> {
     let edge1 = v1 - v0;
     let edge2 = v2 - v0;

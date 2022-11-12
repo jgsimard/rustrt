@@ -1,5 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
+use rand::Rng;
 
 use crate::integrators::integrator::Integrator;
 use crate::materials::material::Material;
@@ -29,7 +30,7 @@ fn balance_heuristic(pdf1: f32, pdf2: f32) -> (f32, f32) {
 }
 
 impl Integrator for PathTracerMISIntegrator {
-    fn li(&self, scene: &Scene, sampler: &mut SamplerType, ray_: &Ray) -> Vec3 {
+    fn li(&self, scene: &Scene, sampler: &SamplerType, rng: &mut impl Rng, ray_: &Ray) -> Vec3 {
         let mut radiance = Vec3::zeros();
         let mut attenuation = Vec3::new(1.0, 1.0, 1.0);
         let mut ray = ray_.clone();
@@ -42,15 +43,15 @@ impl Integrator for PathTracerMISIntegrator {
             };
 
             // sample material
-            let rv_mat = sampler.next2f();
+            let rv_mat = sampler.next2f(rng);
             let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_mat) else { break };
 
             // sample light
-            let rv_light = sampler.next2f();
+            let rv_light = sampler.next2f(rng);
             let Some(emit_rec) =
                 scene
                     .emitters
-                    .sample_from_group(&hit.p, rv_light, sampler.next1f()) else { break };
+                    .sample_from_group(&hit.p, rv_light, sampler.next1f(rng)) else { break };
 
             // mixture weight
             let pdf_mat = hit.mat.pdf(&ray.direction, &srec.wo, &hit);

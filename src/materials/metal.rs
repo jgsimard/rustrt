@@ -79,7 +79,6 @@ mod tests {
     extern crate nalgebra_glm as glm;
     use glm::{Vec2, Vec3};
     use serde_json::json;
-    use std::rc::Rc;
 
     use crate::materials::material::{Material, MaterialFactory};
     use crate::ray::Ray;
@@ -107,7 +106,7 @@ mod tests {
             uv: Vec2::new(0.0, 0.0),
             gn: normal,
             sn: normal,
-            mat: Rc::clone(&metal_material),
+            mat: metal_material.clone(),
         };
 
         // And a fictitious ray

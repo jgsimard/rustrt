@@ -5,7 +5,7 @@ use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
 use crate::transform::{read_transform, Transform};
 use crate::utils::{read, INTERSECTION_TEST};
 
-use std::rc::Rc;
+use std::sync::Arc;
 extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use serde_json::Value;
@@ -15,7 +15,7 @@ use std::sync::atomic::Ordering;
 pub struct Quad {
     size: Vec2,
     transform: Transform,
-    pub material: Rc<MaterialType>,
+    pub material: Arc<MaterialType>,
 }
 
 impl Surface for Quad {
@@ -55,7 +55,7 @@ impl Surface for Quad {
             gn: n,
             sn: n,
             uv,
-            mat: Rc::clone(&self.material),
+            mat: Arc::clone(&self.material),
         };
         Some(hit)
     }
