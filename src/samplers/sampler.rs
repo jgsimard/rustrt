@@ -79,8 +79,6 @@ impl Sampler for IndependentSampler {
 }
 
 pub fn create_sampler(j: &Value) -> SamplerType {
-    // println!("sampler {:?}", j);
-    // let v = j.get("sampler").unwrap().clone();
     let sampler_type = j
         .get("type")
         .expect("no sampler type")

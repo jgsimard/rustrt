@@ -33,22 +33,16 @@ use std::path::Path;
 #[derive(Parser)]
 struct Cli {
     /// The filename of the JSON scenefile to load (or the string \"example_sceneN\", where N is 0, 1, 2, or 3).
-    #[arg(short, long)]
-    scene: std::path::PathBuf,
+    #[arg(short, long, default_value_t=String::from("3"))]
+    scene: String,
 
     /// Specify just the output image format; default: png
-    #[arg(short, long, default_value_t=String::new())]
+    #[arg(short, long, default_value_t=String::from("png"))]
     format: String,
 
     /// Specify the output image filename (extension must be one accepted by -f)
-    #[arg(short, long)]
-    outfile: PathBuf,
-    // /// The path to the file to read
-    // verbosity: i32,
-
-    // /// Seed for the random number generator
-    // #[arg(short, long, default_value_t = 1)]
-    // seed: i32
+    #[arg(short, long, default_value_t=String::from("test.png"))]
+    outfile: String,
 }
 
 fn read_scene_from_file<P: AsRef<Path>>(path: P) -> Result<Value, Box<dyn Error>> {
@@ -56,14 +50,12 @@ fn read_scene_from_file<P: AsRef<Path>>(path: P) -> Result<Value, Box<dyn Error>
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
-    // Read the JSON contents of the file as an instance of `User`.
+    // Read the JSON contents of the file
     let j = serde_json::from_reader(reader)?;
 
-    // Return the `User`.
     Ok(j)
 }
 
-// static RAYS : RelaxedCounter  = RelaxedCounter::new(initial_count);
 use crate::utils::INTERSECTION_TEST;
 use crate::utils::RAYS;
 use std::sync::atomic::Ordering;
@@ -73,21 +65,18 @@ fn main() {
 
     println!("scene : {:?}", args.scene);
 
-    let scene_json = if args.scene.exists() {
+    let path = PathBuf::from(args.scene.clone());
+    let scene_json = if path.exists() {
         println!("scene existing file");
-        read_scene_from_file(args.scene).unwrap()
-    } else if args.scene.to_string_lossy().parse::<i32>().is_ok() {
-        let index = args.scene.to_string_lossy().parse::<i32>().unwrap();
+        read_scene_from_file(path).unwrap()
+    } else if args.scene.parse::<i32>().is_ok() {
+        let index = args.scene.parse::<i32>().unwrap();
         create_example_scene(index)
     } else {
         panic!("I dont know how to parse {:?}", args.scene);
     };
-    // println!("{}", scene_json);
 
     let scene = Scene::new(&scene_json);
-
-    // let outfile = "something".to_string();
-
     let image = scene.raytrace();
 
     println!("Number of intersection tests: {:?}", INTERSECTION_TEST);
@@ -98,7 +87,7 @@ fn main() {
     );
     println!("Writing rendered image to file {:?}", args.outfile);
 
-    image.save(args.outfile.to_str().unwrap().to_string());
+    image.save(PathBuf::from(args.outfile).as_path());
 
     println!("Done");
 }
