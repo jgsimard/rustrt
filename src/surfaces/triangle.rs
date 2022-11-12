@@ -54,8 +54,6 @@ impl Mesh {
         let filename: String = read(v, "filename");
 
         let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
-
-        assert!(obj.is_ok());
         let (models, _) = obj.expect("Failed to load OBJ file");
         let mut output = Vec::new();
         for model in models {
@@ -67,7 +65,7 @@ impl Mesh {
                 .collect();
 
             let mut aabb = Aabb::new();
-            for vertex in vs.iter() {
+            for vertex in &vs {
                 aabb.enclose_point(vertex);
             }
 
@@ -156,7 +154,7 @@ impl Triangle {
         let pos = read::<Vec<Vec3>>(v, "positions");
 
         let mut aabb = Aabb::new();
-        for vertex in pos.iter() {
+        for vertex in &pos {
             aabb.enclose_point(vertex);
         }
 
