@@ -12,10 +12,10 @@ use crate::integrators::integrator::{create_integrator, Integrator, IntegratorTy
 use crate::materials::material::MaterialFactory;
 use crate::ray::Ray;
 use crate::samplers::sampler::{create_sampler, Sampler};
-use crate::surfaces::bvh::Bvh;
+use crate::surfaces::bvh::{Bvh, SplitMethod};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 use crate::surfaces::surface_group::LinearSurfaceGroup;
-use crate::utils::{get_progress_bar, read_v_or_f, Factory};
+use crate::utils::{get_progress_bar, read_or, read_v_or_f, Factory};
 
 pub struct Scene {
     pub surfaces: SurfaceGroupType,
@@ -130,7 +130,15 @@ impl Scene {
 
         // create the scene-wide acceleration structure so we can put other surfaces into it
         let surfaces = if map_json.contains_key("accelerator") {
-            SurfaceGroupType::from(Bvh::new(&mut surfaces_vec))
+            let accel_value = map_json.get("accelerator").unwrap();
+            let type_acceletator = accel_value.get("type").unwrap().as_str().unwrap();
+            match type_acceletator {
+                "bbh" => {
+                    let split_method = read_or(accel_value, "split_method", SplitMethod::Middle);
+                    SurfaceGroupType::from(Bvh::new(&mut surfaces_vec, &split_method))
+                }
+                _ => panic!("Unusported accelerator {}", type_acceletator),
+            }
         } else {
             // default to a naive linear accelerator
             SurfaceGroupType::from(LinearSurfaceGroup {
