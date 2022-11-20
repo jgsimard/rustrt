@@ -11,9 +11,9 @@ The repository structure is the following
 
 - src/core : Ray Tracing pluming
 - src/integrators : Ray tracing algorithms
-  - Naive Path Tracer
-  - Next Event Estimation Path Tracer
-  - Multiple Important Sampling Path Tracer
+  - [Naive Path Tracer](src/integrators/path_tracer_mats.rs)
+  - [Next Event Estimation Path Tracer](src/integrators/path_tracer_nee.rs)
+  - [Multiple Important Sampling Path Tracer](src/integrators/path_tracer_mis.rs)
 - src/materials : Materials
 - src/samplers : Random number generator
 - src/surfaces : Triangles, spheres, Rectangles, ...
@@ -23,7 +23,7 @@ The repository structure is the following
 - main.rs : entry point of the program
 
 
-I used the crate `enum_delegate` to replace dynamic dispatch with enums. 
+I used the crate `enum_delegate` to replace dynamic dispatch with enums. You can download assets from the web or from this [link](https://www.dropbox.com/sh/e8svsmy22xoan8y/AACxsE8_LpUDohmDYx8flEIta?dl=0)
 
 ## Renders
 I have included renders of the [Cornell Box scene](https://en.wikipedia.org/wiki/Cornell_box) scene using the path tracing algorithms I have implemented so far. All images are rendered using the name low number of samples per pixel.
