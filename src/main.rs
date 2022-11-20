@@ -1,25 +1,17 @@
-mod aabb;
-mod camera;
-mod image2d;
+mod core;
 mod integrators;
 mod materials;
-mod onb;
-mod ray;
 mod samplers;
-mod sampling;
-mod scene;
 mod surfaces;
 mod textures;
-mod transform;
-mod utils;
 
 #[cfg(test)]
 mod tests;
 
 mod example_scenes;
 
+use crate::core::scene::Scene;
 use crate::example_scenes::create_example_scene;
-use crate::scene::Scene;
 
 use clap::Parser;
 use serde_json::Value;
@@ -55,8 +47,8 @@ fn read_scene_from_file<P: AsRef<Path>>(path: P) -> Result<Value, Box<dyn Error>
     Ok(j)
 }
 
-use crate::utils::INTERSECTION_TEST;
-use crate::utils::RAYS;
+use crate::core::utils::INTERSECTION_TEST;
+use crate::core::utils::RAYS;
 use std::sync::atomic::Ordering;
 
 fn main() {

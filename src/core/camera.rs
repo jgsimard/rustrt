@@ -3,9 +3,9 @@ use glm::{Vec2, Vec3};
 
 use serde_json::{from_value, Value};
 
-use crate::ray::Ray;
-use crate::transform::{read_transform, Transform};
-use crate::utils::deg2rad;
+use crate::core::ray::Ray;
+use crate::core::transform::{read_transform, Transform};
+use crate::core::utils::deg2rad;
 
 /// A virtual pinhole camera.
 ///

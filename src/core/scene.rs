@@ -5,17 +5,17 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
-use crate::aabb::Aabb;
-use crate::camera::PinholeCamera;
-use crate::image2d::Image2d;
+use crate::core::aabb::Aabb;
+use crate::core::camera::PinholeCamera;
+use crate::core::image2d::Image2d;
+use crate::core::ray::Ray;
+use crate::core::utils::{get_progress_bar, read_or, read_v_or_f, Factory};
 use crate::integrators::integrator::{create_integrator, Integrator, IntegratorType};
 use crate::materials::material::MaterialFactory;
-use crate::ray::Ray;
 use crate::samplers::sampler::{create_sampler, Sampler};
 use crate::surfaces::bvh::{Bvh, SplitMethod};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 use crate::surfaces::surface_group::LinearSurfaceGroup;
-use crate::utils::{get_progress_bar, read_or, read_v_or_f, Factory};
 
 pub struct Scene {
     pub surfaces: SurfaceGroupType,
@@ -156,13 +156,27 @@ impl Scene {
         }
     }
 
+    fn raytrace_pixel(&self, x: usize, y: usize, size_x: usize) -> Vec3 {
+        let mut sampler = create_sampler(&self.sampler_value);
+        let sample_count = sampler.sample_count();
+        let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
+        rng.set_stream((y * size_x + x) as u64);
+        (0..sample_count)
+            .into_iter()
+            .map(|_| {
+                let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
+                let ray = self.camera.generate_ray(&pixel);
+                self.integrator.li(self, &mut sampler, &mut rng, &ray)
+            })
+            .sum::<Vec3>()
+            / (sample_count as f32)
+    }
+
     pub fn raytrace(&self) -> Image2d {
         let mut image = Image2d::new(
             self.camera.resolution.x as usize,
             self.camera.resolution.y as usize,
         );
-        let sampler = create_sampler(&self.sampler_value);
-        let sample_count = sampler.sample_count();
 
         println!("Rendering ...");
         let progress_bar = get_progress_bar(image.size());
@@ -170,25 +184,14 @@ impl Scene {
         // Generate multiple rays for each pixel in the image
         let size_x = image.size_x;
         let img: Vec<Vec<Vec3>> = (0..image.size_y)
-            .into_par_iter()
+            .into_par_iter() // rows in parallel
             .map(|y| {
                 (0..image.size_x)
-                    .into_par_iter()
+                    .into_par_iter() // columns in parallel
                     .map(|x| {
-                        let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
-                        rng.set_stream((y * size_x + x) as u64);
-                        let v = (0..sample_count)
-                            .into_iter()
-                            .map(|_| {
-                                let pixel =
-                                    Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
-                                let ray = self.camera.generate_ray(&pixel);
-                                self.integrator.li(self, &sampler, &mut rng, &ray)
-                            })
-                            .sum::<Vec3>()
-                            / (sample_count as f32);
+                        let pixel_value = self.raytrace_pixel(x, y, size_x);
                         progress_bar.inc(1);
-                        v
+                        pixel_value
                     })
                     .collect()
             })
@@ -199,24 +202,6 @@ impl Scene {
                 image[(x, y)] = p;
             }
         }
-
-        // // original
-        // // Generate multiple rays for each pixel in the image
-        // let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
-        // for y in 0..image.size_y {
-        //     for x in 0..image.size_x {
-        //         image[(x, y)] = (0..sample_count)
-        //             .map(|_| {
-        //                 let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
-        //                 let ray = self.camera.generate_ray(&pixel);
-        //                 self.integrator.li(self, &mut sampler, &mut rng, &ray)
-        //             })
-        //             .sum::<Vec3>()
-        //             / (sample_count as f32);
-
-        //         progress_bar.inc(1);
-        //     }
-        // }
 
         println!("Rendering time : {:?}", progress_bar.elapsed());
         image

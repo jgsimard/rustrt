@@ -3,12 +3,12 @@ use glm::{Vec2, Vec3};
 use rand::Rng;
 use serde_json::Value;
 
+use crate::core::ray::Ray;
+use crate::core::utils::{luminance, reflect, reflectance, refract};
 use crate::materials::material::Material;
-use crate::ray::Ray;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::ScatterRecord;
 use crate::textures::texture::{create_texture, Texture, TextureType};
-use crate::utils::{luminance, reflect, reflectance, refract};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Dielectric {
@@ -21,8 +21,8 @@ impl Dielectric {
         Dielectric { ior }
     }
 
-    fn _scatter(&self, r_in: &Ray, hit: &HitInfo, rv: f32) -> Option<(Vec3, Ray)> {
-        let front_face = glm::dot(&hit.gn, &r_in.direction) < 0.0;
+    fn _scatter(&self, ray: &Ray, hit: &HitInfo, rv: f32) -> Option<(Vec3, Ray)> {
+        let front_face = glm::dot(&hit.gn, &ray.direction) < 0.0;
         let ior = luminance(&self.ior.value(hit).unwrap());
         let (normal, ratio_index_of_refraction) = if front_face {
             (hit.sn, 1.0 / ior)
@@ -30,7 +30,7 @@ impl Dielectric {
             (-hit.sn, ior)
         };
 
-        let unit_direction = glm::normalize(&r_in.direction);
+        let unit_direction = glm::normalize(&ray.direction);
 
         let cos_theta = glm::dot(&((-1.0) * unit_direction), &normal).min(1.0);
         let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();

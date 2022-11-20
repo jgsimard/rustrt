@@ -1,9 +1,9 @@
 extern crate nalgebra_glm as glm;
 
-use crate::ray::Ray;
+use crate::core::ray::Ray;
+use crate::core::scene::Scene;
+use crate::core::utils::read_or;
 use crate::samplers::sampler::SamplerType;
-use crate::scene::Scene;
-use crate::utils::read_or;
 use enum_dispatch::enum_dispatch;
 use glm::Vec3;
 use rand::Rng;
@@ -19,7 +19,7 @@ use crate::integrators::path_tracer_nee::PathTracerNEEIntegrator;
 #[enum_dispatch]
 pub trait Integrator {
     /// Sample the incident radiance along a ray
-    fn li(&self, scene: &Scene, sampler: &SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3;
+    fn li(&self, scene: &Scene, sampler: &mut SamplerType, rng: &mut impl Rng, ray: &Ray) -> Vec3;
 }
 
 #[enum_dispatch(Integrator)]

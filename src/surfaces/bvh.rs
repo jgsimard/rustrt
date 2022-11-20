@@ -4,10 +4,10 @@ use indicatif::ProgressBar;
 use partition::partition_index;
 use serde::{Deserialize, Serialize};
 
-use crate::aabb::Aabb;
-use crate::ray::Ray;
+use crate::core::aabb::Aabb;
+use crate::core::ray::Ray;
+use crate::core::utils::get_progress_bar;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
-use crate::utils::get_progress_bar;
 
 #[derive(Serialize, Deserialize)]
 pub enum SplitMethod {

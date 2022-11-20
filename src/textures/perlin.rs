@@ -1,6 +1,6 @@
 use rand::prelude::*;
 // extern crate lazy_static;
-use crate::sampling::random_in_unit_sphere;
+use crate::core::sampling::random_in_unit_sphere;
 
 extern crate nalgebra_glm as glm;
 use glm::Vec3;

@@ -1,5 +1,5 @@
 extern crate nalgebra_glm as glm;
-use crate::utils::{lerp, sincos, FRAC_1_TWOPI, INV_FOURPI};
+use crate::core::utils::{lerp, sincos, FRAC_1_TWOPI, INV_FOURPI};
 use glm::{Vec2, Vec3};
 use rand::Rng;
 

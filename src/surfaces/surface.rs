@@ -1,8 +1,8 @@
-use crate::aabb::Aabb;
+use crate::core::aabb::Aabb;
+use crate::core::ray::Ray;
+use crate::core::utils::Factory;
 use crate::materials::material::MaterialFactory;
 use crate::materials::material::MaterialType;
-use crate::ray::Ray;
-use crate::utils::Factory;
 
 extern crate nalgebra_glm as glm;
 use enum_dispatch::enum_dispatch;

@@ -1,7 +1,7 @@
+use crate::core::onb::Onb;
+use crate::core::ray::Ray;
+use crate::core::sampling::{random_in_unit_sphere, sample_hemisphere_cosine};
 use crate::materials::material::Material;
-use crate::onb::Onb;
-use crate::ray::Ray;
-use crate::sampling::{random_in_unit_sphere, sample_hemisphere_cosine};
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{create_texture, Texture, TextureType};
 
@@ -70,8 +70,8 @@ mod tests {
     use glm::{Vec2, Vec3};
     use serde_json::json;
 
+    use crate::core::ray::Ray;
     use crate::materials::material::{Material, MaterialFactory, MaterialType};
-    use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
 
     #[test]

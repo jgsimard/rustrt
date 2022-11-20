@@ -1,5 +1,5 @@
 extern crate nalgebra_glm as glm;
-use crate::ray::Ray;
+use crate::core::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
 use glm::{Vec2, Vec3};
 

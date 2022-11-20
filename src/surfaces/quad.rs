@@ -1,9 +1,9 @@
-use crate::aabb::Aabb;
+use crate::core::aabb::Aabb;
+use crate::core::ray::Ray;
+use crate::core::transform::{read_transform, Transform};
+use crate::core::utils::{read, INTERSECTION_TEST};
 use crate::materials::material::{Material, MaterialType};
-use crate::ray::Ray;
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
-use crate::transform::{read_transform, Transform};
-use crate::utils::{read, INTERSECTION_TEST};
 
 use std::sync::Arc;
 extern crate nalgebra_glm as glm;

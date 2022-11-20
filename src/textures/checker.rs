@@ -1,10 +1,10 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
+use crate::core::transform::{read_transform, Transform};
+use crate::core::utils::read;
 use crate::surfaces::surface::HitInfo;
 use crate::textures::texture::{create_texture, Texture, TextureType};
-use crate::transform::{read_transform, Transform};
-use crate::utils::read;
 use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]

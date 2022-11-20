@@ -3,13 +3,13 @@ extern crate nalgebra_glm as glm;
 use glm::{Vec2, Vec3};
 use rand::Rng;
 
+use crate::core::ray::Ray;
+use crate::core::sampling::sample_sphere;
+use crate::core::utils::{luminance, reflect};
 use crate::materials::material::Material;
-use crate::ray::Ray;
-use crate::sampling::sample_sphere;
 use crate::surfaces::surface::HitInfo;
 use crate::surfaces::surface::ScatterRecord;
 use crate::textures::texture::{create_texture, Texture, TextureType};
-use crate::utils::{luminance, reflect};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Metal {
@@ -80,8 +80,8 @@ mod tests {
     use glm::{Vec2, Vec3};
     use serde_json::json;
 
+    use crate::core::ray::Ray;
     use crate::materials::material::{Material, MaterialFactory};
-    use crate::ray::Ray;
     use crate::surfaces::surface::HitInfo;
 
     #[test]

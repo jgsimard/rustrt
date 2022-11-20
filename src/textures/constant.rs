@@ -1,5 +1,5 @@
 extern crate nalgebra_glm as glm;
-use crate::utils::read;
+use crate::core::utils::read;
 use glm::Vec3;
 use serde_json::{from_value, Value};
 

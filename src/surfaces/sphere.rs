@@ -1,11 +1,11 @@
-use crate::aabb::Aabb;
+use crate::core::aabb::Aabb;
+use crate::core::onb::Onb;
+use crate::core::ray::Ray;
+use crate::core::sampling::{sample_sphere_cap, sample_sphere_cap_pdf};
+use crate::core::transform::{read_transform, Transform};
+use crate::core::utils::{direction_to_spherical_uv, read_or, INTERSECTION_TEST};
 use crate::materials::material::{Material, MaterialType};
-use crate::onb::Onb;
-use crate::ray::Ray;
-use crate::sampling::{sample_sphere_cap, sample_sphere_cap_pdf};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
-use crate::transform::{read_transform, Transform};
-use crate::utils::{direction_to_spherical_uv, read_or, INTERSECTION_TEST};
 
 extern crate nalgebra_glm as glm;
 use serde_json::Value;
@@ -147,12 +147,12 @@ mod tests {
     use glm::Vec3;
     use std::sync::Arc;
 
+    use crate::core::ray::Ray;
+    use crate::core::transform::Transform;
     use crate::materials::lambertian::Lambertian;
     use crate::materials::material::MaterialType;
-    use crate::ray::Ray;
     use crate::surfaces::sphere::Sphere;
     use crate::surfaces::surface::Surface;
-    use crate::transform::Transform;
 
     use serde_json::json;
 

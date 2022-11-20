@@ -1,6 +1,6 @@
 extern crate nalgebra_glm as glm;
 
-use crate::utils::read_or;
+use crate::core::utils::read_or;
 use enum_dispatch::enum_dispatch;
 use glm::Vec2;
 use rand::Rng;
@@ -25,17 +25,15 @@ pub trait Sampler {
     fn advance(&mut self);
 
     /// Retrieve the next float value (dimension) from the current sample
-    fn next1f(&self, rng: &mut impl Rng) -> f32;
+    fn next1f(&mut self, rng: &mut impl Rng) -> f32;
 
     /// Retrieve the next two float values (dimensions) from the current sample
-    fn next2f(&self, rng: &mut impl Rng) -> Vec2;
+    fn next2f(&mut self, rng: &mut impl Rng) -> Vec2;
 
     /// Return the number of configured pixel samples
     fn sample_count(&self) -> i32;
 
     fn seed(&self) -> u64;
-
-    // fn set_rng(&mut self, rng: ChaCha8Rng);
 }
 
 #[enum_dispatch(Sampler)]
@@ -59,13 +57,13 @@ pub struct IndependentSampler {
 impl Sampler for IndependentSampler {
     fn start_pixel(&mut self, _x: i32, _y: i32) {}
 
-    fn next1f(&self, rng: &mut impl Rng) -> f32 {
-        // self.current_dimension += 1;
+    fn next1f(&mut self, rng: &mut impl Rng) -> f32 {
+        self.current_dimension += 1;
         rng.gen()
     }
 
-    fn next2f(&self, rng: &mut impl Rng) -> Vec2 {
-        // self.current_dimension += 2;
+    fn next2f(&mut self, rng: &mut impl Rng) -> Vec2 {
+        self.current_dimension += 2;
         Vec2::new(rng.gen(), rng.gen())
     }
 

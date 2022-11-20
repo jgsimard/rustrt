@@ -1,6 +1,6 @@
-use crate::aabb::Aabb;
-use crate::ray::Ray;
-use crate::utils::deg2rad;
+use crate::core::aabb::Aabb;
+use crate::core::ray::Ray;
+use crate::core::utils::deg2rad;
 
 extern crate nalgebra_glm as glm;
 use glm::{Mat3x4, Mat4, Vec3};
@@ -188,8 +188,8 @@ pub fn read_transform(v: &Value) -> Transform {
 #[cfg(test)]
 mod tests {
 
-    use crate::ray::Ray;
-    use crate::transform::Transform;
+    use crate::core::ray::Ray;
+    use crate::core::transform::Transform;
     use nalgebra::{Matrix4, Vector3};
 
     extern crate approx;
@@ -198,10 +198,8 @@ mod tests {
     fn from_transformation_matrix() {
         // Setup
         let transformation_matrix = Matrix4::new(
-            -0.846852, -0.492958, -0.199586, -0.997497, 
-            0.107965, -0.526819, 0.843093, 0.127171, 
-            -0.520755, 0.692427, 0.499359, -0.613392, 
-            0.0, 0.0, 0.0, 1.0,
+            -0.846852, -0.492958, -0.199586, -0.997497, 0.107965, -0.526819, 0.843093, 0.127171,
+            -0.520755, 0.692427, 0.499359, -0.613392, 0.0, 0.0, 0.0, 1.0,
         );
 
         let transform = Transform::new(transformation_matrix);

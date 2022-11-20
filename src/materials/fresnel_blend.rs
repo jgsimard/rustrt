@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
+use crate::core::ray::Ray;
+use crate::core::utils::{luminance, reflectance};
 use crate::materials::material::{Material, MaterialFactory};
-use crate::ray::Ray;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{create_texture, Texture, TextureType};
-use crate::utils::{luminance, reflectance};
 
 use serde_json::{from_value, Value};
 extern crate nalgebra_glm as glm;

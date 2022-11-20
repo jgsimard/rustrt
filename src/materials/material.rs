@@ -6,9 +6,9 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::ray::Ray;
+use crate::core::ray::Ray;
+use crate::core::utils::Factory;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
-use crate::utils::Factory;
 
 #[enum_dispatch]
 pub trait Material {

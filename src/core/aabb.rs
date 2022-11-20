@@ -1,6 +1,6 @@
 use nalgebra_glm::Vec3;
 extern crate nalgebra_glm as glm;
-use crate::ray::Ray;
+use crate::core::ray::Ray;
 use std::mem;
 
 /// A 3D axis-aligned bounding box consisting of two 3D points min and max

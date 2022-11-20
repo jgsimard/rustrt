@@ -1,11 +1,11 @@
-use crate::aabb::Aabb;
+use crate::core::aabb::Aabb;
+use crate::core::ray::Ray;
+use crate::core::sampling::{sample_triangle, sample_triangle_pdf};
+use crate::core::transform::{read_transform, Transform};
+use crate::core::utils::{read, INTERSECTION_TEST};
 use crate::materials::material::{Material, MaterialType};
-use crate::ray::Ray;
-use crate::sampling::{sample_triangle, sample_triangle_pdf};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::surfaces::surface::{SurfaceFactory, SurfaceType};
-use crate::transform::{read_transform, Transform};
-use crate::utils::{read, INTERSECTION_TEST};
 
 use nalgebra::{Vector2, Vector3};
 use std::sync::Arc;
@@ -421,8 +421,8 @@ mod tests {
     extern crate nalgebra_glm as glm;
     use glm::{Vec2, Vec3};
 
+    use crate::core::ray::Ray;
     use crate::materials::material::MaterialFactory;
-    use crate::ray::Ray;
     use crate::surfaces::triangle::single_triangle_intersect;
     use serde_json::json;
 

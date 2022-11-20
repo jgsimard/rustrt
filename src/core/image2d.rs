@@ -4,7 +4,6 @@ use image::{io::Reader as ImageReader, GenericImageView, Pixel};
 use std::ops::{Index, IndexMut};
 use std::path::Path;
 
-
 use image::Rgb;
 
 #[derive(Debug, PartialEq, Eq, Clone)]

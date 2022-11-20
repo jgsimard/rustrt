@@ -1,10 +1,10 @@
 extern crate nalgebra_glm as glm;
 use glm::Vec3;
 
-use crate::image2d::Image2d;
+use crate::core::image2d::Image2d;
+use crate::core::utils::read;
 use crate::surfaces::surface::HitInfo;
 use crate::textures::texture::Texture;
-use crate::utils::read;
 use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]

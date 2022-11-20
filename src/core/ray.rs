@@ -2,7 +2,7 @@ extern crate nalgebra_glm as glm;
 use glm::Vec3;
 use std::sync::atomic::Ordering;
 
-use crate::utils::RAYS;
+use crate::core::utils::RAYS;
 
 // use nalgebra::Unit;
 
