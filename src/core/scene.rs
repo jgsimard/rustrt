@@ -1,9 +1,8 @@
-use serde_json::{json, Map, Value};
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
+use nalgebra_glm::{Vec2, Vec3};
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
+use serde_json::{json, Map, Value};
 
 use crate::core::aabb::Aabb;
 use crate::core::camera::PinholeCamera;

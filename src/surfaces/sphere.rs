@@ -1,3 +1,8 @@
+use nalgebra_glm::{length, Vec2, Vec3};
+use serde_json::Value;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+
 use crate::core::aabb::Aabb;
 use crate::core::onb::Onb;
 use crate::core::ray::Ray;
@@ -6,13 +11,6 @@ use crate::core::transform::{read_transform, Transform};
 use crate::core::utils::{direction_to_spherical_uv, read_or, INTERSECTION_TEST};
 use crate::materials::material::{Material, MaterialType};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
-
-extern crate nalgebra_glm as glm;
-use serde_json::Value;
-
-use glm::{Vec2, Vec3};
-use std::sync::atomic::Ordering;
-use std::sync::Arc;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Sphere {
@@ -93,7 +91,7 @@ impl Surface for Sphere {
         if let Some(_hit) = self.intersect(&test_ray) {
             let center = self.transform.point(&Vec3::zeros());
             // let direction = center - o;
-            let dist = glm::length(&(o - center));
+            let dist = length(&(o - center));
             let cos_theta_max = f32::sqrt(dist * dist - self.radius * self.radius) / dist;
             let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
             return pdf;
@@ -104,9 +102,9 @@ impl Surface for Sphere {
     fn sample(&self, o: &Vec3, rv: Vec2) -> Option<EmitterRecord> {
         let center = self.transform.point(&Vec3::zeros());
         let direction_centre: Vec3 = center - o;
-        let dist = glm::length(&(o - center));
+        let dist = length(&(o - center));
 
-        let radius = glm::length(&self.transform.vector(&(Vec3::z()))) * self.radius;
+        let radius = length(&self.transform.vector(&(Vec3::z()))) * self.radius;
         let cos_theta_max_from_p = f32::sqrt(dist * dist - radius * radius) / dist;
 
         if radius > dist {
@@ -143,8 +141,7 @@ impl Surface for Sphere {
 
 #[cfg(test)]
 mod tests {
-    extern crate nalgebra_glm as glm;
-    use glm::Vec3;
+    use nalgebra_glm::Vec3;
     use std::sync::Arc;
 
     use crate::core::ray::Ray;
@@ -194,7 +191,7 @@ mod tests {
         let transformed_sphere = Sphere {
             radius: 1.0,
             transform,
-            material: material,
+            material,
         };
         let test_ray = Ray::new(Vec3::new(1.0, 0.5, 8.0), Vec3::new(0.0, 0.0, -1.0));
 

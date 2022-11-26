@@ -1,15 +1,14 @@
+use nalgebra_glm::{clamp, cross, dot, length, length2, normalize, Vec2, Vec3};
+use serde_json::Value;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+
 use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
 use crate::core::transform::{read_transform, Transform};
 use crate::core::utils::{read, INTERSECTION_TEST};
 use crate::materials::material::{Material, MaterialType};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
-
-use std::sync::Arc;
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
-use serde_json::Value;
-use std::sync::atomic::Ordering;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Quad {
@@ -44,9 +43,9 @@ impl Surface for Quad {
         // project hitpoint onto plane to reduce floating-point error
         p.z = 0.0;
 
-        let n = glm::normalize(&self.transform.normal(&Vec3::z()));
+        let n = normalize(&self.transform.normal(&Vec3::z()));
         let uv = 0.5 * p.xy().component_div(&self.size).add_scalar(1.0);
-        let uv = glm::clamp(&uv, 0.000001, 0.999999);
+        let uv = clamp(&uv, 0.000001, 0.999999);
 
         // if hit, set intersection record values
         let hit = HitInfo {
@@ -69,9 +68,9 @@ impl Surface for Quad {
             let v0 = self.transform.vector(&Vec3::new(self.size.x, 0.0, 0.0));
             let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
 
-            let area = 4.0 * glm::length(&glm::cross(&v0, &v1));
-            let distance2 = hit.t * hit.t * glm::length2(dir);
-            let cosine = f32::abs(glm::dot(dir, &hit.gn) / glm::length(dir));
+            let area = 4.0 * length(&cross(&v0, &v1));
+            let distance2 = hit.t * hit.t * length2(dir);
+            let cosine = f32::abs(dot(dir, &hit.gn) / length(dir));
             let geometry_factor = distance2 / cosine;
             let pdf = 1.0 / area;
 
@@ -87,7 +86,7 @@ impl Surface for Quad {
 
         let p = self.transform.point(&raw_p);
         let wi = p - o;
-        let distance2 = glm::length2(&wi);
+        let distance2 = length2(&wi);
         let t = f32::sqrt(distance2);
         let normal = self.transform.normal(&Vec3::z());
         let wi = wi / t;
@@ -95,8 +94,8 @@ impl Surface for Quad {
         let v0 = self.transform.vector(&Vec3::new(self.size.x, 0.0, 0.0));
         let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
 
-        let area = 4.0 * glm::length(&glm::cross(&v0, &v1));
-        let cosine = f32::abs(glm::dot(&wi, &normal));
+        let area = 4.0 * length(&cross(&v0, &v1));
+        let cosine = f32::abs(dot(&wi, &normal));
         let geometry_factor = distance2 / cosine;
         let pdf = 1.0 / area * geometry_factor;
 
@@ -134,7 +133,7 @@ impl Surface for Quad {
 impl Quad {
     fn local_bounds(&self) -> Aabb {
         const EPS: f32 = 1e-4_f32;
-        let v = glm::vec3(self.size.x + EPS, self.size.y + EPS, EPS);
+        let v = Vec3::new(self.size.x + EPS, self.size.y + EPS, EPS);
         Aabb { min: -v, max: v }
     }
 

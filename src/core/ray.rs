@@ -1,13 +1,9 @@
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
+use nalgebra_glm::Vec3;
 use std::sync::atomic::Ordering;
 
 use crate::core::utils::RAYS;
 
-// use nalgebra::Unit;
-
 // TODO : Use Unit for direction
-
 #[derive(Debug, Clone)]
 pub struct Ray {
     pub origin: Vec3,

@@ -1,6 +1,5 @@
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
 use indicatif::ProgressBar;
+use nalgebra_glm::{max2, min2, Vec2, Vec3};
 use partition::partition_index;
 use serde::{Deserialize, Serialize};
 
@@ -101,13 +100,13 @@ impl Bvh {
             };
         }
         // chose the slit_axis that has the biggest range
-        let mut max = glm::vec3(f32::MIN, f32::MIN, f32::MIN);
-        let mut min = glm::vec3(f32::MAX, f32::MAX, f32::MAX);
+        let mut max = Vec3::new(f32::MIN, f32::MIN, f32::MIN);
+        let mut min = Vec3::new(f32::MAX, f32::MAX, f32::MAX);
 
         for s in surfaces.iter() {
             let c = s.bounds().center();
-            min = glm::min2(&min, &c);
-            max = glm::max2(&max, &c);
+            min = min2(&min, &c);
+            max = max2(&max, &c);
         }
 
         let (split_axis, _) = (max - min).argmax();

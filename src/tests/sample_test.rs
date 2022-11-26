@@ -1,9 +1,11 @@
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
+use nalgebra_glm::{dot, normalize, Vec2, Vec3};
 use rand::Rng;
 use serde_json::Value;
+use std::f32::consts::FRAC_1_PI;
+use std::f32::consts::PI;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use crate::core::image2d::{Array2d, Image2d};
 use crate::core::utils::{
@@ -13,9 +15,6 @@ use crate::core::utils::{
 use crate::materials::material::{Material, MaterialFactory, MaterialType};
 use crate::surfaces::surface::{HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 use crate::surfaces::surface_group::LinearSurfaceGroup;
-use std::f32::consts::FRAC_1_PI;
-use std::f32::consts::PI;
-use std::sync::Arc;
 
 pub trait SampleTest {
     fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3>;
@@ -43,8 +42,8 @@ impl MaterialTest {
     pub fn new(v: Value) -> (MaterialTest, SampleTestParameters) {
         let mf = MaterialFactory::new();
         let material = mf.create_material(v["material"].clone());
-        let normal = glm::normalize(&read(&v, "normal"));
-        let incoming = glm::normalize(&read_or(&v, "incoming", Vec3::new(0.25, 0.0, -1.0)));
+        let normal = normalize(&read(&v, "normal"));
+        let incoming = normalize(&read_or(&v, "incoming", Vec3::new(0.25, 0.0, -1.0)));
         let hit = HitInfo {
             t: 1.0,
             p: Vec3::zeros(),
@@ -59,7 +58,7 @@ impl MaterialTest {
         let num_samples = read_or(&v, "num_samples", 50) * image_width * image_height;
 
         let test = MaterialTest {
-            material: material,
+            material,
             // normal: normal,
             incoming,
             hit,
@@ -87,8 +86,8 @@ impl SampleTest for MaterialTest {
             if srec.is_specular {
                 params.any_specular = true;
             }
-            let wo = glm::normalize(&srec.wo);
-            if glm::dot(&wo, &self.hit.sn) < -1e-8 {
+            let wo = normalize(&srec.wo);
+            if dot(&wo, &self.hit.sn) < -1e-8 {
                 params.any_below_hemisphere = true;
                 return None;
             }
@@ -162,7 +161,7 @@ impl SampleTest for SurfaceTest {
         let erec = self
             .surface_group
             .sample_from_group(&Vec3::zeros(), *rv, rv1)?;
-        let dir = glm::normalize(&erec.wi);
+        let dir = normalize(&erec.wi);
         Some(dir)
     }
 }
@@ -294,8 +293,8 @@ impl SampleTestParameters {
         values.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         let max_value = values[((pdf_size as f32 - 1.0) * 0.9995) as usize];
-        for i in 0..pdf_size {
-            if f32::is_nan(values[i]) || f32::is_infinite(values[i]) {
+        for value in values {
+            if f32::is_nan(*value) || f32::is_infinite(*value) {
                 nan_or_inf = true;
             }
         }

@@ -1,17 +1,13 @@
+use nalgebra_glm::{dot, Vec2, Vec3};
+use rand::Rng;
+use serde_json::{from_value, Value};
 use std::sync::Arc;
 
 use crate::core::ray::Ray;
 use crate::core::utils::{luminance, reflectance};
-use crate::materials::material::{Material, MaterialFactory};
+use crate::materials::material::{Material, MaterialFactory, MaterialType};
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{create_texture, Texture, TextureType};
-
-use serde_json::{from_value, Value};
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
-use rand::Rng;
-
-use super::material::MaterialType;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FresnelBlend {
@@ -57,12 +53,12 @@ impl FresnelBlend {
 
     fn _scatter(&self, ray: &Ray, hit: &HitInfo, rv: f32) -> Option<(Vec3, Ray)> {
         let interior_ior = luminance(&self.ior.value(hit).unwrap());
-        let normal = if glm::dot(&hit.gn, &ray.direction) < 0.0 {
+        let normal = if dot(&hit.gn, &ray.direction) < 0.0 {
             hit.sn
         } else {
             -hit.sn
         };
-        let cos_theta = f32::min(glm::dot(&(-ray.direction), &normal), 1.0);
+        let cos_theta = f32::min(dot(&(-ray.direction), &normal), 1.0);
 
         let will_reflect = rv < reflectance(cos_theta, interior_ior);
 

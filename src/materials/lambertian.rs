@@ -5,9 +5,8 @@ use crate::materials::material::Material;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{create_texture, Texture, TextureType};
 
+use nalgebra_glm::{dot, normalize, Vec2, Vec3};
 use serde_json::Value;
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Lambertian {
@@ -24,7 +23,7 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(&self, _r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
         let mut rng = rand::thread_rng();
-        let mut scatter_direction = hit.sn + glm::normalize(&random_in_unit_sphere(&mut rng));
+        let mut scatter_direction = hit.sn + normalize(&random_in_unit_sphere(&mut rng));
 
         // Catch degenerate scatter direction
         const EPSILON: f32 = 1.0e-6;
@@ -33,7 +32,7 @@ impl Material for Lambertian {
         }
 
         let attenuation = self.albedo.value(hit).unwrap();
-        let ray_out = Ray::new(hit.p, glm::normalize(&scatter_direction));
+        let ray_out = Ray::new(hit.p, normalize(&scatter_direction));
 
         Some((attenuation, ray_out))
     }
@@ -49,7 +48,7 @@ impl Material for Lambertian {
         self.albedo.value(hit).unwrap() * self.pdf(wi, scattered, hit)
     }
 
-    fn sample(&self, _wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, _wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
         let uvw = Onb::build_from_w(&hit.gn);
         let srec = ScatterRecord {
             attenuation: self.albedo.value(hit).unwrap(),
@@ -60,14 +59,13 @@ impl Material for Lambertian {
     }
 
     fn pdf(&self, _wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
-        f32::max(0.0, glm::dot(scattered, &hit.gn)) * std::f32::consts::FRAC_1_PI
+        f32::max(0.0, dot(scattered, &hit.gn)) * std::f32::consts::FRAC_1_PI
     }
 }
 
 #[cfg(test)]
 mod tests {
-    extern crate nalgebra_glm as glm;
-    use glm::{Vec2, Vec3};
+    use nalgebra_glm::{Vec2, Vec3};
     use serde_json::json;
 
     use crate::core::ray::Ray;

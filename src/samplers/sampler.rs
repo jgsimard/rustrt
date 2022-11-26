@@ -1,11 +1,9 @@
-extern crate nalgebra_glm as glm;
+use enum_dispatch::enum_dispatch;
+use nalgebra_glm::Vec2;
+use rand::Rng;
+use serde_json::Value;
 
 use crate::core::utils::read_or;
-use enum_dispatch::enum_dispatch;
-use glm::Vec2;
-use rand::Rng;
-
-use serde_json::Value;
 
 /// Sample generator.
 ///

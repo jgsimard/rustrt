@@ -2,8 +2,7 @@ use rand::prelude::*;
 // extern crate lazy_static;
 use crate::core::sampling::random_in_unit_sphere;
 
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
+use nalgebra_glm::{dot, Vec3};
 
 fn generate_perm(rng: &mut impl Rng) -> Vec<u8> {
     let mut p = Vec::with_capacity(256);
@@ -42,7 +41,7 @@ fn perlin_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f32 {
         for j in 0..2 {
             for k in 0..2 {
                 let ijk = Vec3::new(i as f32, j as f32, k as f32);
-                let weight = glm::dot(&corners[i][j][k], &(uvw - ijk));
+                let weight = dot(&corners[i][j][k], &(uvw - ijk));
                 let ijk_inv = Vec3::new(1., 1., 1.) - ijk;
                 accum += (ijk.component_mul(&uvw3) + ijk_inv.component_mul(&uvw3_inv)).product()
                     * weight;

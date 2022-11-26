@@ -1,3 +1,6 @@
+use nalgebra_glm::{dot, normalize, Vec2, Vec3};
+use serde_json::Value;
+
 use crate::core::onb::Onb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{sample_hemisphere_cosine_power, sample_hemisphere_cosine_power_pdf};
@@ -5,10 +8,6 @@ use crate::core::utils::{read_or, reflect};
 use crate::materials::material::Material;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{create_texture, Texture, TextureType};
-use serde_json::Value;
-
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BlinnPhong {
@@ -32,13 +31,13 @@ impl Material for BlinnPhong {
         self.albedo.value(hit).unwrap() * self.pdf(wi, scattered, hit)
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
         let uvw = Onb::build_from_w(&hit.gn);
         let normal = uvw.local(&sample_hemisphere_cosine_power(self.exponent, rv));
 
-        let mirror_dir = glm::normalize(&reflect(wi, &normal));
+        let mirror_dir = normalize(&reflect(wi, &normal));
 
-        if glm::dot(&mirror_dir, &hit.gn) >= 0.0 {
+        if dot(&mirror_dir, &hit.gn) >= 0.0 {
             let srec = ScatterRecord {
                 attenuation: self.albedo.value(hit).unwrap(),
                 wo: mirror_dir,
@@ -50,11 +49,11 @@ impl Material for BlinnPhong {
     }
 
     fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
-        let random_normal = glm::normalize(&(-glm::normalize(wi) + glm::normalize(scattered)));
-        let cosine = f32::max(glm::dot(&random_normal, &hit.gn), 0.0);
+        let random_normal = normalize(&(-normalize(wi) + normalize(scattered)));
+        let cosine = f32::max(dot(&random_normal, &hit.gn), 0.0);
         let normal_pdf = sample_hemisphere_cosine_power_pdf(self.exponent, cosine);
-        let final_pdf = normal_pdf / (4.0 * glm::dot(&(-wi), &random_normal));
-        if glm::dot(scattered, &hit.gn) >= 0.0 {
+        let final_pdf = normal_pdf / (4.0 * dot(&(-wi), &random_normal));
+        if dot(scattered, &hit.gn) >= 0.0 {
             final_pdf
         } else {
             0.0

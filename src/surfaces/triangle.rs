@@ -1,3 +1,9 @@
+use nalgebra::{Vector2, Vector3};
+use nalgebra_glm::{cross, dot, length, length2, normalize, Vec2, Vec3};
+use serde_json::Value;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+
 use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{sample_triangle, sample_triangle_pdf};
@@ -6,13 +12,6 @@ use crate::core::utils::{read, INTERSECTION_TEST};
 use crate::materials::material::{Material, MaterialType};
 use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
 use crate::surfaces::surface::{SurfaceFactory, SurfaceType};
-
-use nalgebra::{Vector2, Vector3};
-use std::sync::Arc;
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
-use serde_json::Value;
-use std::sync::atomic::Ordering;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Mesh {
@@ -263,8 +262,8 @@ impl Surface for Triangle {
 
             let pdf = sample_triangle_pdf(&v0, &v1, &v2);
 
-            let distance2 = hit.t * hit.t * glm::length2(dir);
-            let cosine = f32::abs(glm::dot(dir, &hit.gn) / glm::length(dir));
+            let distance2 = hit.t * hit.t * length2(dir);
+            let cosine = f32::abs(dot(dir, &hit.gn) / length(dir));
             let geometry_factor = distance2 / cosine;
 
             return geometry_factor * pdf;
@@ -279,12 +278,12 @@ impl Surface for Triangle {
 
         let p = sample_triangle(&v0, &v1, &v2, rv);
         let wi = p - origin;
-        let distance2 = glm::length2(&wi);
+        let distance2 = length2(&wi);
         let t = f32::sqrt(distance2);
         let normal = self.mesh.transform.normal(&Vec3::z());
 
         let pdf = sample_triangle_pdf(&v0, &v1, &v2);
-        let cosine = f32::abs(glm::dot(&wi, &normal));
+        let cosine = f32::abs(dot(&wi, &normal));
         let geometry_factor = distance2 / cosine;
 
         let pdf = geometry_factor * pdf;
@@ -353,8 +352,8 @@ pub fn single_triangle_intersect(
 ) -> Option<HitInfo> {
     let edge1 = v1 - v0;
     let edge2 = v2 - v0;
-    let h = glm::cross(&ray.direction, &edge2);
-    let det = glm::dot(&edge1, &h);
+    let h = cross(&ray.direction, &edge2);
+    let det = dot(&edge1, &h);
 
     // check if the ray is parallel
     if det.abs() < 1e-10 {
@@ -364,32 +363,32 @@ pub fn single_triangle_intersect(
     // barycentric coordinate
     let inv_det = 1.0 / det;
     let s = ray.origin - v0;
-    let u = glm::dot(&s, &h) * inv_det;
+    let u = dot(&s, &h) * inv_det;
 
     if !(0.0..=1.0).contains(&u) {
         return None;
     }
 
-    let q = glm::cross(&s, &edge1);
-    let v = glm::dot(&ray.direction, &q) * inv_det;
+    let q = cross(&s, &edge1);
+    let v = dot(&ray.direction, &q) * inv_det;
 
     if v < 0.0 || u + v > 1.0 {
         return None;
     }
 
     // hit time
-    let t = inv_det * glm::dot(&edge2, &q);
+    let t = inv_det * dot(&edge2, &q);
     if t < ray.min_t || t > ray.max_t {
         return None;
     }
 
     // geometric normal
-    let gn = glm::normalize(&glm::cross(&edge1, &edge2));
+    let gn = normalize(&cross(&edge1, &edge2));
 
     // shading normal
     let sn = if n0.is_some() && n1.is_some() && n2.is_some() {
         //  barycentric interpolation of the per-vertex normals
-        glm::normalize(&((1.0 - u - v) * (n0.unwrap()) + u * (n1.unwrap()) + v * (n2.unwrap())))
+        normalize(&((1.0 - u - v) * (n0.unwrap()) + u * (n1.unwrap()) + v * (n2.unwrap())))
     } else {
         // We don't have per-vertex normals - just use the geometric normal
         gn
@@ -418,15 +417,13 @@ pub fn single_triangle_intersect(
 
 #[cfg(test)]
 mod tests {
-    extern crate nalgebra_glm as glm;
-    use glm::{Vec2, Vec3};
+    use approx::assert_abs_diff_eq;
+    use nalgebra_glm::{Vec2, Vec3};
+    use serde_json::json;
 
     use crate::core::ray::Ray;
     use crate::materials::material::MaterialFactory;
     use crate::surfaces::triangle::single_triangle_intersect;
-    use serde_json::json;
-
-    extern crate approx;
 
     #[test]
     fn ray_triangle_intersection() {
@@ -435,8 +432,12 @@ mod tests {
         let v1 = Vec3::new(1.0, 3.0, 1.0);
         let v2 = Vec3::new(2.0, -2.0, 3.0);
 
-        let n0 = Some(Vec3::new(0.0, 0.707106, 0.707106));
-        let n1 = Some(Vec3::new(0.666666, 0.333333, 0.666666));
+        let n0 = Some(Vec3::new(
+            0.0,
+            std::f32::consts::FRAC_1_SQRT_2,
+            std::f32::consts::FRAC_1_SQRT_2,
+        ));
+        let n1 = Some(Vec3::new(2. / 3., 1. / 3., 2. / 3.));
         let n2 = Some(Vec3::new(0.0, -0.447213, -0.894427));
 
         let t0: Option<Vec2> = None;
@@ -459,12 +460,12 @@ mod tests {
             let correct_gn = Vec3::new(0.744073, -0.114473, -0.658218);
             let correct_sn = Vec3::new(0.762482, 0.317441, 0.563784);
 
-            approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
-            approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
-            approx::assert_abs_diff_eq!(correct_gn, hit.gn, epsilon = 1e-5);
-            approx::assert_abs_diff_eq!(correct_sn, hit.sn, epsilon = 1e-5);
+            assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
+            assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
+            assert_abs_diff_eq!(correct_gn, hit.gn, epsilon = 1e-5);
+            assert_abs_diff_eq!(correct_sn, hit.sn, epsilon = 1e-5);
         } else {
-            assert!(false, "did not hit")
+            panic!("did not hit")
         }
     }
 

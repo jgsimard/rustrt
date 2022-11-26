@@ -1,5 +1,4 @@
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
+use nalgebra_glm::Vec3;
 
 use crate::core::transform::{read_transform, Transform};
 use crate::core::utils::read;

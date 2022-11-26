@@ -1,7 +1,6 @@
-use serde_json::Value;
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
+use nalgebra_glm::{Vec2, Vec3};
 use rand::Rng;
+use serde_json::Value;
 
 use crate::core::ray::Ray;
 use crate::core::sampling::sample_sphere;
@@ -58,7 +57,7 @@ impl Material for Metal {
         Vec3::zeros()
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
         let (attenuation, ray_out) = self._scatter(&ray, hit, rv)?;
         let srec = ScatterRecord {
@@ -76,8 +75,7 @@ impl Material for Metal {
 
 #[cfg(test)]
 mod tests {
-    extern crate nalgebra_glm as glm;
-    use glm::{Vec2, Vec3};
+    use nalgebra_glm::{Vec2, Vec3};
     use serde_json::json;
 
     use crate::core::ray::Ray;

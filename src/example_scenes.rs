@@ -1,9 +1,8 @@
+use nalgebra_glm::{length, lerp, Vec3};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use serde_json::Value;
 use serde_json::{self, json};
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
 
 pub fn create_example_scene(scene_number: i32) -> Value {
     match scene_number {
@@ -104,9 +103,9 @@ fn create_steinbach_scene() -> Value {
 
             let center = Vec3::new(-u * v.cos(), v * u.cos() * 0.75, u * v.sin());
             let kd = 0.35
-                * glm::lerp(
-                    &glm::lerp(&Vec3::new(0.9, 0.0, 0.0), &Vec3::new(0.0, 0.9, 0.0), t),
-                    &glm::lerp(&Vec3::new(0.0, 0.0, 0.9), &Vec3::new(0.0, 0.0, 0.0), t),
+                * lerp(
+                    &lerp(&Vec3::new(0.9, 0.0, 0.0), &Vec3::new(0.0, 0.9, 0.0), t),
+                    &lerp(&Vec3::new(0.0, 0.0, 0.9), &Vec3::new(0.0, 0.0, 0.0), t),
                     s,
                 );
 
@@ -201,7 +200,7 @@ fn create_shirley_scene() -> Value {
             let r1 = rng.gen::<f32>();
             let r2 = rng.gen::<f32>();
             let center = Vec3::new(a as f32 + 0.9 * r1, 0.2, b as f32 + 0.9 * r2);
-            if glm::length(&(center - Vec3::new(4.0, 0.2, 0.0))) > 0.9 {
+            if length(&(center - Vec3::new(4.0, 0.2, 0.0))) > 0.9 {
                 let mut sphere =
                     json!({"type": "sphere", "radius": 0.2, "transform": {"translate": center}});
 

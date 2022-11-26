@@ -2,8 +2,7 @@ use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
 use crate::core::utils::{deg2rad, read_or};
 
-extern crate nalgebra_glm as glm;
-use glm::{Mat3x4, Mat4, Vec3};
+use nalgebra_glm::{cross, normalize, Mat3x4, Mat4, Vec3};
 use serde_json::{from_value, Value};
 use std::ops::Mul;
 
@@ -131,9 +130,9 @@ pub fn parse_transform(json: &Value) -> Transform {
         let at = read_or(json, "at", Vec3::zeros()) + to;
         let up = read_or(json, "up", Vec3::y());
 
-        let dir = glm::normalize(&(from - at));
-        let left = glm::normalize(&glm::cross(&up, &dir));
-        let new_up = glm::normalize(&glm::cross(&dir, &left));
+        let dir = normalize(&(from - at));
+        let left = normalize(&cross(&up, &dir));
+        let new_up = normalize(&cross(&dir, &left));
 
         Transform::axis_offset(&left, &new_up, &dir, &from)
     } else if json_map.contains_key("o")

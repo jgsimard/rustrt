@@ -1,5 +1,4 @@
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
+use nalgebra_glm::Vec3;
 use rand::Rng;
 
 use crate::core::ray::Ray;

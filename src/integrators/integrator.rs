@@ -1,20 +1,17 @@
-extern crate nalgebra_glm as glm;
+use enum_dispatch::enum_dispatch;
+use nalgebra_glm::Vec3;
+use rand::Rng;
+use serde_json::Value;
 
 use crate::core::ray::Ray;
 use crate::core::scene::Scene;
 use crate::core::utils::read_or;
-use crate::samplers::sampler::SamplerType;
-use enum_dispatch::enum_dispatch;
-use glm::Vec3;
-use rand::Rng;
-
-use serde_json::Value;
-
 use crate::integrators::ambiant_occlusion::AmbientOcclusionIntegrator;
 use crate::integrators::normals::NormalsIntegrator;
 use crate::integrators::path_tracer_mats::PathTracerMatsIntegrator;
 use crate::integrators::path_tracer_mis::PathTracerMISIntegrator;
 use crate::integrators::path_tracer_nee::PathTracerNEEIntegrator;
+use crate::samplers::sampler::SamplerType;
 
 #[enum_dispatch]
 pub trait Integrator {

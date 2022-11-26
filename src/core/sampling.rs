@@ -1,7 +1,7 @@
-extern crate nalgebra_glm as glm;
-use crate::core::utils::{lerp, sincos, FRAC_1_TWOPI, INV_FOURPI};
-use glm::{Vec2, Vec3};
+use nalgebra_glm::{cross, length, length2, Vec2, Vec3};
 use rand::Rng;
+
+use crate::core::utils::{lerp, sincos, FRAC_1_TWOPI, INV_FOURPI};
 
 /// Uniformly sample a vector on a 2D disk with radius 1, centered around the origin
 #[allow(unused)]
@@ -14,7 +14,7 @@ pub fn sample_disk(rv: &Vec2) -> Vec2 {
 /// Probability density of `sample_disk`()
 #[allow(unused)]
 pub fn sample_disk_pdf(p: &Vec2) -> f32 {
-    if glm::length2(p) <= 1.0 {
+    if length2(p) <= 1.0 {
         std::f32::consts::FRAC_1_PI
     } else {
         0.0
@@ -111,7 +111,7 @@ pub fn sample_triangle(v0: &Vec3, v1: &Vec3, v2: &Vec3, rv: Vec2) -> Vec3 {
 pub fn sample_triangle_pdf(v0: &Vec3, v1: &Vec3, v2: &Vec3) -> f32 {
     let edge1 = v1 - v0;
     let edge2 = v2 - v0;
-    let area = 0.5 * glm::length(&glm::cross(&edge1, &edge2));
+    let area = 0.5 * length(&cross(&edge1, &edge2));
     1.0 / area
 }
 

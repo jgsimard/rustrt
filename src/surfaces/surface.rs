@@ -1,14 +1,13 @@
+use enum_dispatch::enum_dispatch;
+use nalgebra_glm::{Vec2, Vec3};
+use serde_json::{Map, Value};
+use std::sync::Arc;
+
 use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
 use crate::core::utils::Factory;
 use crate::materials::material::MaterialFactory;
 use crate::materials::material::MaterialType;
-
-extern crate nalgebra_glm as glm;
-use enum_dispatch::enum_dispatch;
-use glm::{Vec2, Vec3};
-use serde_json::{Map, Value};
-use std::sync::Arc;
 
 /// Contains information about a ray intersection hit point.
 ///

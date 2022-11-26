@@ -1,11 +1,9 @@
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
-
-use serde_json::{from_value, Value};
+use nalgebra_glm::{Vec2, Vec3};
+use serde_json::Value;
 
 use crate::core::ray::Ray;
 use crate::core::transform::{read_transform, Transform};
-use crate::core::utils::deg2rad;
+use crate::core::utils::{deg2rad, read_or};
 
 /// A virtual pinhole camera.
 ///
@@ -52,10 +50,11 @@ pub struct PinholeCamera {
 
 impl PinholeCamera {
     pub fn new(json: &Value) -> PinholeCamera {
-        let resolution = from_value(json["resolution"].clone()).unwrap_or(Vec2::new(512., 512.));
-        let aperture_radius: f32 = from_value(json["aperture"].clone()).unwrap_or(0.);
-        let focal_distance: f32 = from_value(json["fdist"].clone()).unwrap_or(1.);
-        let vfov: f32 = from_value(json["vfov"].clone()).unwrap_or(90.);
+        let resolution = read_or(json, "resolution", Vec2::new(512., 512.));
+        let aperture_radius = read_or(json, "aperture", 0.);
+        let focal_distance = read_or(json, "fdist", 1.);
+        let vfov = read_or(json, "vfov", 90.);
+
         let transform = read_transform(json);
 
         let height = 2.0 * focal_distance * deg2rad(vfov / 2.0).tan();

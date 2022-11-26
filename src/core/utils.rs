@@ -1,14 +1,12 @@
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
+use nalgebra_glm::{dot, Vec2, Vec3};
 use serde_json::{from_value, Value};
 use std::fmt::Write;
 use std::ops::{Add, Mul, Sub};
+use std::sync::atomic::AtomicUsize;
 
 pub const INV_FOURPI: f32 = 1.0 / (4.0 * std::f32::consts::PI);
 pub const FRAC_1_TWOPI: f32 = 1.0 / (2.0 * std::f32::consts::PI);
-
-use std::sync::atomic::AtomicUsize;
 pub static RAYS: AtomicUsize = AtomicUsize::new(0);
 pub static INTERSECTION_TEST: AtomicUsize = AtomicUsize::new(0);
 
@@ -118,7 +116,7 @@ pub fn deg2rad(rad: f32) -> f32 {
 }
 
 pub fn luminance(c: &Vec3) -> f32 {
-    glm::dot(c, &Vec3::new(0.212671, 0.715160, 0.072169))
+    dot(c, &Vec3::new(0.212671, 0.715160, 0.072169))
 }
 
 pub fn reflect(direction: &Vec3, normal: &Vec3) -> Vec3 {
@@ -126,7 +124,7 @@ pub fn reflect(direction: &Vec3, normal: &Vec3) -> Vec3 {
 }
 
 pub fn refract(direction_in: &Vec3, normal: &Vec3, etai_over_etat: f32) -> Vec3 {
-    let cos_theta = glm::dot(&(-1.0 * direction_in), normal).min(1.0);
+    let cos_theta = dot(&(-1.0 * direction_in), normal).min(1.0);
     let r_out_perp = etai_over_etat * (direction_in + cos_theta * normal);
     let r_out_parallel = -(1.0 - r_out_perp.norm_squared()).abs().sqrt() * normal;
     r_out_perp + r_out_parallel

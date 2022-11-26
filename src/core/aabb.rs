@@ -1,6 +1,5 @@
-use nalgebra_glm::Vec3;
-extern crate nalgebra_glm as glm;
 use crate::core::ray::Ray;
+use nalgebra_glm::{any, equal, max2, min2, Vec3};
 use std::mem;
 
 /// A 3D axis-aligned bounding box consisting of two 3D points min and max
@@ -15,18 +14,18 @@ pub struct Aabb {
 impl Aabb {
     pub fn new() -> Aabb {
         Aabb {
-            max: glm::vec3(f32::MIN, f32::MIN, f32::MIN),
-            min: glm::vec3(f32::MAX, f32::MAX, f32::MAX),
+            max: Vec3::new(f32::MIN, f32::MIN, f32::MIN),
+            min: Vec3::new(f32::MAX, f32::MAX, f32::MAX),
         }
     }
 
     fn is_finite(&self) -> bool {
         const INF: Vec3 = Vec3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY);
         const NEG_INF: Vec3 = Vec3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
-        !glm::any(&glm::equal(&self.min, &INF))
-            || glm::any(&glm::equal(&self.min, &NEG_INF))
-            || glm::any(&glm::equal(&self.max, &INF))
-            || glm::any(&glm::equal(&self.max, &NEG_INF))
+        !any(&equal(&self.min, &INF))
+            || any(&equal(&self.min, &NEG_INF))
+            || any(&equal(&self.max, &INF))
+            || any(&equal(&self.max, &NEG_INF))
     }
 
     pub fn is_empty(&self) -> bool {
@@ -34,13 +33,13 @@ impl Aabb {
     }
 
     pub fn enclose(&mut self, other: &Aabb) {
-        self.min = glm::min2(&self.min, &other.min);
-        self.max = glm::max2(&self.max, &other.max);
+        self.min = min2(&self.min, &other.min);
+        self.max = max2(&self.max, &other.max);
     }
 
     pub fn enclose_point(&mut self, point: &Vec3) {
-        self.min = glm::min2(&self.min, point);
-        self.max = glm::max2(&self.max, point);
+        self.min = min2(&self.min, point);
+        self.max = max2(&self.max, point);
     }
 
     pub fn center(&self) -> Vec3 {

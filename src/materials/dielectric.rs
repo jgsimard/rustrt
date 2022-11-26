@@ -1,5 +1,4 @@
-extern crate nalgebra_glm as glm;
-use glm::{Vec2, Vec3};
+use nalgebra_glm::{dot, normalize, Vec2, Vec3};
 use rand::Rng;
 use serde_json::Value;
 
@@ -22,7 +21,7 @@ impl Dielectric {
     }
 
     fn _scatter(&self, ray: &Ray, hit: &HitInfo, rv: f32) -> Option<(Vec3, Ray)> {
-        let front_face = glm::dot(&hit.gn, &ray.direction) < 0.0;
+        let front_face = dot(&hit.gn, &ray.direction) < 0.0;
         let ior = luminance(&self.ior.value(hit).unwrap());
         let (normal, ratio_index_of_refraction) = if front_face {
             (hit.sn, 1.0 / ior)
@@ -30,9 +29,9 @@ impl Dielectric {
             (-hit.sn, ior)
         };
 
-        let unit_direction = glm::normalize(&ray.direction);
+        let unit_direction = normalize(&ray.direction);
 
-        let cos_theta = glm::dot(&((-1.0) * unit_direction), &normal).min(1.0);
+        let cos_theta = dot(&((-1.0) * unit_direction), &normal).min(1.0);
         let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
 
         let total_intern_reflection = ratio_index_of_refraction * sin_theta >= 1.0;

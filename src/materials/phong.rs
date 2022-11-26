@@ -6,9 +6,8 @@ use crate::materials::material::Material;
 use crate::surfaces::surface::{HitInfo, ScatterRecord};
 use crate::textures::texture::{create_texture, Texture, TextureType};
 
+use nalgebra_glm::{dot, normalize, Vec2, Vec3};
 use serde_json::Value;
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Phong {
@@ -40,25 +39,25 @@ impl Material for Phong {
         self.albedo.value(hit).unwrap() * self.pdf(wi, scattered, hit)
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &glm::Vec2) -> Option<ScatterRecord> {
-        let mirror_dir = glm::normalize(&reflect(wi, &hit.gn));
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
+        let mirror_dir = normalize(&reflect(wi, &hit.gn));
         let uvw = Onb::build_from_w(&mirror_dir);
         let srec = ScatterRecord {
             attenuation: self.albedo.value(hit).unwrap(),
             wo: uvw.local(&sample_hemisphere_cosine_power(self.exponent, rv)),
             is_specular: false,
         };
-        if glm::dot(&srec.wo, &hit.gn) >= 0.0 {
+        if dot(&srec.wo, &hit.gn) >= 0.0 {
             return Some(srec);
         }
         None
     }
 
     fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32 {
-        let mirror_dir = glm::normalize(&reflect(wi, &hit.gn));
-        let cosine = f32::max(glm::dot(&glm::normalize(scattered), &mirror_dir), 0.0);
+        let mirror_dir = normalize(&reflect(wi, &hit.gn));
+        let cosine = f32::max(dot(&normalize(scattered), &mirror_dir), 0.0);
         let pdf = sample_hemisphere_cosine_power_pdf(self.exponent, cosine);
-        if glm::dot(scattered, &hit.gn) >= 0.0 {
+        if dot(scattered, &hit.gn) >= 0.0 {
             pdf
         } else {
             0.0

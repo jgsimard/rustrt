@@ -1,5 +1,4 @@
-extern crate nalgebra_glm as glm;
-use glm::Vec3;
+use nalgebra_glm::{abs, Vec3};
 use rand::Rng;
 
 use crate::core::ray::Ray;
@@ -20,7 +19,7 @@ impl Integrator for NormalsIntegrator {
         ray: &Ray,
     ) -> Vec3 {
         if let Some(hit) = scene.intersect(ray) {
-            glm::abs(&hit.sn)
+            abs(&hit.sn)
         } else {
             Vec3::zeros()
         }

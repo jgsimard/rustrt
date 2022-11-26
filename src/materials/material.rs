@@ -1,7 +1,5 @@
-extern crate nalgebra_glm as glm;
 use enum_dispatch::enum_dispatch;
-use glm::{Vec2, Vec3};
-
+use nalgebra_glm::{Vec2, Vec3};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
