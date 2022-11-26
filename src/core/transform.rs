@@ -1,6 +1,6 @@
 use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
-use crate::core::utils::deg2rad;
+use crate::core::utils::{deg2rad, read_or};
 
 extern crate nalgebra_glm as glm;
 use glm::{Mat3x4, Mat4, Vec3};
@@ -119,57 +119,50 @@ pub fn parse_transform(json: &Value) -> Transform {
         return t;
     }
     // single transform
-    let kv = json.as_object().unwrap();
+    let json_map = json.as_object().unwrap();
 
-    let read_vector3 = |v: &Value| from_value::<Vec3>(v.clone()).unwrap();
-    let read = |s: &str, default| kv.get(s).map_or(default, read_vector3);
-
-    if kv.contains_key("from")
-        || kv.contains_key("at")
-        || kv.contains_key("to")
-        || kv.contains_key("up")
+    if json_map.contains_key("from")
+        || json_map.contains_key("at")
+        || json_map.contains_key("to")
+        || json_map.contains_key("up")
     {
-        let from = read("from", Vec3::z());
-        let to = read("to", Vec3::zeros());
-        let at = read("at", Vec3::zeros()) + to;
-        let up = read("up", Vec3::y());
+        let from = read_or(json, "from", Vec3::z());
+        let to = read_or(json, "to", Vec3::zeros());
+        let at = read_or(json, "at", Vec3::zeros()) + to;
+        let up = read_or(json, "up", Vec3::y());
 
         let dir = glm::normalize(&(from - at));
         let left = glm::normalize(&glm::cross(&up, &dir));
         let new_up = glm::normalize(&glm::cross(&dir, &left));
 
         Transform::axis_offset(&left, &new_up, &dir, &from)
-    } else if kv.contains_key("o")
-        || kv.contains_key("x")
-        || kv.contains_key("y")
-        || kv.contains_key("z")
+    } else if json_map.contains_key("o")
+        || json_map.contains_key("x")
+        || json_map.contains_key("y")
+        || json_map.contains_key("z")
     {
-        let o = read("o", Vec3::zeros());
-        let x = read("x", Vec3::x());
-        let y = read("y", Vec3::y());
-        let z = read("z", Vec3::z());
+        let o = read_or(json, "o", Vec3::zeros());
+        let x = read_or(json, "x", Vec3::x());
+        let y = read_or(json, "y", Vec3::y());
+        let z = read_or(json, "z", Vec3::z());
 
         Transform::axis_offset(&x, &y, &z, &o)
-    } else if kv.contains_key("translate") {
-        let t = read("translate", Vec3::zeros());
+    } else if json_map.contains_key("translate") {
+        let t = read_or(json, "translate", Vec3::zeros());
         Transform::translate(&t)
-    } else if kv.contains_key("scale") {
-        let scale = kv.get("scale").unwrap().clone();
+    } else if json_map.contains_key("scale") {
+        let scale = json_map.get("scale").unwrap().clone();
         if scale.is_number() {
             let sn: f32 = from_value(scale).expect("could not load 'scale' number Transform");
             return Transform::new(Mat4::new_scaling(sn));
         }
         let sv: Vec3 = from_value(scale).expect("could not load 'scale' vector Transform");
         Transform::new(Mat4::new_nonuniform_scaling(&sv))
-    } else if kv.contains_key("axis") || kv.contains_key("angle") {
-        let axis = read("axis", Vec3::x());
-        let angle = kv
-            .get("angle")
-            .map_or(0.0, |v: &Value| from_value::<f32>(v.clone()).unwrap());
-
-        let angle = deg2rad(angle);
+    } else if json_map.contains_key("axis") || json_map.contains_key("angle") {
+        let axis = read_or(json, "axis", Vec3::x());
+        let angle = deg2rad(read_or(json, "angle", 0.0));
         Transform::new(Mat4::from_scaled_axis(axis * angle))
-    } else if kv.contains_key("matrix") {
+    } else if json_map.contains_key("matrix") {
         unimplemented!();
     } else {
         panic!("Unrecognized 'transform' command:")
@@ -177,9 +170,8 @@ pub fn parse_transform(json: &Value) -> Transform {
 }
 
 pub fn read_transform(v: &Value) -> Transform {
-    let m = v.as_object().expect("Should be a map");
-    if m.contains_key("transform") {
-        parse_transform(&v["transform"])
+    if let Some(transform) = v.get("transform") {
+        parse_transform(transform)
     } else {
         Transform::default()
     }
