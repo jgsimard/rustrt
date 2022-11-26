@@ -29,11 +29,8 @@ pub struct Scene {
 impl Scene {
     /// parse the sampler
     pub fn get_sampler_json(map_json: &Map<String, Value>) -> Value {
-        if map_json.contains_key("sampler") {
-            let mut sampler_map = (*map_json.get("sampler").unwrap())
-                .as_object()
-                .unwrap()
-                .clone();
+        if let Some(sampler_value) = map_json.get("sampler") {
+            let mut sampler_map = sampler_value.as_object().unwrap().clone();
             if !sampler_map.contains_key("type") {
                 println!("No sampler 'type' specified, assuming independent sampling.");
                 sampler_map.insert("type".to_string(), json!("independent"));
@@ -88,10 +85,8 @@ impl Scene {
 
         // materials
         let mut material_factory = MaterialFactory::new();
-        if map_json.contains_key("materials") {
-            map_json
-                .get("materials")
-                .unwrap()
+        if let Some(materials) = map_json.get("materials") {
+            materials
                 .as_array()
                 .expect("Materials should be in an array")
                 .iter()
@@ -105,8 +100,8 @@ impl Scene {
         // surfaces
         let mut surface_facory = SurfaceFactory { material_factory };
         let mut surfaces_vec = Vec::new();
-        if map_json.contains_key("surfaces") {
-            for surface_json in map_json.get("surfaces").unwrap().as_array().unwrap() {
+        if let Some(surfaces) = map_json.get("surfaces") {
+            for surface_json in surfaces.as_array().unwrap() {
                 if let Some(mut surface) = surface_facory.make(surface_json) {
                     surfaces_vec.append(&mut surface);
                 } else {
@@ -129,8 +124,7 @@ impl Scene {
         });
 
         // create the scene-wide acceleration structure so we can put other surfaces into it
-        let surfaces = if map_json.contains_key("accelerator") {
-            let accel_value = map_json.get("accelerator").unwrap();
+        let surfaces = if let Some(accel_value) = map_json.get("accelerator") {
             let type_acceletator = accel_value.get("type").unwrap().as_str().unwrap();
             match type_acceletator {
                 "bbh" => {
