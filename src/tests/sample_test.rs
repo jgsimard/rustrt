@@ -293,10 +293,8 @@ impl SampleTestParameters {
         values.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         let max_value = values[((pdf_size as f32 - 1.0) * 0.9995) as usize];
-        for value in values {
-            if f32::is_nan(*value) || f32::is_infinite(*value) {
-                nan_or_inf = true;
-            }
+        if values.iter().any(|value| value.is_nan() || value.is_infinite()) {
+            nan_or_inf = true;
         }
 
         // Generate heat maps
