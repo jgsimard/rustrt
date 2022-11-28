@@ -178,12 +178,47 @@ pub fn read_transform(v: &Value) -> Transform {
 
 #[cfg(test)]
 mod tests {
-
     use crate::core::ray::Ray;
-    use crate::core::transform::Transform;
+    use crate::core::transform::{read_transform, Transform};
     use nalgebra::{Matrix4, Vector3};
+    use nalgebra_glm::Mat4;
+    use serde_json::json;
 
-    extern crate approx;
+    #[test]
+    fn parse_from_at_to_up() {
+        let transform_json = json!({
+            "transform":{
+                "from": [-10.0, 10.0, 40.0],
+                "to": [0.0, -1.0, 0.0],
+                "up": [0.0, 1.0, 0.0]
+            }
+        });
+        let transform = read_transform(&transform_json);
+        let m = Matrix4::new(
+            0.970142, 0.062519, -0.234339, -10.0, 0.0, 0.966205, 0.257773, 10.0, 0.242535,
+            -0.250076, 0.937357, 40.0, 0.0, 0.0, 0.0, 1.0,
+        );
+        approx::assert_abs_diff_eq!(m, transform.m, epsilon = 1e-5);
+    }
+
+    #[test]
+    fn inverse() {
+        let transformation_matrix = Matrix4::new(
+            -0.846852, -0.492958, -0.199586, -0.997497, 0.107965, -0.526819, 0.843093, 0.127171,
+            -0.520755, 0.692427, 0.499359, -0.613392, 0.0, 0.0, 0.0, 1.0,
+        );
+        let identity = Mat4::identity();
+        let transform = Transform::new(transformation_matrix);
+        let transform_inverse = transform.inverse();
+
+        let res = transform.clone() * transform_inverse.clone();
+        approx::assert_abs_diff_eq!(identity, res.m, epsilon = 1e-5);
+        approx::assert_abs_diff_eq!(identity, res.m_inv, epsilon = 1e-5);
+
+        let res = transform_inverse * transform;
+        approx::assert_abs_diff_eq!(identity, res.m, epsilon = 1e-5);
+        approx::assert_abs_diff_eq!(identity, res.m_inv, epsilon = 1e-5);
+    }
 
     #[test]
     fn from_transformation_matrix() {
