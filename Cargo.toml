@@ -29,4 +29,5 @@ rand_chacha = "0.3"
 opt-level = 3 # otherwise sampling tests take forever
 
 [profile.release]
-debug = true # for profiling
+# debug = true # for profiling
+strip = "symbols" # for smaller executable
