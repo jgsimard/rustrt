@@ -98,19 +98,22 @@ impl Scene {
 
         // surfaces
         let mut surface_facory = SurfaceFactory { material_factory };
-        let mut surfaces_vec = Vec::new();
-        if let Some(surfaces) = map_json.get("surfaces") {
-            for surface_json in surfaces.as_array().unwrap() {
-                if let Some(mut surface) = surface_facory.make(surface_json) {
-                    surfaces_vec.append(&mut surface);
-                } else {
-                    panic!(
-                        "surface of type : {} not yet supported",
-                        surface_json["type"]
-                    );
-                }
-            }
-        }
+
+        let mut surfaces_vec = if let Some(surfaces) = map_json.get("surfaces") {
+            surfaces
+                .as_array()
+                .expect("Surfaces should be in an array")
+                .iter()
+                .flat_map(|sur| {
+                    surface_facory.make(sur).unwrap_or_else(|| {
+                        panic!("surface of type : {} not yet supported", sur["type"])
+                    })
+                })
+                .collect()
+        } else {
+            panic!("No surfaces to render :(");
+        };
+
         let surfaces = create_surface_group(map_json, &mut surfaces_vec);
 
         // not sure about this cloned ... FIXME!
@@ -132,11 +135,12 @@ impl Scene {
         }
     }
 
-    fn raytrace_pixel(&self, x: usize, y: usize, size_x: usize) -> Vec3 {
+    /// Raytrace a single pixel given its position
+    fn raytrace_pixel(&self, x: usize, y: usize) -> Vec3 {
         let mut sampler = create_sampler(&self.sampler_value);
         let sample_count = sampler.sample_count();
         let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
-        rng.set_stream((y * size_x + x) as u64);
+        rng.set_stream((y * (self.camera.resolution.x as usize) + x) as u64);
         (0..sample_count)
             .into_iter()
             .map(|_| {
@@ -148,6 +152,7 @@ impl Scene {
             / (sample_count as f32)
     }
 
+    /// Raytrace a whole image
     pub fn raytrace(&self) -> Image2d {
         let mut image = Image2d::new(
             self.camera.resolution.x as usize,
@@ -158,14 +163,13 @@ impl Scene {
         let progress_bar = get_progress_bar(image.size());
 
         // Generate multiple rays for each pixel in the image
-        let size_x = image.size_x;
         let img: Vec<Vec<Vec3>> = (0..image.size_y)
             .into_par_iter() // rows in parallel
             .map(|y| {
                 (0..image.size_x)
                     .into_par_iter() // columns in parallel
                     .map(|x| {
-                        let pixel_value = self.raytrace_pixel(x, y, size_x);
+                        let pixel_value = self.raytrace_pixel(x, y);
                         progress_bar.inc(1);
                         pixel_value
                     })
