@@ -3,7 +3,7 @@ mod independent;
 use enum_dispatch::enum_dispatch;
 use nalgebra_glm::Vec2;
 use rand::Rng;
-use serde_json::Value;
+use serde_json::{json, Map, Value};
 
 use crate::core::utils::read_or;
 
@@ -44,8 +44,25 @@ pub enum SamplerType {
     Independent(IndependentSampler),
 }
 
-pub fn create_sampler(j: &Value) -> SamplerType {
-    let sampler_type = j
+pub fn create_sampler(map: &Map<String, Value>) -> SamplerType {
+    // TODO : rewrite this
+    let sampler_json = if let Some(sampler_value) = map.get("sampler") {
+        let mut sampler_map = sampler_value.as_object().unwrap().clone();
+        if !sampler_map.contains_key("type") {
+            println!("No sampler 'type' specified, assuming independent sampling.");
+            sampler_map.insert("type".to_string(), json!("independent"));
+        }
+        if !sampler_map.contains_key("samples") {
+            println!("Number of samples is not specified, assuming 1.");
+            sampler_map.insert("samples".to_string(), json!(1));
+        }
+        serde_json::to_value(sampler_map).unwrap()
+    } else {
+        println!("No sampler specified, defaulting to 1 spp independent sampling.");
+        json!({"type" : "independent", "samples": 1})
+    };
+
+    let sampler_type = sampler_json
         .get("type")
         .expect("no sampler type")
         .as_str()
@@ -53,14 +70,12 @@ pub fn create_sampler(j: &Value) -> SamplerType {
 
     match sampler_type {
         "independent" => {
-            // ThreadRng::from(_)
-            let samples = read_or(j, "samples", 1);
+            let samples = read_or(&sampler_json, "samples", 1);
             SamplerType::from(IndependentSampler {
                 base_seed: 123,
                 sample_count: samples,
                 current_sample: 0,
                 current_dimension: 0,
-                // rng: ChaCha8Rng::seed_from_u64(123),
             })
         }
         _ => {

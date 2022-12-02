@@ -2,7 +2,7 @@ use nalgebra_glm::{Vec2, Vec3};
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value};
 
 use crate::core::aabb::Aabb;
 use crate::core::camera::PinholeCamera;
@@ -11,7 +11,7 @@ use crate::core::ray::Ray;
 use crate::core::utils::{get_progress_bar, read_v_or_f, Factory};
 use crate::integrators::{create_integrator, Integrator, IntegratorType};
 use crate::materials::MaterialFactory;
-use crate::samplers::{create_sampler, Sampler};
+use crate::samplers::{create_sampler, Sampler, SamplerType};
 use crate::surfaces::{
     create_surface_group, EmitterRecord, HitInfo, Surface, SurfaceFactory, SurfaceGroupType,
 };
@@ -20,31 +20,12 @@ pub struct Scene {
     pub surfaces: SurfaceGroupType,
     pub emitters: SurfaceGroupType,
     pub integrator: IntegratorType,
-    sampler_value: Value,
+    pub sampler: SamplerType,
     camera: PinholeCamera,
     pub background: Vec3,
 }
 
 impl Scene {
-    /// parse the sampler
-    pub fn get_sampler_json(map_json: &Map<String, Value>) -> Value {
-        if let Some(sampler_value) = map_json.get("sampler") {
-            let mut sampler_map = sampler_value.as_object().unwrap().clone();
-            if !sampler_map.contains_key("type") {
-                println!("No sampler 'type' specified, assuming independent sampling.");
-                sampler_map.insert("type".to_string(), json!("independent"));
-            }
-            if !sampler_map.contains_key("samples") {
-                println!("Number of samples is not specified, assuming 1.");
-                sampler_map.insert("samples".to_string(), json!(1));
-            }
-            serde_json::to_value(sampler_map).unwrap()
-        } else {
-            println!("No sampler specified, defaulting to 1 spp independent sampling.");
-            json!({"type" : "independent", "samples": 1})
-        }
-    }
-
     pub fn new(scene_json: &Value) -> Scene {
         println!("Parsing...");
         let map_json = scene_json.as_object().unwrap();
@@ -74,6 +55,8 @@ impl Scene {
                 .get("camera")
                 .expect("No camera specified in scene!"),
         );
+
+        let sampler = create_sampler(map_json);
 
         // integrator
         let integrator = create_integrator(scene_json);
@@ -128,7 +111,7 @@ impl Scene {
         Scene {
             integrator,
             emitters,
-            sampler_value: Scene::get_sampler_json(map_json),
+            sampler,
             surfaces,
             camera,
             background,
@@ -137,7 +120,7 @@ impl Scene {
 
     /// Raytrace a single pixel given its position
     fn raytrace_pixel(&self, x: usize, y: usize) -> Vec3 {
-        let mut sampler = create_sampler(&self.sampler_value);
+        let mut sampler = self.sampler.clone();
         let sample_count = sampler.sample_count();
         let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
         rng.set_stream((y * (self.camera.resolution.x as usize) + x) as u64);
