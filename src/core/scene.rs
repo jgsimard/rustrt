@@ -109,10 +109,10 @@ impl Scene {
         let emitters = create_surface_group(&Map::new(), &mut emitters_vec);
 
         Scene {
-            integrator,
-            emitters,
-            sampler,
             surfaces,
+            emitters,
+            integrator,
+            sampler,
             camera,
             background,
         }
@@ -128,7 +128,7 @@ impl Scene {
             .into_iter()
             .map(|_| {
                 let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
-                let ray = self.camera.generate_ray(&pixel);
+                let ray = self.camera.generate_ray(pixel);
                 self.integrator.li(self, &mut sampler, &mut rng, &ray)
             })
             .sum::<Vec3>()

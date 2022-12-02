@@ -120,7 +120,7 @@ mod tests {
             }
         });
 
-        let (test, mut parameters) = SurfaceTest::new(v);
+        let (test, mut parameters) = SurfaceTest::new(&v);
         parameters.run(&test, 1.0, 1e-2);
     }
 }

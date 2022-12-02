@@ -7,7 +7,7 @@ use std::sync::Arc;
 use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{sample_triangle, sample_triangle_pdf};
-use crate::core::transform::{read_transform, Transform};
+use crate::core::transform::Transform;
 use crate::core::utils::{read, INTERSECTION_TEST};
 use crate::materials::{Material, MaterialType};
 use crate::surfaces::{EmitterRecord, HitInfo, Surface};
@@ -49,7 +49,7 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn read(v: &Value, sf: &SurfaceFactory) -> Vec<SurfaceType> {
-        let transform = read_transform(v);
+        let transform = Transform::read(v);
         let filename: String = read(v, "filename");
 
         let obj = tobj::load_obj(filename, &tobj::OFFLINE_RENDERING_LOAD_OPTIONS);
@@ -143,7 +143,7 @@ pub struct Triangle {
 impl Triangle {
     pub fn new(v: &Value, sf: &SurfaceFactory) -> Triangle {
         let m = v.as_object().unwrap();
-        let transform = read_transform(v);
+        let transform = Transform::read(v);
         let material = sf.get_material(m);
 
         assert!(
@@ -438,7 +438,7 @@ mod tests {
             std::f32::consts::FRAC_1_SQRT_2,
         ));
         let n1 = Some(Vec3::new(2. / 3., 1. / 3., 2. / 3.));
-        let n2 = Some(Vec3::new(0.0, -0.447213, -0.894427));
+        let n2 = Some(Vec3::new(0.0, -0.447_213, -0.894_427));
 
         let t0: Option<Vec2> = None;
         let t1: Option<Vec2> = None;
@@ -448,17 +448,17 @@ mod tests {
 
         let material_json = json!({"type": "lambertian", "albedo": 1.0});
         let mf = MaterialFactory::new();
-        let material = mf.create_material(material_json);
+        let material = mf.create_material(&material_json);
 
         // run function
         if let Some(hit) =
             single_triangle_intersect(&ray, &v0, &v1, &v2, &n0, &n1, &n2, &t0, &t1, &t2, material)
         {
             // verify computed results
-            let correct_t = 12.520326;
-            let correct_p = Vec3::new(1.0, 1.504065, 1.260162);
-            let correct_gn = Vec3::new(0.744073, -0.114473, -0.658218);
-            let correct_sn = Vec3::new(0.762482, 0.317441, 0.563784);
+            let correct_t = 12.520_326;
+            let correct_p = Vec3::new(1.0, 1.504_065, 1.260_162);
+            let correct_gn = Vec3::new(0.744_073, -0.114_473, -0.658_218);
+            let correct_sn = Vec3::new(0.762_482, 0.317_441, 0.563_784);
 
             assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
             assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
@@ -495,7 +495,7 @@ mod tests {
             }
         });
 
-        let (test, mut parameters) = SurfaceTest::new(v);
+        let (test, mut parameters) = SurfaceTest::new(&v);
         parameters.run(&test, 1.0, 1e-2);
     }
 }

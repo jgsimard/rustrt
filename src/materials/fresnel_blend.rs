@@ -27,7 +27,7 @@ impl FresnelBlend {
                 .expect("doesnt contain refr"))
             .clone()
         } else if v.is_object() {
-            mf.create_material(refracted_v)
+            mf.create_material(&refracted_v)
         } else {
             panic!("NOOOOOO refr : {}", refracted_v);
         };
@@ -40,7 +40,7 @@ impl FresnelBlend {
                 .expect("doesnt contain refl"))
             .clone()
         } else if v.is_object() {
-            mf.create_material(reflected_v)
+            mf.create_material(&reflected_v)
         } else {
             panic!("NOOOOOO refl : {}", reflected_v);
         };
@@ -87,7 +87,7 @@ impl Material for FresnelBlend {
         Vec3::zeros()
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
         let (attenuation, ray_out) = self._scatter(&ray, hit, rv.x)?;
         let srec = ScatterRecord {

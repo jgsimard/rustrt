@@ -1,13 +1,13 @@
 use nalgebra_glm::{cross, normalize, Vec3};
 
-/// OrthoNormal Basis
+/// `OrthoNormal` Basis
 pub struct Onb {
     axis: [Vec3; 3],
 }
 
 impl Onb {
-    pub fn build_from_w(n: &Vec3) -> Self {
-        let w = normalize(n);
+    pub fn build_from_w(normal: &Vec3) -> Self {
+        let w = normalize(normal);
         let a = if w.x.abs() > 0.9 {
             Vec3::new(0.0, 1.0, 0.0)
         } else {

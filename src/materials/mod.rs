@@ -41,14 +41,14 @@ pub trait Material {
     /// Sample a scattered direction at the surface hitpoint \p hit.
     ///
     /// If it is not possible to evaluate the pdf of the material (e.g.\ it is
-    /// specular or unknown), then set \c srec.is_specular to true, and populate
+    /// specular or unknown), then set \c `srec.is_specular` to true, and populate
     /// \c srec.wo and \c srec.attenuation just like we did previously in the
     /// #scatter() function. This allows you to fall back to the way we did
     /// things with the #scatter() function, i.e.\ bypassing #pdf()
     /// evaluations needed for explicit Monte Carlo integration in your
     /// #Integrator, but this also precludes the use of MIS or mixture sampling
     /// since the pdf is unknown.
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord>;
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: Vec2) -> Option<ScatterRecord>;
 
     /// Compute the probability density that #sample() will generate \c scattered (given \c wi).
     fn pdf(&self, wi: &Vec3, scattered: &Vec3, hit: &HitInfo) -> f32;
@@ -87,7 +87,7 @@ impl MaterialFactory {
         }
     }
 
-    pub fn create_material(&self, v: Value) -> Arc<MaterialType> {
+    pub fn create_material(&self, v: &Value) -> Arc<MaterialType> {
         let type_material = v
             .get("type")
             .expect("material should have a type")
@@ -95,13 +95,13 @@ impl MaterialFactory {
             .expect("material type should be a string");
 
         let material = match type_material {
-            "lambertian" => MaterialType::from(Lambertian::new(&v)),
-            "metal" => MaterialType::from(Metal::new(&v)),
-            "dielectric" => MaterialType::from(Dielectric::new(&v)),
-            "diffuse_light" => MaterialType::from(DiffuseLight::new(&v)),
-            "fresnel_blend" => MaterialType::from(FresnelBlend::new(&v, self)),
-            "phong" => MaterialType::from(Phong::new(&v)),
-            "blinn_phong" => MaterialType::from(BlinnPhong::new(&v)),
+            "lambertian" => MaterialType::from(Lambertian::new(v)),
+            "metal" => MaterialType::from(Metal::new(v)),
+            "dielectric" => MaterialType::from(Dielectric::new(v)),
+            "diffuse_light" => MaterialType::from(DiffuseLight::new(v)),
+            "fresnel_blend" => MaterialType::from(FresnelBlend::new(v, self)),
+            "phong" => MaterialType::from(Phong::new(v)),
+            "blinn_phong" => MaterialType::from(BlinnPhong::new(v)),
             _ => unimplemented!("The material type '{}' ", type_material),
         };
         Arc::new(material)
@@ -117,7 +117,7 @@ impl Factory<Arc<MaterialType>> for MaterialFactory {
             .to_string()
             .trim_matches('"')
             .to_string();
-        let material = self.create_material((*v).clone());
+        let material = self.create_material(v);
         self.materials.insert(name, material.clone());
         Some(vec![material])
     }

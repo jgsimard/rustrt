@@ -7,7 +7,7 @@ use crate::core::aabb::Aabb;
 use crate::core::onb::Onb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{sample_sphere_cap, sample_sphere_cap_pdf};
-use crate::core::transform::{read_transform, Transform};
+use crate::core::transform::Transform;
 use crate::core::utils::{direction_to_spherical_uv, read_or, INTERSECTION_TEST};
 use crate::materials::{Material, MaterialType};
 use crate::surfaces::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
@@ -28,7 +28,7 @@ impl Sphere {
     }
     pub fn new(v: &Value, sf: &SurfaceFactory) -> Sphere {
         let radius = read_or(v, "radius", 1.0);
-        let transform = read_transform(v);
+        let transform = Transform::read(v);
         let material = sf.get_material(v.as_object().unwrap());
 
         Sphere {
@@ -162,11 +162,11 @@ mod tests {
             "albedo": 1.0
         });
         let mf = MaterialFactory::new();
-        let material = mf.create_material(lambert_json);
+        let material = mf.create_material(&lambert_json);
 
         let test_sphere = Sphere {
             radius: 1.0,
-            transform: Default::default(),
+            transform: Transform::default(),
             material: material.clone(),
         };
 
@@ -174,9 +174,9 @@ mod tests {
         let test_ray = Ray::new(Vec3::new(-0.25, 0.5, 4.0), Vec3::new(0.0, 0.0, -1.0));
         // HitInfo hit;
         if let Some(hit) = test_sphere.intersect(&test_ray) {
-            let correct_t = 3.170844;
-            let correct_p = Vec3::new(-0.25, 0.5, 0.829156);
-            let correct_n = Vec3::new(-0.25, 0.5, 0.829156);
+            let correct_t = 3.170_844;
+            let correct_p = Vec3::new(-0.25, 0.5, 0.829_156);
+            let correct_n = Vec3::new(-0.25, 0.5, 0.829_156);
 
             approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
             approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
@@ -201,9 +201,9 @@ mod tests {
 
         println!("Testing transformed sphere intersection");
         if let Some(hit) = transformed_sphere.intersect(&test_ray) {
-            let correct_t = 2.585422;
+            let correct_t = 2.585_422;
             let correct_p = Vec3::new(1.0, 0.5, 5.41458);
-            let correct_n = Vec3::new(0.147442, 0.147442, 0.978019);
+            let correct_n = Vec3::new(0.147_442, 0.147_442, 0.978_019);
 
             approx::assert_abs_diff_eq!(correct_t, hit.t, epsilon = 1e-5);
             approx::assert_abs_diff_eq!(correct_p, hit.p, epsilon = 1e-5);
@@ -233,7 +233,7 @@ mod tests {
             }
         });
 
-        let (test, mut parameters) = SurfaceTest::new(v);
+        let (test, mut parameters) = SurfaceTest::new(&v);
         parameters.run(&test, 1.0, 1e-3);
     }
 }

@@ -1,6 +1,6 @@
 use nalgebra_glm::Vec3;
 
-use crate::core::transform::{read_transform, Transform};
+use crate::core::transform::Transform;
 use crate::core::utils::read;
 use crate::surfaces::HitInfo;
 use crate::textures::{create_texture, Texture, TextureType};
@@ -32,7 +32,7 @@ impl CheckerTexture {
         let even_texture = Box::new(create_texture(v, "even"));
         let odd_texture = Box::new(create_texture(v, "odd"));
         let scale = read::<f32>(v, "scale");
-        let transform = read_transform(v);
+        let transform = Transform::read(v);
 
         CheckerTexture {
             odd_texture,

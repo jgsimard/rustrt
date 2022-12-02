@@ -28,7 +28,7 @@ impl Integrator for PathTracerMatsIntegrator {
 
             // sample next direction
             let rv = sampler.next2f(rng);
-            let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv) else { break;};
+            let Some(srec) = hit.mat.sample(&ray.direction, &hit, rv) else { break;};
 
             // add emitted light contribution
             if let Some(emitted) = hit.mat.emmitted(&ray, &hit) {

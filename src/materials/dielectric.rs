@@ -20,7 +20,7 @@ impl Dielectric {
         Dielectric { ior }
     }
 
-    fn _scatter(&self, ray: &Ray, hit: &HitInfo, rv: f32) -> Option<(Vec3, Ray)> {
+    fn _scatter(&self, ray: &Ray, hit: &HitInfo, rv: f32) -> (Vec3, Ray) {
         let front_face = dot(&hit.gn, &ray.direction) < 0.0;
         let ior = luminance(&self.ior.value(hit).unwrap());
         let (normal, ratio_index_of_refraction) = if front_face {
@@ -46,7 +46,7 @@ impl Dielectric {
 
         let scattered = Ray::new(hit.p, direction);
 
-        Some((Vec3::new(1.0, 1.0, 1.0), scattered))
+        (Vec3::new(1.0, 1.0, 1.0), scattered)
     }
 }
 
@@ -54,7 +54,7 @@ impl Material for Dielectric {
     fn scatter(&self, ray: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
         let mut rng = rand::thread_rng();
         let rv = rng.gen();
-        self._scatter(ray, hit, rv)
+        Some(self._scatter(ray, hit, rv))
     }
 
     fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vec3> {
@@ -69,9 +69,9 @@ impl Material for Dielectric {
         Vec3::zeros()
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
-        let (attenuation, ray_out) = self._scatter(&ray, hit, rv.x)?;
+        let (attenuation, ray_out) = self._scatter(&ray, hit, rv.x);
         let srec = ScatterRecord {
             attenuation,
             wo: ray_out.direction,

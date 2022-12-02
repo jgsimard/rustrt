@@ -15,7 +15,7 @@ pub enum SplitMethod {
     Sah,
 }
 
-/// small modification of partition to include edge case of partition_index at start or end of array
+/// small modification of partition to include edge case of `partition_index` at start or end of array
 pub fn partition<T, P>(data: &mut [T], predicate: P, max_leaf_size: usize) -> (&mut [T], &mut [T])
 where
     P: Fn(&T) -> bool,
@@ -114,9 +114,9 @@ impl Bvh {
 
         let (left, right) = match split_method {
             SplitMethod::Equal => {
-                let mid = n_surfaces / 2;
-                surfaces.select_nth_unstable_by(mid, |a, b| center(a).total_cmp(&center(b)));
-                surfaces.split_at_mut(mid)
+                let middle = n_surfaces / 2;
+                surfaces.select_nth_unstable_by(middle, |a, b| center(a).total_cmp(&center(b)));
+                surfaces.split_at_mut(middle)
             }
             SplitMethod::Middle => {
                 let middle = (max + min)[split_axis] / 2.0;

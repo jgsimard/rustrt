@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
-use crate::core::transform::{read_transform, Transform};
+use crate::core::transform::Transform;
 use crate::core::utils::{read, INTERSECTION_TEST};
 use crate::materials::{Material, MaterialType};
 use crate::surfaces::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
@@ -45,7 +45,7 @@ impl Surface for Quad {
 
         let n = normalize(&self.transform.normal(&Vec3::z()));
         let uv = 0.5 * p.xy().component_div(&self.size).add_scalar(1.0);
-        let uv = clamp(&uv, 0.000001, 0.999999);
+        let uv = clamp(&uv, 0.000_001, 0.999_999);
 
         // if hit, set intersection record values
         let hit = HitInfo {
@@ -147,7 +147,7 @@ impl Quad {
         };
         let size = size / 2.0;
 
-        let transform = read_transform(v);
+        let transform = Transform::read(v);
         let material = sf.get_material(m);
 
         Quad {
@@ -187,7 +187,7 @@ mod tests {
             }
         });
 
-        let (test, mut parameters) = SurfaceTest::new(v);
+        let (test, mut parameters) = SurfaceTest::new(&v);
         parameters.run(&test, 1.0, 1e-2);
     }
 }

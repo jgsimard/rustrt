@@ -59,20 +59,16 @@ fn create_sphere_plane_scene() -> Value {
             }
         ],
         "sampler": {"samples": 1},
-        "background": [1, 1, 1]
+        "background": [1, 1, 1],
+        "accelerator" : { "type": "bbh"}
     }"#;
 
-    let mut j: Value = serde_json::from_str(data).unwrap();
-
-    // BVH
-    j["accelerator"] = json!({"type": "bbh"});
-
-    j
+    serde_json::from_str(data).unwrap()
 }
 
 fn create_steinbach_scene() -> Value {
     // Compose the camera
-    let mut j = json!({
+    let mut scene = json!({
         "camera":{
             "transform":{
                 "from": [-10.0, 10.0, 40.0],
@@ -81,12 +77,11 @@ fn create_steinbach_scene() -> Value {
             },
             "vfov" : 18.,
             "resolution": [512, 512]
-        }
+        },
+        "sampler": {"samples": 10},
+        "background": [1, 1, 1],
+        "accelerator" : { "type": "bbh"}
     });
-
-    // compose the image properties
-    j["sampler"] = json!({"samples": 10});
-    j["background"] = serde_json::to_value([1.0, 1.0, 1.0]).unwrap(); // json!({[1.0, 1.0 , 1.0]});
 
     let object_center = Vec3::new(0.0, 0.0, 0.0);
     let radius = 0.5;
@@ -109,7 +104,7 @@ fn create_steinbach_scene() -> Value {
                     s,
                 );
 
-            let s = json!({
+            surfaces.push(json!({
                 "type": "sphere",
                 "radius": radius,
                 "transform":{
@@ -122,12 +117,11 @@ fn create_steinbach_scene() -> Value {
                     "type": "lambertian",
                     "albedo": kd
                 }
-            });
-            surfaces.push(s);
+            }));
         }
     }
 
-    let s = json!({
+    surfaces.push(json!({
         "type": "quad",
         "size": [100, 100],
         "transform":{
@@ -140,22 +134,17 @@ fn create_steinbach_scene() -> Value {
             "type": "lambertian",
             "albedo": 1.0
         }
-    });
-    surfaces.push(s);
+    }));
+    scene["surfaces"] = serde_json::Value::Array(surfaces);
 
-    j["surfaces"] = serde_json::Value::Array(surfaces);
-
-    // BVH
-    j["accelerator"] = json!({"type": "bbh"});
-
-    j
+    scene
 }
 
 fn create_shirley_scene() -> Value {
     let mut rng = ChaCha8Rng::seed_from_u64(420);
 
     // Compose the camera
-    let mut j = json!({
+    let mut scene = json!({
         "camera": {
             "transform":{
                 "from":[13, 2, 3],
@@ -166,20 +155,16 @@ fn create_shirley_scene() -> Value {
             "fdist": 10,
             "aperture": 0.1,
             "resolution": [600, 400]
-        }
+        },
+        "sampler": {"samples": 10},
+        "background": [1, 1, 1],
+        "accelerator" : { "type": "bbh"}
     });
-
-    // compose the image properties
-    j["sampler"] = json!({"samples": 10});
-    j["background"] = serde_json::to_value([1.0, 1.0, 1.0]).unwrap();
-
-    // BVH
-    j["accelerator"] = json!({"type": "bbh"});
 
     let mut surfaces: Vec<Value> = Vec::new();
 
     // ground plane
-    let gp = json!({
+    surfaces.push(json!({
         "type": "quad",
         "size": [100, 100],
         "transform":{
@@ -191,15 +176,16 @@ fn create_shirley_scene() -> Value {
             "type": "lambertian",
             "albedo": [0.5, 0.5, 0.5]
         }
-    });
-    surfaces.push(gp);
+    }));
 
     for a in -11..11 {
         for b in -11..11 {
             let choose_mat = rng.gen::<f32>();
-            let r1 = rng.gen::<f32>();
-            let r2 = rng.gen::<f32>();
-            let center = Vec3::new(a as f32 + 0.9 * r1, 0.2, b as f32 + 0.9 * r2);
+            let center = Vec3::new(
+                a as f32 + 0.9 * rng.gen::<f32>(),
+                0.2,
+                b as f32 + 0.9 * rng.gen::<f32>(),
+            );
             if length(&(center - Vec3::new(4.0, 0.2, 0.0))) > 0.9 {
                 let mut sphere =
                     json!({"type": "sphere", "radius": 0.2, "transform": {"translate": center}});
@@ -268,7 +254,7 @@ fn create_shirley_scene() -> Value {
         }
     }));
 
-    j["surfaces"] = serde_json::Value::Array(surfaces);
+    scene["surfaces"] = serde_json::Value::Array(surfaces);
 
-    j
+    scene
 }

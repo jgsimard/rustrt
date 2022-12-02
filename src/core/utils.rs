@@ -116,7 +116,7 @@ pub fn deg2rad(rad: f32) -> f32 {
 }
 
 pub fn luminance(c: &Vec3) -> f32 {
-    dot(c, &Vec3::new(0.212671, 0.715160, 0.072169))
+    dot(c, &Vec3::new(0.212_671, 0.715_160, 0.072_169))
 }
 
 pub fn reflect(direction: &Vec3, normal: &Vec3) -> Vec3 {

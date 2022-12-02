@@ -16,7 +16,7 @@ use crate::materials::{Material, MaterialFactory, MaterialType};
 use crate::surfaces::{create_surface_group, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 
 pub trait SampleTest {
-    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3>;
+    fn sample(&self, params: &mut SampleTestParameters, rv: Vec2, rv1: f32) -> Option<Vec3>;
     fn pdf(&self, params: &mut SampleTestParameters, dir: &Vec3, rv: f32) -> f32;
 }
 
@@ -38,11 +38,11 @@ pub struct SampleTestParameters {
 }
 
 impl MaterialTest {
-    pub fn new(v: Value) -> (MaterialTest, SampleTestParameters) {
+    pub fn new(v: &Value) -> (MaterialTest, SampleTestParameters) {
         let mf = MaterialFactory::new();
-        let material = mf.create_material(v["material"].clone());
-        let normal = normalize(&read(&v, "normal"));
-        let incoming = normalize(&read_or(&v, "incoming", Vec3::new(0.25, 0.0, -1.0)));
+        let material = mf.create_material(&v["material"]);
+        let normal = normalize(&read(v, "normal"));
+        let incoming = normalize(&read_or(v, "incoming", Vec3::new(0.25, 0.0, -1.0)));
         let hit = HitInfo {
             t: 1.0,
             p: Vec3::zeros(),
@@ -51,10 +51,10 @@ impl MaterialTest {
             uv: Vec2::new(0.5, 0.5),
             mat: material.clone(),
         };
-        let name = read(&v, "name");
-        let image_width = read_or(&v, "image_width", 512);
-        let image_height = read_or(&v, "image_height", 256);
-        let num_samples = read_or(&v, "num_samples", 50) * image_width * image_height;
+        let name = read(v, "name");
+        let image_width = read_or(v, "image_width", 512);
+        let image_height = read_or(v, "image_height", 256);
+        let num_samples = read_or(v, "num_samples", 50) * image_width * image_height;
 
         let test = MaterialTest {
             material,
@@ -79,7 +79,7 @@ impl SampleTest for MaterialTest {
         self.material.pdf(&self.incoming, dir, &self.hit)
     }
 
-    fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2, _rv1: f32) -> Option<Vec3> {
+    fn sample(&self, params: &mut SampleTestParameters, rv: Vec2, _rv1: f32) -> Option<Vec3> {
         if let Some(srec) = self.material.sample(&self.incoming, &self.hit, rv) {
             let dir = srec.wo;
             if srec.is_specular {
@@ -105,7 +105,7 @@ pub struct SurfaceTest {
 }
 
 impl SurfaceTest {
-    pub fn new(v: Value) -> (SurfaceTest, SampleTestParameters) {
+    pub fn new(v: &Value) -> (SurfaceTest, SampleTestParameters) {
         let m = v.as_object().unwrap();
         let surface_json = if m.contains_key("surface") {
             v["surface"].clone()
@@ -132,10 +132,10 @@ impl SurfaceTest {
 
         let test = SurfaceTest { surface_group };
 
-        let name = read(&v, "name");
-        let image_width = read_or(&v, "image_width", 512);
-        let image_height = read_or(&v, "image_height", 256);
-        let num_samples = read_or(&v, "num_samples", 50) * image_width * image_height;
+        let name = read(v, "name");
+        let image_width = read_or(v, "image_width", 512);
+        let image_height = read_or(v, "image_height", 256);
+        let num_samples = read_or(v, "num_samples", 50) * image_width * image_height;
 
         let parameters = SampleTestParameters {
             any_specular: false,
@@ -154,10 +154,10 @@ impl SampleTest for SurfaceTest {
         self.surface_group.pdf_child(&Vec3::zeros(), dir, rv)
     }
 
-    fn sample(&self, _params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3> {
+    fn sample(&self, _params: &mut SampleTestParameters, rv: Vec2, rv1: f32) -> Option<Vec3> {
         let erec = self
             .surface_group
-            .sample_from_group(&Vec3::zeros(), *rv, rv1)?;
+            .sample_from_group(&Vec3::zeros(), rv, rv1)?;
         let dir = normalize(&erec.wi);
         Some(dir)
     }
@@ -166,7 +166,7 @@ impl SampleTest for SurfaceTest {
 impl SampleTestParameters {
     fn print_more_statistics(&self) {
         if self.any_specular {
-            println!("is_specular is set. It should not be.")
+            println!("is_specular is set. It should not be.");
         }
         if self.any_below_hemisphere {
             println!(
@@ -176,7 +176,7 @@ impl SampleTestParameters {
         }
     }
 
-    fn pixel_to_direction(&self, pixel: &Vec2) -> Vec3 {
+    fn pixel_to_direction(&self, pixel: Vec2) -> Vec3 {
         let image_width = self.image_width as f32;
         let image_height = self.image_height as f32;
         let a: Vec2 = pixel.add_scalar(0.5);
@@ -193,9 +193,6 @@ impl SampleTestParameters {
     }
 
     pub fn run(&mut self, sample_test: &dyn SampleTest, target: f32, epsilon: f32) {
-        println!("---------------------------------------------------------------------------\n");
-        println!("Running sample test for \"{}\"\n", self.name);
-
         // Merge adjacent pixels to decrease noise in the histogram
         const HISTO_SUBSAMPLE: usize = 4;
         const NB_SAMPLES: usize = 10;
@@ -218,7 +215,7 @@ impl SampleTestParameters {
                                 (HISTO_SUBSAMPLE * x + sx) as f32,
                                 (HISTO_SUBSAMPLE * y + sy) as f32,
                             );
-                            let dir = self.pixel_to_direction(&pixel);
+                            let dir = self.pixel_to_direction(pixel);
                             let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
                             let pixel_area = (PI / self.image_width as f32)
                                 * (PI * 2.0 / self.image_height as f32)
@@ -242,7 +239,7 @@ impl SampleTestParameters {
         let mut valid_samples = 0;
         let mut nan_or_inf = false;
         for _ in 0..self.num_samples {
-            if let Some(dir) = sample_test.sample(self, &Vec2::new(rng.gen(), rng.gen()), rng.gen())
+            if let Some(dir) = sample_test.sample(self, Vec2::new(rng.gen(), rng.gen()), rng.gen())
             {
                 if f32::is_nan(dir.x + dir.y + dir.z) || f32::is_infinite(dir.x + dir.y + dir.z) {
                     nan_or_inf = true;
@@ -265,8 +262,6 @@ impl SampleTestParameters {
                 // Accumulate into histogram
                 histogram[(pixel.x as usize, pixel.y as usize)] += weight;
                 valid_samples += 1;
-            } else {
-                continue;
             }
         }
 

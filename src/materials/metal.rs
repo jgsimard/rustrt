@@ -23,7 +23,7 @@ impl Metal {
         Metal { albedo, roughness }
     }
 
-    fn _scatter(&self, r_in: &Ray, hit: &HitInfo, rv: &Vec2) -> Option<(Vec3, Ray)> {
+    fn _scatter(&self, r_in: &Ray, hit: &HitInfo, rv: Vec2) -> Option<(Vec3, Ray)> {
         let reflected = reflect(&r_in.direction, &hit.sn);
         let roughness = luminance(&self.roughness.value(hit).unwrap());
         let scatter_direction = reflected + roughness * sample_sphere(rv);
@@ -42,7 +42,7 @@ impl Material for Metal {
     fn scatter(&self, ray: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
         let mut rng = rand::thread_rng();
         let rv = Vec2::new(rng.gen(), rng.gen());
-        self._scatter(ray, hit, &rv)
+        self._scatter(ray, hit, rv)
     }
 
     fn emmitted(&self, _ray: &Ray, _hit: &HitInfo) -> Option<Vec3> {
@@ -57,7 +57,7 @@ impl Material for Metal {
         Vec3::zeros()
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: Vec2) -> Option<ScatterRecord> {
         let ray = Ray::new(hit.p - wi, *wi);
         let (attenuation, ray_out) = self._scatter(&ray, hit, rv)?;
         let srec = ScatterRecord {
@@ -93,7 +93,7 @@ mod tests {
             "roughness": 0.3
         });
         let mf = MaterialFactory::new();
-        let metal_material = mf.create_material(metal_json);
+        let metal_material = mf.create_material(&metal_json);
 
         // Let's create a fictitious hitpoint
         let surface_point = Vec3::new(1.0, 2.0, 0.0);

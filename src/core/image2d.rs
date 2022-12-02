@@ -47,13 +47,13 @@ impl<T: std::clone::Clone + std::default::Default> IndexMut<(usize, usize)> for 
 }
 pub type Image2d = Array2d<Vec3>;
 
-/// Convert from linear RGB to sRGB
+/// Convert from linear RGB to `sRGB`
 fn to_srgb(c: &Vec3) -> Vec3 {
     let mut result = Vec3::new(0.0, 0.0, 0.0);
 
     for i in 0..3 {
         let value = c[i];
-        if value <= 0.0031308 {
+        if value <= 0.003_130_8 {
             result[i] = 12.92 * value;
         } else {
             result[i] = (1.0 + 0.055) * value.powf(1.0 / 2.4) - 0.055;

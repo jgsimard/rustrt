@@ -43,7 +43,7 @@ impl Integrator for PathTracerMISIntegrator {
 
             // sample material
             let rv_mat = sampler.next2f(rng);
-            let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_mat) else { break };
+            let Some(srec) = hit.mat.sample(&ray.direction, &hit, rv_mat) else { break };
 
             // sample light
             let rv_light = sampler.next2f(rng);

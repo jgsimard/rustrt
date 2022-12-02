@@ -2,7 +2,7 @@ use nalgebra_glm::{Vec2, Vec3};
 use serde_json::Value;
 
 use crate::core::ray::Ray;
-use crate::core::transform::{read_transform, Transform};
+use crate::core::transform::Transform;
 use crate::core::utils::{deg2rad, read_or};
 
 /// A virtual pinhole camera.
@@ -55,7 +55,7 @@ impl PinholeCamera {
         let focal_distance = read_or(json, "fdist", 1.);
         let vfov = read_or(json, "vfov", 90.);
 
-        let transform = read_transform(json);
+        let transform = Transform::read(json);
 
         let height = 2.0 * focal_distance * deg2rad(vfov / 2.0).tan();
         let width = resolution[0] / resolution[1] * height;
@@ -71,11 +71,11 @@ impl PinholeCamera {
     }
 
     /// Generate a ray inside a given pixel
-    pub fn generate_ray(&self, pixel: &Vec2) -> Ray {
+    pub fn generate_ray(&self, pixel: Vec2) -> Ray {
         let origin = Vec3::zeros();
         let xy = self
             .size
-            .component_mul(pixel)
+            .component_mul(&pixel)
             .component_div(&self.resolution)
             - self.size / 2.0;
         let direction = Vec3::new(xy.x, xy.y, -self.focal_distance);

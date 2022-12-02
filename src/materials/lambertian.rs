@@ -21,13 +21,12 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _r_in: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, _ray: &Ray, hit: &HitInfo) -> Option<(Vec3, Ray)> {
         let mut rng = rand::thread_rng();
         let mut scatter_direction = hit.sn + normalize(&random_in_unit_sphere(&mut rng));
 
         // Catch degenerate scatter direction
-        const EPSILON: f32 = 1.0e-6;
-        if scatter_direction.norm_squared() < EPSILON {
+        if scatter_direction.norm_squared() < 1.0e-6 {
             scatter_direction = hit.sn;
         }
 
@@ -48,7 +47,7 @@ impl Material for Lambertian {
         self.albedo.value(hit).unwrap() * self.pdf(wi, scattered, hit)
     }
 
-    fn sample(&self, _wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, _wi: &Vec3, hit: &HitInfo, rv: Vec2) -> Option<ScatterRecord> {
         let uvw = Onb::build_from_w(&hit.gn);
         let srec = ScatterRecord {
             attenuation: self.albedo.value(hit).unwrap(),
@@ -81,7 +80,7 @@ mod tests {
             "albedo": surface_color
         });
         let mf = MaterialFactory::new();
-        let lambert_material = mf.create_material(lambert_json);
+        let lambert_material = mf.create_material(&lambert_json);
         assert!(matches!(
             lambert_material.as_ref(),
             MaterialType::Lambertian { .. }
@@ -133,7 +132,7 @@ mod tests {
             "name": "lambertian"
         });
 
-        let (test, mut parameters) = MaterialTest::new(v);
+        let (test, mut parameters) = MaterialTest::new(&v);
         parameters.run(&test, 1.0, 1e-2);
     }
 
@@ -151,7 +150,7 @@ mod tests {
             "name": "lambertian-rotated"
         });
 
-        let (test, mut parameters) = MaterialTest::new(v);
+        let (test, mut parameters) = MaterialTest::new(&v);
         parameters.run(&test, 1.0, 1e-4);
     }
 }

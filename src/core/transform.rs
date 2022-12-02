@@ -26,6 +26,14 @@ impl Transform {
         }
     }
 
+    pub fn read(v: &Value) -> Transform {
+        if let Some(transform) = v.get("transform") {
+            parse(transform)
+        } else {
+            Transform::default()
+        }
+    }
+
     /// Return the inverse transformation
     pub fn inverse(&self) -> Transform {
         Transform {
@@ -77,10 +85,10 @@ impl Transform {
     }
 
     pub fn axis_offset(x: &Vec3, y: &Vec3, z: &Vec3, o: &Vec3) -> Transform {
-        let m = Mat3x4::from_columns(&[*x, *y, *z, *o]);
-        let mut m = m.insert_row(3, 0.);
-        m[(3, 3)] = 1.0;
-        Transform::new(m)
+        let matrix = Mat3x4::from_columns(&[*x, *y, *z, *o]);
+        let mut matrix = matrix.insert_row(3, 0.);
+        matrix[(3, 3)] = 1.0;
+        Transform::new(matrix)
     }
 
     pub fn translate(t: &Vec3) -> Transform {
@@ -108,12 +116,12 @@ impl Default for Transform {
     }
 }
 
-pub fn parse_transform(json: &Value) -> Transform {
+fn parse(json: &Value) -> Transform {
     // multiple transforms
     if json.is_array() {
         let mut t: Transform = Transform::default();
         for sub_t in json.as_array().unwrap() {
-            t = parse_transform(sub_t) * t;
+            t = parse(sub_t) * t;
         }
         return t;
     }
@@ -168,18 +176,10 @@ pub fn parse_transform(json: &Value) -> Transform {
     }
 }
 
-pub fn read_transform(v: &Value) -> Transform {
-    if let Some(transform) = v.get("transform") {
-        parse_transform(transform)
-    } else {
-        Transform::default()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::core::ray::Ray;
-    use crate::core::transform::{read_transform, Transform};
+    use crate::core::transform::Transform;
     use nalgebra::{Matrix4, Vector3};
     use nalgebra_glm::Mat4;
     use serde_json::json;
@@ -193,10 +193,10 @@ mod tests {
                 "up": [0.0, 1.0, 0.0]
             }
         });
-        let transform = read_transform(&transform_json);
+        let transform = Transform::read(&transform_json);
         let m = Matrix4::new(
-            0.970142, 0.062519, -0.234339, -10.0, 0.0, 0.966205, 0.257773, 10.0, 0.242535,
-            -0.250076, 0.937357, 40.0, 0.0, 0.0, 0.0, 1.0,
+            0.970_142, 0.062_519, -0.234_339, -10.0, 0.0, 0.966_205, 0.257_773, 10.0, 0.242_535,
+            -0.250_076, 0.937_357, 40.0, 0.0, 0.0, 0.0, 1.0,
         );
         approx::assert_abs_diff_eq!(m, transform.m, epsilon = 1e-5);
     }
@@ -204,8 +204,8 @@ mod tests {
     #[test]
     fn inverse() {
         let transformation_matrix = Matrix4::new(
-            -0.846852, -0.492958, -0.199586, -0.997497, 0.107965, -0.526819, 0.843093, 0.127171,
-            -0.520755, 0.692427, 0.499359, -0.613392, 0.0, 0.0, 0.0, 1.0,
+            -0.846_852, -0.492_958, -0.199_586, -0.997_497, 0.107_965, -0.526_819, 0.843_093,
+            0.127_171, -0.520_755, 0.692_427, 0.499_359, -0.613_392, 0.0, 0.0, 0.0, 1.0,
         );
         let identity = Mat4::identity();
         let transform = Transform::new(transformation_matrix);
@@ -224,18 +224,18 @@ mod tests {
     fn from_transformation_matrix() {
         // Setup
         let transformation_matrix = Matrix4::new(
-            -0.846852, -0.492958, -0.199586, -0.997497, 0.107965, -0.526819, 0.843093, 0.127171,
-            -0.520755, 0.692427, 0.499359, -0.613392, 0.0, 0.0, 0.0, 1.0,
+            -0.846_852, -0.492_958, -0.199_586, -0.997_497, 0.107_965, -0.526_819, 0.843_093,
+            0.127_171, -0.520_755, 0.692_427, 0.499_359, -0.613_392, 0.0, 0.0, 0.0, 1.0,
         );
 
         let transform = Transform::new(transformation_matrix);
 
-        let vector = Vector3::new(-0.997497, 0.127171, -0.613_392);
-        let point = Vector3::new(0.617481, 0.170019, -0.0402539);
-        let normal = Vector3::new(-0.281208, 0.743764, 0.606_413);
+        let vector = Vector3::new(-0.997_497, 0.127_171, -0.613_392);
+        let point = Vector3::new(0.617_481, 0.170_019, -0.040_253_9);
+        let normal = Vector3::new(-0.281_208, 0.743_764, 0.606_413);
         let ray = Ray::new(
-            Vector3::new(-0.997497, 0.127171, -0.613392),
-            Vector3::new(0.962222, 0.264941, -0.0627278),
+            Vector3::new(-0.997_497, 0.127_171, -0.613_392),
+            Vector3::new(0.962_222, 0.264_941, -0.062_727_8),
         );
 
         // Use Transform
@@ -245,11 +245,11 @@ mod tests {
         let transformed_ray = transform.ray(&ray);
 
         // Test Transform
-        let correct_transformed_vector = Vector3::new(0.904467, -0.691_837, 0.301205);
-        let correct_transformed_point = Vector3::new(-1.596_19, 0.0703303, -0.837324);
-        let correct_transformed_normal = Vector3::new(-0.249534, 0.0890737, 0.96426);
-        let correct_transformed_ray_position = Vector3::new(-0.0930302, -0.564666, -0.312187);
-        let correct_transformed_ray_direction = Vector3::new(-0.932945, -0.088575, -0.348953);
+        let correct_transformed_vector = Vector3::new(0.904_467, -0.691_837, 0.301_205);
+        let correct_transformed_point = Vector3::new(-1.596_19, 0.070_330_3, -0.837_324);
+        let correct_transformed_normal = Vector3::new(-0.249_534, 0.089_073_7, 0.96426);
+        let correct_transformed_ray_position = Vector3::new(-0.093_030_2, -0.564_666, -0.312_187);
+        let correct_transformed_ray_direction = Vector3::new(-0.932_945, -0.088_575, -0.348_953);
 
         approx::assert_abs_diff_eq!(
             correct_transformed_vector,

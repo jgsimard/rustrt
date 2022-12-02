@@ -39,7 +39,7 @@ impl Material for Phong {
         self.albedo.value(hit).unwrap() * self.pdf(wi, scattered, hit)
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: Vec2) -> Option<ScatterRecord> {
         let mirror_dir = normalize(&reflect(wi, &hit.gn));
         let uvw = Onb::build_from_w(&mirror_dir);
         let srec = ScatterRecord {
@@ -85,7 +85,7 @@ mod tests {
             "name": "phong"
         });
 
-        let (test, mut parameters) = MaterialTest::new(v);
+        let (test, mut parameters) = MaterialTest::new(&v);
         parameters.run(&test, 1.0, 1e-2);
     }
 
@@ -104,7 +104,7 @@ mod tests {
             "name": "phong-rotated"
         });
 
-        let (test, mut parameters) = MaterialTest::new(v);
+        let (test, mut parameters) = MaterialTest::new(&v);
         parameters.run(&test, 0.945, 1e-3);
     }
 }

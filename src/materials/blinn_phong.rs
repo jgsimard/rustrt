@@ -31,7 +31,7 @@ impl Material for BlinnPhong {
         self.albedo.value(hit).unwrap() * self.pdf(wi, scattered, hit)
     }
 
-    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: &Vec2) -> Option<ScatterRecord> {
+    fn sample(&self, wi: &Vec3, hit: &HitInfo, rv: Vec2) -> Option<ScatterRecord> {
         let uvw = Onb::build_from_w(&hit.gn);
         let normal = uvw.local(&sample_hemisphere_cosine_power(self.exponent, rv));
 
@@ -89,7 +89,7 @@ mod tests {
             "name": "blinn_phong"
         });
 
-        let (test, mut parameters) = MaterialTest::new(v);
+        let (test, mut parameters) = MaterialTest::new(&v);
         parameters.run(&test, 0.969, 1e-3);
     }
 
@@ -108,7 +108,7 @@ mod tests {
             "name": "blinn_phong-rotated"
         });
 
-        let (test, mut parameters) = MaterialTest::new(v);
+        let (test, mut parameters) = MaterialTest::new(&v);
         parameters.run(&test, 0.909, 1e-3);
     }
 }

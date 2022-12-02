@@ -33,7 +33,7 @@ impl Integrator for PathTracerNEEIntegrator {
 
             // sample material
             let rv_mat = sampler.next2f(rng);
-            let Some(srec) = hit.mat.sample(&ray.direction, &hit, &rv_mat) else {break;};
+            let Some(srec) = hit.mat.sample(&ray.direction, &hit, rv_mat) else {break;};
 
             if !srec.is_specular {
                 // no need to sample light for specular materials

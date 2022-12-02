@@ -1,7 +1,7 @@
 use nalgebra_glm::{lerp, Vec3};
 use serde_json::Value;
 
-use crate::core::transform::{read_transform, Transform};
+use crate::core::transform::Transform;
 use crate::core::utils::read;
 use crate::surfaces::HitInfo;
 use crate::textures::perlin;
@@ -29,7 +29,7 @@ impl MarbleTexture {
         let veins = Box::new(create_texture(v, "veins"));
         let base = Box::new(create_texture(v, "base"));
         let scale = read(v, "scale");
-        let transform = read_transform(v);
+        let transform = Transform::read(v);
         MarbleTexture {
             base,
             veins,

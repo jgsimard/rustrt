@@ -157,7 +157,7 @@ impl SurfaceFactory {
                     .unwrap())
                 .clone()
             } else {
-                self.material_factory.create_material((*mat).clone())
+                self.material_factory.create_material(mat)
             }
         } else {
             panic!("Invalid material");
@@ -191,7 +191,7 @@ pub fn create_surface_group(
     } else {
         // default to a naive linear accelerator
         SurfaceGroupType::from(LinearSurfaceGroup {
-            surfaces: surfaces.to_vec(),
+            surfaces: surfaces.clone(),
         })
     }
 }
