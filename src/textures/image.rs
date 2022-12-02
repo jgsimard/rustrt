@@ -2,8 +2,8 @@ use nalgebra_glm::Vec3;
 
 use crate::core::image2d::Image2d;
 use crate::core::utils::read;
-use crate::surfaces::surface::HitInfo;
-use crate::textures::texture::Texture;
+use crate::surfaces::HitInfo;
+use crate::textures::Texture;
 use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]

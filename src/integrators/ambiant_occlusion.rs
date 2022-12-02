@@ -3,10 +3,10 @@ use rand::Rng;
 
 use crate::core::ray::Ray;
 use crate::core::scene::Scene;
-use crate::integrators::integrator::Integrator;
-use crate::materials::material::Material;
-use crate::samplers::sampler::{Sampler, SamplerType};
-use crate::surfaces::surface::Surface;
+use crate::integrators::Integrator;
+use crate::materials::Material;
+use crate::samplers::{Sampler, SamplerType};
+use crate::surfaces::Surface;
 
 #[derive(Debug, Clone)]
 pub struct AmbientOcclusionIntegrator;

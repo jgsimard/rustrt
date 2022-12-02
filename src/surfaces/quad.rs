@@ -7,8 +7,8 @@ use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
 use crate::core::transform::{read_transform, Transform};
 use crate::core::utils::{read, INTERSECTION_TEST};
-use crate::materials::material::{Material, MaterialType};
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
+use crate::materials::{Material, MaterialType};
+use crate::surfaces::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Quad {

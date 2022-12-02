@@ -4,10 +4,10 @@ use serde_json::Value;
 
 use crate::core::ray::Ray;
 use crate::core::utils::{luminance, reflect, reflectance, refract};
-use crate::materials::material::Material;
-use crate::surfaces::surface::HitInfo;
-use crate::surfaces::surface::ScatterRecord;
-use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::materials::Material;
+use crate::surfaces::HitInfo;
+use crate::surfaces::ScatterRecord;
+use crate::textures::{create_texture, Texture, TextureType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Dielectric {

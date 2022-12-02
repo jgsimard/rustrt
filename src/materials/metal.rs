@@ -5,10 +5,10 @@ use serde_json::Value;
 use crate::core::ray::Ray;
 use crate::core::sampling::sample_sphere;
 use crate::core::utils::{luminance, reflect};
-use crate::materials::material::Material;
-use crate::surfaces::surface::HitInfo;
-use crate::surfaces::surface::ScatterRecord;
-use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::materials::Material;
+use crate::surfaces::HitInfo;
+use crate::surfaces::ScatterRecord;
+use crate::textures::{create_texture, Texture, TextureType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Metal {
@@ -79,8 +79,8 @@ mod tests {
     use serde_json::json;
 
     use crate::core::ray::Ray;
-    use crate::materials::material::{Material, MaterialFactory};
-    use crate::surfaces::surface::HitInfo;
+    use crate::materials::{Material, MaterialFactory};
+    use crate::surfaces::HitInfo;
 
     #[test]
     fn test_metal() {

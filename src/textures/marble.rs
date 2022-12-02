@@ -3,9 +3,9 @@ use serde_json::Value;
 
 use crate::core::transform::{read_transform, Transform};
 use crate::core::utils::read;
-use crate::surfaces::surface::HitInfo;
+use crate::surfaces::HitInfo;
 use crate::textures::perlin;
-use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::textures::{create_texture, Texture, TextureType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct MarbleTexture {

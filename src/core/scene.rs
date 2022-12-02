@@ -8,13 +8,13 @@ use crate::core::aabb::Aabb;
 use crate::core::camera::PinholeCamera;
 use crate::core::image2d::Image2d;
 use crate::core::ray::Ray;
-use crate::core::utils::{get_progress_bar, read_or, read_v_or_f, Factory};
-use crate::integrators::integrator::{create_integrator, Integrator, IntegratorType};
-use crate::materials::material::MaterialFactory;
-use crate::samplers::sampler::{create_sampler, Sampler};
-use crate::surfaces::bvh::{Bvh, SplitMethod};
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
-use crate::surfaces::surface_group::LinearSurfaceGroup;
+use crate::core::utils::{get_progress_bar, read_v_or_f, Factory};
+use crate::integrators::{create_integrator, Integrator, IntegratorType};
+use crate::materials::MaterialFactory;
+use crate::samplers::{create_sampler, Sampler};
+use crate::surfaces::{
+    create_surface_group, EmitterRecord, HitInfo, Surface, SurfaceFactory, SurfaceGroupType,
+};
 
 pub struct Scene {
     pub surfaces: SurfaceGroupType,
@@ -111,33 +111,16 @@ impl Scene {
                 }
             }
         }
+        let surfaces = create_surface_group(map_json, &mut surfaces_vec);
+
         // not sure about this cloned ... FIXME!
-        let emitters_vec = surfaces_vec
+        let mut emitters_vec = surfaces_vec
             .iter()
             .filter(|x| x.is_emissive())
             .cloned()
             .collect();
 
-        let emitters = SurfaceGroupType::from(LinearSurfaceGroup {
-            surfaces: emitters_vec,
-        });
-
-        // create the scene-wide acceleration structure so we can put other surfaces into it
-        let surfaces = if let Some(accel_value) = map_json.get("accelerator") {
-            let type_acceletator = accel_value.get("type").unwrap().as_str().unwrap();
-            match type_acceletator {
-                "bbh" => {
-                    let split_method = read_or(accel_value, "split_method", SplitMethod::Middle);
-                    SurfaceGroupType::from(Bvh::new(&mut surfaces_vec, &split_method))
-                }
-                _ => panic!("Unusported accelerator {}", type_acceletator),
-            }
-        } else {
-            // default to a naive linear accelerator
-            SurfaceGroupType::from(LinearSurfaceGroup {
-                surfaces: surfaces_vec,
-            })
-        };
+        let emitters = create_surface_group(&Map::new(), &mut emitters_vec);
 
         Scene {
             integrator,

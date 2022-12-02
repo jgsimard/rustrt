@@ -1,9 +1,9 @@
 use crate::core::onb::Onb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{random_in_unit_sphere, sample_hemisphere_cosine};
-use crate::materials::material::Material;
-use crate::surfaces::surface::{HitInfo, ScatterRecord};
-use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::materials::Material;
+use crate::surfaces::{HitInfo, ScatterRecord};
+use crate::textures::{create_texture, Texture, TextureType};
 
 use nalgebra_glm::{dot, normalize, Vec2, Vec3};
 use serde_json::Value;
@@ -69,8 +69,8 @@ mod tests {
     use serde_json::json;
 
     use crate::core::ray::Ray;
-    use crate::materials::material::{Material, MaterialFactory, MaterialType};
-    use crate::surfaces::surface::HitInfo;
+    use crate::materials::{Material, MaterialFactory, MaterialType};
+    use crate::surfaces::HitInfo;
 
     #[test]
     fn test_lambertian() {

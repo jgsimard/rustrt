@@ -2,8 +2,8 @@ use nalgebra_glm::Vec3;
 use serde_json::{from_value, Value};
 
 use crate::core::utils::read;
-use crate::surfaces::surface::HitInfo;
-use crate::textures::texture::Texture;
+use crate::surfaces::HitInfo;
+use crate::textures::Texture;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ConstantTexture {
@@ -39,9 +39,9 @@ mod tests {
     use serde_json::json;
 
     use crate::textures::constant::ConstantTexture;
-    use crate::textures::texture::create_texture;
+    use crate::textures::create_texture;
 
-    use crate::textures::texture::TextureType;
+    use crate::textures::TextureType;
 
     #[test]
     fn create_texture_number() {

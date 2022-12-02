@@ -9,9 +9,9 @@ use crate::core::ray::Ray;
 use crate::core::sampling::{sample_triangle, sample_triangle_pdf};
 use crate::core::transform::{read_transform, Transform};
 use crate::core::utils::{read, INTERSECTION_TEST};
-use crate::materials::material::{Material, MaterialType};
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface};
-use crate::surfaces::surface::{SurfaceFactory, SurfaceType};
+use crate::materials::{Material, MaterialType};
+use crate::surfaces::{EmitterRecord, HitInfo, Surface};
+use crate::surfaces::{SurfaceFactory, SurfaceType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Mesh {
@@ -422,7 +422,7 @@ mod tests {
     use serde_json::json;
 
     use crate::core::ray::Ray;
-    use crate::materials::material::MaterialFactory;
+    use crate::materials::MaterialFactory;
     use crate::surfaces::triangle::single_triangle_intersect;
 
     #[test]

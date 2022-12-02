@@ -2,8 +2,8 @@ use crate::core::onb::Onb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{sample_hemisphere, sample_hemisphere_pdf};
 use crate::core::utils::read_v_or_f;
-use crate::materials::material::Material;
-use crate::surfaces::surface::{HitInfo, ScatterRecord};
+use crate::materials::Material;
+use crate::surfaces::{HitInfo, ScatterRecord};
 
 use nalgebra_glm::{dot, Vec2, Vec3};
 use serde_json::Value;

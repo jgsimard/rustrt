@@ -5,9 +5,9 @@ use crate::core::onb::Onb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{sample_hemisphere_cosine_power, sample_hemisphere_cosine_power_pdf};
 use crate::core::utils::{read_or, reflect};
-use crate::materials::material::Material;
-use crate::surfaces::surface::{HitInfo, ScatterRecord};
-use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::materials::Material;
+use crate::surfaces::{HitInfo, ScatterRecord};
+use crate::textures::{create_texture, Texture, TextureType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BlinnPhong {

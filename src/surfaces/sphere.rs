@@ -9,8 +9,8 @@ use crate::core::ray::Ray;
 use crate::core::sampling::{sample_sphere_cap, sample_sphere_cap_pdf};
 use crate::core::transform::{read_transform, Transform};
 use crate::core::utils::{direction_to_spherical_uv, read_or, INTERSECTION_TEST};
-use crate::materials::material::{Material, MaterialType};
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
+use crate::materials::{Material, MaterialType};
+use crate::surfaces::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Sphere {
@@ -142,14 +142,12 @@ impl Surface for Sphere {
 #[cfg(test)]
 mod tests {
     use nalgebra_glm::Vec3;
-    use std::sync::Arc;
 
     use crate::core::ray::Ray;
     use crate::core::transform::Transform;
-    use crate::materials::lambertian::Lambertian;
-    use crate::materials::material::MaterialType;
-    use crate::surfaces::sphere::Sphere;
-    use crate::surfaces::surface::Surface;
+    use crate::materials::MaterialFactory;
+    use crate::surfaces::Sphere;
+    use crate::surfaces::Surface;
 
     use serde_json::json;
 
@@ -159,7 +157,13 @@ mod tests {
     fn ray_sphere_intersection() {
         // Let's check if your implementation was correct:
 
-        let material = Arc::new(MaterialType::from(Lambertian::new(&json!({"albedo": 1.0}))));
+        let lambert_json = json!({
+            "type": "lambertian",
+            "albedo": 1.0
+        });
+        let mf = MaterialFactory::new();
+        let material = mf.create_material(lambert_json);
+
         let test_sphere = Sphere {
             radius: 1.0,
             transform: Default::default(),

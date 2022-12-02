@@ -3,9 +3,9 @@ use rand::Rng;
 
 use crate::core::ray::Ray;
 use crate::core::scene::Scene;
-use crate::integrators::integrator::Integrator;
-use crate::samplers::sampler::SamplerType;
-use crate::surfaces::surface::Surface;
+use crate::integrators::Integrator;
+use crate::samplers::SamplerType;
+use crate::surfaces::Surface;
 
 #[derive(Debug, Clone)]
 pub struct NormalsIntegrator;

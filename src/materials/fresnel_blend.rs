@@ -5,9 +5,9 @@ use std::sync::Arc;
 
 use crate::core::ray::Ray;
 use crate::core::utils::{luminance, reflectance};
-use crate::materials::material::{Material, MaterialFactory, MaterialType};
-use crate::surfaces::surface::{HitInfo, ScatterRecord};
-use crate::textures::texture::{create_texture, Texture, TextureType};
+use crate::materials::{Material, MaterialFactory, MaterialType};
+use crate::surfaces::{HitInfo, ScatterRecord};
+use crate::textures::{create_texture, Texture, TextureType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FresnelBlend {

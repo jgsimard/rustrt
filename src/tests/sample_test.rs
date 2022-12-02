@@ -1,6 +1,6 @@
 use nalgebra_glm::{dot, normalize, Vec2, Vec3};
 use rand::Rng;
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::f32::consts::FRAC_1_PI;
 use std::f32::consts::PI;
 use std::fs;
@@ -12,9 +12,8 @@ use crate::core::utils::{
     direction_to_spherical_coordinates, inferno, read, read_or, spherical_coordinates_to_direction,
     Factory, FRAC_1_TWOPI,
 };
-use crate::materials::material::{Material, MaterialFactory, MaterialType};
-use crate::surfaces::surface::{HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
-use crate::surfaces::surface_group::LinearSurfaceGroup;
+use crate::materials::{Material, MaterialFactory, MaterialType};
+use crate::surfaces::{create_surface_group, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 
 pub trait SampleTest {
     fn sample(&self, params: &mut SampleTestParameters, rv: &Vec2, rv1: f32) -> Option<Vec3>;
@@ -129,9 +128,7 @@ impl SurfaceTest {
                 surface_json["type"]
             );
         }
-        let surface_group = SurfaceGroupType::from(LinearSurfaceGroup {
-            surfaces: surfaces_vec,
-        });
+        let surface_group = create_surface_group(&Map::new(), &mut surfaces_vec);
 
         let test = SurfaceTest { surface_group };
 
@@ -293,7 +290,10 @@ impl SampleTestParameters {
         values.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         let max_value = values[((pdf_size as f32 - 1.0) * 0.9995) as usize];
-        if values.iter().any(|value| value.is_nan() || value.is_infinite()) {
+        if values
+            .iter()
+            .any(|value| value.is_nan() || value.is_infinite())
+        {
             nan_or_inf = true;
         }
 

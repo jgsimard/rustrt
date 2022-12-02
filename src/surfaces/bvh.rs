@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::core::aabb::Aabb;
 use crate::core::ray::Ray;
 use crate::core::utils::get_progress_bar;
-use crate::surfaces::surface::{EmitterRecord, HitInfo, Surface, SurfaceType};
+use crate::surfaces::{EmitterRecord, HitInfo, Surface, SurfaceType};
 
 #[derive(Serialize, Deserialize)]
 pub enum SplitMethod {
