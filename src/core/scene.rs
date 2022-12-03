@@ -80,22 +80,21 @@ impl Scene {
         }
 
         // surfaces
-        let mut surface_facory = SurfaceFactory { material_factory };
-
-        let mut surfaces_vec = if let Some(surfaces) = map_json.get("surfaces") {
-            surfaces
-                .as_array()
-                .expect("Surfaces should be in an array")
-                .iter()
-                .flat_map(|sur| {
-                    surface_facory.make(sur).unwrap_or_else(|| {
-                        panic!("surface of type : {} not yet supported", sur["type"])
-                    })
-                })
-                .collect()
-        } else {
+        let Some(surfaces) = map_json.get("surfaces") else {
             panic!("No surfaces to render :(");
         };
+        
+        let mut surface_facory = SurfaceFactory { material_factory };
+        let mut surfaces_vec = surfaces
+            .as_array()
+            .expect("Surfaces should be in an array")
+            .iter()
+            .flat_map(|sur| {
+                surface_facory.make(sur).unwrap_or_else(|| {
+                    panic!("surface of type : {} not yet supported", sur["type"])
+                })
+            })
+            .collect();
 
         let surfaces = create_surface_group(map_json, &mut surfaces_vec);
 

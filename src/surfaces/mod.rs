@@ -126,19 +126,19 @@ impl Factory<SurfaceType> for SurfaceFactory {
             "triangle" => vec![SurfaceType::from(Triangle::new(v, self))],
             "mesh" => Mesh::read(v, self),
             "group" => {
-                let children = m.get("children").unwrap().as_array().unwrap();
-                let mut surfaces_vec = Vec::new();
-                for child_surface_json in children {
-                    if let Some(mut surface) = self.make(child_surface_json) {
-                        surfaces_vec.append(&mut surface);
-                    } else {
-                        panic!(
-                            "surface of type : {} not yet supported",
-                            child_surface_json["type"]
-                        );
-                    }
-                }
-                surfaces_vec
+                let Some(children) = m.get("children") else {
+                    panic!("No children to render :(");
+                };
+                children
+                    .as_array()
+                    .expect("children should be in an array")
+                    .iter()
+                    .flat_map(|sur| {
+                        self.make(sur).unwrap_or_else(|| {
+                            panic!("surface of type : {} not yet supported", sur["type"])
+                        })
+                    })
+                    .collect()
             }
             _ => unimplemented!("surface type {} not supported", surface_type),
         };
