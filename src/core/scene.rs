@@ -4,7 +4,6 @@ use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 use serde_json::{Map, Value};
 
-use crate::core::aabb::Aabb;
 use crate::core::camera::PinholeCamera;
 use crate::core::image2d::Image2d;
 use crate::core::ray::Ray;
@@ -12,9 +11,7 @@ use crate::core::utils::{get_progress_bar, read_v_or_f, Factory};
 use crate::integrators::{create_integrator, Integrator, IntegratorType};
 use crate::materials::MaterialFactory;
 use crate::samplers::{create_sampler, Sampler, SamplerType};
-use crate::surfaces::{
-    create_surface_group, EmitterRecord, HitInfo, Surface, SurfaceFactory, SurfaceGroupType,
-};
+use crate::surfaces::{create_surface_group, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 
 pub struct Scene {
     pub surfaces: SurfaceGroupType,
@@ -83,7 +80,7 @@ impl Scene {
         let Some(surfaces) = map_json.get("surfaces") else {
             panic!("No surfaces to render :(");
         };
-        
+
         let mut surface_facory = SurfaceFactory { material_factory };
         let mut surfaces_vec = surfaces
             .as_array()
@@ -115,6 +112,10 @@ impl Scene {
             camera,
             background,
         }
+    }
+
+    pub fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
+        self.surfaces.intersect(ray)
     }
 
     /// Raytrace a single pixel given its position
@@ -167,27 +168,5 @@ impl Scene {
 
         println!("Rendering time : {:?}", progress_bar.elapsed());
         image
-    }
-}
-
-impl Surface for Scene {
-    fn intersect(&self, ray: &Ray) -> Option<HitInfo> {
-        self.surfaces.intersect(ray)
-    }
-
-    fn bounds(&self) -> Aabb {
-        unimplemented!()
-    }
-
-    fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
-        unimplemented!()
-    }
-
-    fn sample(&self, _o: &Vec3, _rv: Vec2) -> Option<EmitterRecord> {
-        unimplemented!()
-    }
-
-    fn is_emissive(&self) -> bool {
-        unimplemented!()
     }
 }

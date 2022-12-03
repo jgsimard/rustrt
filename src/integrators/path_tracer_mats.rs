@@ -6,7 +6,6 @@ use crate::core::scene::Scene;
 use crate::integrators::Integrator;
 use crate::materials::Material;
 use crate::samplers::{Sampler, SamplerType};
-use crate::surfaces::Surface;
 
 #[derive(Debug, Clone)]
 pub struct PathTracerMatsIntegrator {

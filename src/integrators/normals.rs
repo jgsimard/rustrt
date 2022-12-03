@@ -5,7 +5,6 @@ use crate::core::ray::Ray;
 use crate::core::scene::Scene;
 use crate::integrators::Integrator;
 use crate::samplers::SamplerType;
-use crate::surfaces::Surface;
 
 #[derive(Debug, Clone)]
 pub struct NormalsIntegrator;
