@@ -24,6 +24,8 @@ lazy_static = "1.4"
 rayon = "1.5"
 rand_chacha = "0.3"
 
+[profile.dev]
+opt-level = 3 # otherwise it takes forever
 
 [profile.test]
 opt-level = 3 # otherwise sampling tests take forever

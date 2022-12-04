@@ -10,7 +10,7 @@ pub fn create_example_scene(scene_number: i32) -> Value {
         1 => create_sphere_plane_scene(),
         2 => create_steinbach_scene(),
         3 => create_shirley_scene(),
-        _ => unimplemented!(),
+        _ => panic!("Valid exemples scenes are 0-1-2-3, scene number {scene_number} is not implemented"),
     }
 }
 

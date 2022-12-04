@@ -124,6 +124,7 @@ impl Scene {
         let sample_count = sampler.sample_count();
         let mut rng = ChaCha8Rng::seed_from_u64(sampler.seed());
         rng.set_stream((y * (self.camera.resolution.x as usize) + x) as u64);
+        // Generate multiple rays for each pixel in the image
         (0..sample_count)
             .into_iter()
             .map(|_| {
@@ -145,7 +146,7 @@ impl Scene {
         println!("Rendering ...");
         let progress_bar = get_progress_bar(image.size());
 
-        // Generate multiple rays for each pixel in the image
+        // Compute each pixel in parallel
         let img: Vec<Vec<Vec3>> = (0..image.size_y)
             .into_par_iter() // rows in parallel
             .map(|y| {
