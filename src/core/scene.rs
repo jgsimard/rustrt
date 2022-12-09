@@ -71,7 +71,7 @@ impl Scene {
                 .iter()
                 .for_each(|mat| {
                     material_factory.make(mat).unwrap_or_else(|| {
-                        panic!("surface of type : {} not yet supported", mat["type"])
+                        panic!("material of type : {} not yet supported", mat["type"])
                     });
                 });
         }
