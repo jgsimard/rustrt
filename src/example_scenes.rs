@@ -10,7 +10,9 @@ pub fn create_example_scene(scene_number: i32) -> Value {
         1 => create_sphere_plane_scene(),
         2 => create_steinbach_scene(),
         3 => create_shirley_scene(),
-        _ => panic!("Valid exemples scenes are 0-1-2-3, scene number {scene_number} is not implemented"),
+        _ => panic!(
+            "Valid exemples scenes are 0-1-2-3, scene number {scene_number} is not implemented"
+        ),
     }
 }
 
@@ -192,22 +194,20 @@ fn create_shirley_scene() -> Value {
 
                 if choose_mat < 0.8 {
                     // diffuse
-                    let r1 = rng.gen::<f32>();
-                    let r2 = rng.gen::<f32>();
-                    let r3 = rng.gen::<f32>();
-                    let r4 = rng.gen::<f32>();
-                    let r5 = rng.gen::<f32>();
-                    let r6 = rng.gen::<f32>();
-                    let albedo = Vec3::new(r1 * r2, r3 * r4, r5 * r6);
+                    let albedo = Vec3::new(
+                        rng.gen::<f32>() * rng.gen::<f32>(),
+                        rng.gen::<f32>() * rng.gen::<f32>(),
+                        rng.gen::<f32>() * rng.gen::<f32>(),
+                    );
                     sphere["material"] = json!({"type": "lambertian", "albedo": albedo});
                 } else if choose_mat < 0.95 {
                     // metal
-                    let r1 = rng.gen::<f32>();
-                    let r2 = rng.gen::<f32>();
-                    let r3 = rng.gen::<f32>();
-                    let r4 = rng.gen::<f32>();
-                    let albedo = Vec3::new(0.5 * (1.0 + r1), 0.5 * (1.0 + r2), 0.5 * (1.0 + r3));
-                    let rough = 0.5 * r4;
+                    let albedo = Vec3::new(
+                        0.5 * (1.0 + rng.gen::<f32>()),
+                        0.5 * (1.0 + rng.gen::<f32>()),
+                        0.5 * (1.0 + rng.gen::<f32>()),
+                    );
+                    let rough = 0.5 * rng.gen::<f32>();
                     sphere["material"] =
                         json!({"type": "metal", "albedo": albedo, "roughness": rough});
                 } else {

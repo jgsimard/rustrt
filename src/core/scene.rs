@@ -56,7 +56,7 @@ impl Scene {
         let sampler = create_sampler(map_json);
 
         // integrator
-        let integrator = create_integrator(scene_json);
+        let integrator = create_integrator(map_json);
 
         // scene background
         // TODO replace by let background = create_texture(&scene_json, "background")
@@ -98,7 +98,7 @@ impl Scene {
         // not sure about this cloned ... FIXME!
         let mut emitters_vec = surfaces_vec
             .iter()
-            .filter(|x| x.is_emissive())
+            .filter(|surface| surface.is_emissive())
             .cloned()
             .collect();
 

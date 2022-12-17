@@ -3,6 +3,8 @@ use crate::core::ray::Ray;
 use crate::core::utils::{deg2rad, read_or};
 
 use nalgebra_glm::{cross, normalize, Mat3x4, Mat4, Vec3};
+use nalgebra::{convert, convert_unchecked, Isometry3};
+use nalgebra;
 use serde_json::{from_value, Value};
 use std::ops::Mul;
 
@@ -14,18 +16,28 @@ use std::ops::Mul;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Transform {
-    pub m: Mat4,
-    pub m_inv: Mat4,
+    pub m: Isometry3<f32>,
+    pub m_inv: Isometry3<f32>
+    // pub m: Mat4,
+    // pub m_inv: Mat4,
 }
 
 impl Transform {
     pub fn new(m: Mat4) -> Transform {
+        // Transform {
+        //     m,
+        //     // m_inv: m.try_inverse().expect("Matrix not invertible"),
+        // }
         Transform {
-            m,
-            m_inv: m.try_inverse().expect("Matrix not invertible"),
+            m: convert_unchecked::<Mat4, Isometry3<f32>>(m),
+            m_inv: convert_unchecked::<Mat4, Isometry3<f32>>(m).inverse(),
         }
     }
-
+    // fn m_inv(&self) -> Isometry3<f32>{
+    //     self.m.inverse()
+    //     // convert_unchecked::<Mat4, nalgebra::Isometry3<f32>>(self.m).inverse()
+    //     // self.m. .try_inverse().expect("Matrix not invertible")
+    // }
     pub fn read(v: &Value) -> Transform {
         if let Some(transform) = v.get("transform") {
             parse(transform)
@@ -36,27 +48,44 @@ impl Transform {
 
     /// Return the inverse transformation
     pub fn inverse(&self) -> Transform {
+        // Transform {
+        //     m: self.m_inv,
+        //     m_inv: self.m,
+        // }
         Transform {
-            m: self.m_inv,
-            m_inv: self.m,
+            m: self.m.inverse(),
+            m_inv: self.m
         }
     }
 
     /// Apply the homogeneous transformation to a 3D direction vector
     pub fn vector(&self, v: &Vec3) -> Vec3 {
-        (self.m * v.insert_row(3, 0.0)).xyz()
+        // let m = convert::<Isometry3<f32>, Mat4>(self.m);
+        // (m * v.insert_row(3, 0.0)).xyz()
+
+        self.m * v
+        // (self.m * v.insert_row(3, 0.0)).xyz()
     }
 
     /// Apply the homogeneous transformation to a 3D normal
     pub fn normal(&self, n: &Vec3) -> Vec3 {
-        (self.m_inv.transpose() * n.insert_row(3, 0.0))
+        let m_inv = convert::<Isometry3<f32>, Mat4>(self.m_inv);
+        (m_inv.transpose() * n.insert_row(3, 0.0))
             .xyz()
             .normalize()
+        // (self.m_inv.transpose() * n.insert_row(3, 0.0))
+        //     .xyz()
+        //     .normalize()
     }
 
     /// Transform a point by an arbitrary matrix in homogeneous coordinates
     pub fn point(&self, p: &Vec3) -> Vec3 {
-        (self.m * p.insert_row(3, 1.0)).xyz()
+        // convert_unchecked::<Vec3, nalgebra::Point3<f32>>(*p);
+        // let m_inv = convert::<Vec3, nalgebra::Point3<f32>>(*p);
+        let pp = nalgebra::Point3::new(p.x, p.y, p.z);
+        let res = self.m * pp;
+        Vec3::new(res.x, res.y, res.z)
+        // (self.m * p.insert_row(3, 1.0)).xyz()
     }
 
     /// Apply the homogeneous transformation to a Ray
@@ -110,8 +139,10 @@ impl Mul<Transform> for Transform {
 impl Default for Transform {
     fn default() -> Transform {
         Transform {
-            m: Mat4::identity(),
-            m_inv: Mat4::identity(),
+            m: Isometry3::default(),
+            m_inv: Isometry3::default(),
+            //  Mat4::identity(),
+            // m_inv: Mat4::identity(),
         }
     }
 }

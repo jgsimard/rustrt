@@ -1,9 +1,8 @@
+use image::Rgb;
 use image::{io::Reader as ImageReader, GenericImageView, Pixel};
 use nalgebra_glm::{clamp, comp_max, comp_min, Vec3};
 use std::ops::{Index, IndexMut};
 use std::path::Path;
-
-use image::Rgb;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Array2d<T> {

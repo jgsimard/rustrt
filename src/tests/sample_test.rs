@@ -99,9 +99,6 @@ impl SampleTest for MaterialTest {
 
 pub struct SurfaceTest {
     surface_group: SurfaceGroupType,
-    // normal: Vec3,
-    // incoming: Vec3,
-    // hit: HitInfo
 }
 
 impl SurfaceTest {
@@ -192,6 +189,8 @@ impl SampleTestParameters {
         a.component_mul(&b)
     }
 
+    #[allow(clippy::cast_precision_loss)] // TODO
+    #[allow(clippy::cast_sign_loss)] // TODO
     pub fn run(&mut self, sample_test: &dyn SampleTest, target: f32, epsilon: f32) {
         // Merge adjacent pixels to decrease noise in the histogram
         const HISTO_SUBSAMPLE: usize = 4;

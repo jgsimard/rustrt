@@ -7,7 +7,7 @@ mod path_tracer_nee;
 use enum_dispatch::enum_dispatch;
 use nalgebra_glm::Vec3;
 use rand::Rng;
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 use crate::core::ray::Ray;
 use crate::core::scene::Scene;
@@ -36,13 +36,12 @@ pub enum IntegratorType {
     PathTracerMIS(PathTracerMISIntegrator),
 }
 
-pub fn create_integrator(v: &Value) -> IntegratorType {
-    let m = v.as_object().unwrap();
-    if !m.contains_key("integrator") {
+pub fn create_integrator(m: &Map<String, Value>) -> IntegratorType {
+    let Some(integrator_json) = m.get("integrator") else {
         println!("No integrator mentioned : using PathTracerMatsIntegrator");
         return IntegratorType::from(PathTracerMatsIntegrator { max_bounces: 64 });
-    }
-    let integrator_json = v.get("integrator").unwrap();
+    };
+
     let sampler_type = integrator_json
         .get("type")
         .expect("no integrator type")

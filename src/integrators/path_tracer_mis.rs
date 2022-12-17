@@ -11,7 +11,7 @@ use crate::surfaces::Surface;
 /// Multiple Importance Sampling Integrator
 #[derive(Debug, Clone)]
 pub struct PathTracerMISIntegrator {
-    pub max_bounces: i32,
+    pub max_bounces: i32
 }
 
 #[allow(unused)]
