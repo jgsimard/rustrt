@@ -4,6 +4,7 @@ use serde_json::Value;
 use crate::core::ray::Ray;
 use crate::core::transform::Transform;
 use crate::core::utils::{deg2rad, read_or};
+use crate::core::sampling::sample_disk;
 
 /// A virtual pinhole camera.
 ///
@@ -37,15 +38,15 @@ use crate::core::utils::{deg2rad, read_or};
 #[derive(Debug)]
 pub struct PinholeCamera {
     /// Local coordinate system
-    pub transform: Transform,
+    transform: Transform,
     /// Physical size of the image plane
-    pub size: Vec2,
+    size: Vec2,
     /// Distance to image plane along local z axis
-    pub focal_distance: f32,
+    focal_distance: f32,
     /// Image resolution
     pub resolution: Vec2,
     /// The size of the aperture for depth of field
-    pub aperture_radius: f32,
+    aperture_radius: f32,
 }
 
 impl PinholeCamera {
@@ -71,14 +72,15 @@ impl PinholeCamera {
     }
 
     /// Generate a ray inside a given pixel
-    pub fn generate_ray(&self, pixel: Vec2) -> Ray {
-        let origin = Vec3::zeros();
+    pub fn generate_ray(&self, pixel: Vec2, rv: Vec2) -> Ray {
+        let offset = self.aperture_radius * sample_disk(rv);
+        let origin = Vec3::new(offset.x, offset.y, 0.0);
         let xy = self
             .size
             .component_mul(&pixel)
             .component_div(&self.resolution)
             - self.size / 2.0;
         let direction = Vec3::new(xy.x, xy.y, -self.focal_distance);
-        self.transform.ray(&Ray::new(origin, direction))
+        self.transform.ray(&Ray::new(origin, direction - origin))
     }
 }

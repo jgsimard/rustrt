@@ -14,10 +14,10 @@ use crate::samplers::{create_sampler, Sampler, SamplerType};
 use crate::surfaces::{create_surface_group, HitInfo, Surface, SurfaceFactory, SurfaceGroupType};
 
 pub struct Scene {
-    pub surfaces: SurfaceGroupType,
+    surfaces: SurfaceGroupType,
     pub emitters: SurfaceGroupType,
-    pub integrator: IntegratorType,
-    pub sampler: SamplerType,
+    integrator: IntegratorType,
+    sampler: SamplerType,
     camera: PinholeCamera,
     pub background: Vec3,
 }
@@ -129,7 +129,7 @@ impl Scene {
             .into_iter()
             .map(|_| {
                 let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
-                let ray = self.camera.generate_ray(pixel);
+                let ray = self.camera.generate_ray(pixel, sampler.next2f(&mut rng));
                 self.integrator.li(self, &mut sampler, &mut rng, &ray)
             })
             .sum::<Vec3>()
