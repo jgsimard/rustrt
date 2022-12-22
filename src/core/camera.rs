@@ -79,8 +79,9 @@ impl PinholeCamera {
             .size
             .component_mul(&pixel)
             .component_div(&self.resolution)
-            - self.size / 2.0;
+            - self.size / 2.0
+            - offset;
         let direction = Vec3::new(xy.x, xy.y, -self.focal_distance);
-        self.transform.ray(&Ray::new(origin, direction - origin))
+        self.transform.ray(&Ray::new(origin, direction))
     }
 }
