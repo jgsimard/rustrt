@@ -6,7 +6,7 @@ use std::path::Path;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Array2d<T> {
-    data: Vec<T>,
+    pub data: Vec<T>,
     pub size_x: usize,
     pub size_y: usize,
 }
