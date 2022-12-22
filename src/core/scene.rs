@@ -126,7 +126,6 @@ impl Scene {
         rng.set_stream((y * (self.camera.resolution.x as usize) + x) as u64);
         // Generate multiple rays for each pixel in the image
         (0..sample_count)
-            .into_iter()
             .map(|_| {
                 let pixel = Vec2::new(x as f32, y as f32) + sampler.next2f(&mut rng);
                 let ray = self.camera.generate_ray(pixel, sampler.next2f(&mut rng));
@@ -161,9 +160,9 @@ impl Scene {
             })
             .collect();
 
-        for (y, row) in img.into_iter().enumerate() {
-            for (x, p) in row.into_iter().enumerate() {
-                image[(x, y)] = p;
+        for (y, row) in img.iter().enumerate() {
+            for (x, pixel) in row.iter().enumerate() {
+                image[(x, y)] = *pixel;
             }
         }
 

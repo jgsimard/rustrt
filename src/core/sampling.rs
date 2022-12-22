@@ -4,7 +4,6 @@ use rand::Rng;
 use crate::core::utils::{lerp, sincos, FRAC_1_TWOPI, INV_FOURPI};
 
 /// Uniformly sample a vector on a 2D disk with radius 1, centered around the origin
-#[allow(unused)]
 pub fn sample_disk(rv: Vec2) -> Vec2 {
     let r = f32::sqrt(rv.y);
     let (sin_phi, cos_phi) = sincos(std::f32::consts::TAU * rv.x);

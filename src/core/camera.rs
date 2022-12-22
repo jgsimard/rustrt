@@ -13,10 +13,6 @@ use crate::core::sampling::sample_disk;
 /// system. It has an image plane positioned a z = -dist with size
 /// (width, height).
 ///
-/// We currently only support pinhole perspective cameras. This class could
-/// be made into a virtual base class to support other types of cameras
-/// (e.g. an orthographic camera, or omni-directional camera).
-///
 /// The camera setup looks something like this, where the
 /// up vector points out of the screen:
 ///
