@@ -14,9 +14,9 @@ use crate::surfaces::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Sphere {
-    pub radius: f32,
-    pub transform: Transform,
-    pub material: Arc<MaterialType>,
+    transform: Transform,
+    radius: f32,
+    material: Arc<MaterialType>,
 }
 
 impl Sphere {

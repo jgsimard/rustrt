@@ -16,35 +16,35 @@ use crate::surfaces::{SurfaceFactory, SurfaceType};
 #[derive(Debug, PartialEq, Clone)]
 pub struct Mesh {
     /// Vertex positions
-    pub vertex_positions: Vec<Vec3>,
+    vertex_positions: Vec<Vec3>,
 
     /// Vertex normals
-    pub vertex_normals: Vec<Vec3>,
+    vertex_normals: Vec<Vec3>,
 
     /// Vertex texture coordinates
-    pub uvs: Vec<Vec2>,
+    uvs: Vec<Vec2>,
 
     /// Vertex indices per face (triangle)
-    pub vertex_indices: Vec<Vector3<usize>>,
+    vertex_indices: Vec<Vector3<usize>>,
 
     /// Normal indices per face (triangle)
-    pub normal_indices: Vec<Vector3<usize>>,
+    normal_indices: Vec<Vector3<usize>>,
 
     /// Texture indices per face (triangle)
-    pub texture_indices: Vec<Vector3<usize>>,
+    texture_indices: Vec<Vector3<usize>>,
 
     /// One material index per face (triangle)
-    pub material_indices: Vec<usize>,
+    material_indices: Vec<usize>,
 
     /// All materials in the mesh
     // materials: Vec<Rc<dyn Material>>,
-    pub materials: Arc<MaterialType>, // TODO : change this if multiple materials !
+    materials: Arc<MaterialType>, // TODO : change this if multiple materials !
 
     /// Transformation that the data has already been transformed by
-    pub transform: Transform,
+    transform: Transform,
 
     /// The bounds, after transformation
-    pub bbox: Aabb,
+    bbox: Aabb,
 }
 
 impl Mesh {
@@ -136,8 +136,8 @@ impl Mesh {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Triangle {
-    pub mesh: Arc<Mesh>,
-    pub face_idx: usize,
+    mesh: Arc<Mesh>,
+    face_idx: usize,
 }
 
 impl Triangle {
@@ -193,7 +193,7 @@ impl Triangle {
 
 impl Triangle {
     /// convenience function to access the i-th vertex (i must be 0, 1, or 2)
-    pub fn vertex(&self, i: usize) -> Vec3 {
+    fn vertex(&self, i: usize) -> Vec3 {
         self.mesh.vertex_positions[self.mesh.vertex_indices[self.face_idx][i]]
     }
 }

@@ -39,7 +39,7 @@ pub enum IntegratorType {
 pub fn create_integrator(m: &Map<String, Value>) -> IntegratorType {
     let Some(integrator_json) = m.get("integrator") else {
         println!("No integrator mentioned : using PathTracerMatsIntegrator");
-        return IntegratorType::from(PathTracerMatsIntegrator { max_bounces: 64 });
+        return IntegratorType::from(PathTracerMatsIntegrator::new(64));
     };
 
     let sampler_type = integrator_json
@@ -53,15 +53,15 @@ pub fn create_integrator(m: &Map<String, Value>) -> IntegratorType {
         "ao" => IntegratorType::from(AmbientOcclusionIntegrator {}),
         "path_tracer_mats" => {
             let max_bounces = read_or(integrator_json, "max_bounces", 64);
-            IntegratorType::from(PathTracerMatsIntegrator { max_bounces })
+            IntegratorType::from(PathTracerMatsIntegrator::new(max_bounces))
         }
         "path_tracer_nee" => {
             let max_bounces = read_or(integrator_json, "max_bounces", 64);
-            IntegratorType::from(PathTracerNEEIntegrator { max_bounces })
+            IntegratorType::from(PathTracerNEEIntegrator::new(max_bounces))
         }
         "path_tracer_mis" => {
             let max_bounces = read_or(integrator_json, "max_bounces", 64);
-            IntegratorType::from(PathTracerMISIntegrator { max_bounces })
+            IntegratorType::from(PathTracerMISIntegrator::new(max_bounces))
         }
         _ => {
             unimplemented!("Sampler type {}", sampler_type);

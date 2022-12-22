@@ -11,7 +11,13 @@ use crate::surfaces::Surface;
 /// Next Event Estimation Integrator
 #[derive(Debug, Clone)]
 pub struct PathTracerNEEIntegrator {
-    pub max_bounces: i32,
+    max_bounces: i32,
+}
+
+impl PathTracerNEEIntegrator {
+    pub fn new(max_bounces: i32) -> PathTracerNEEIntegrator {
+        PathTracerNEEIntegrator { max_bounces }
+    }
 }
 
 impl Integrator for PathTracerNEEIntegrator {

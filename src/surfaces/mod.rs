@@ -105,10 +105,10 @@ use crate::surfaces::triangle::{Mesh, Triangle};
 #[enum_dispatch(Surface)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum SurfaceType {
-    Sphere,
-    Quad,
-    Triangle,
-    Bvh,
+    Sphere(Sphere),
+    Quad(Quad),
+    Triangle(Triangle),
+    Bvh(Bvh),
 }
 
 pub struct SurfaceFactory {

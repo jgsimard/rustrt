@@ -158,7 +158,7 @@ fn create_shirley_scene() -> Value {
             "aperture": 0.1,
             "resolution": [600, 400]
         },
-        "sampler": {"samples": 10},
+        "sampler": {"samples": 100},
         "background": [1, 1, 1],
         "accelerator" : { "type": "bbh"}
     });

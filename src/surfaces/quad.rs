@@ -14,7 +14,7 @@ use crate::surfaces::{EmitterRecord, HitInfo, Surface, SurfaceFactory};
 pub struct Quad {
     size: Vec2,
     transform: Transform,
-    pub material: Arc<MaterialType>,
+    material: Arc<MaterialType>,
 }
 
 impl Surface for Quad {

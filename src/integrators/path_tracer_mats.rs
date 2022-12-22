@@ -9,7 +9,13 @@ use crate::samplers::{Sampler, SamplerType};
 
 #[derive(Debug, Clone)]
 pub struct PathTracerMatsIntegrator {
-    pub max_bounces: i32,
+    max_bounces: i32,
+}
+
+impl PathTracerMatsIntegrator {
+    pub fn new(max_bounces: i32) -> PathTracerMatsIntegrator {
+        PathTracerMatsIntegrator { max_bounces }
+    }
 }
 
 // iterative version

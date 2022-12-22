@@ -8,10 +8,21 @@ use crate::samplers::Sampler;
 /// returns independent uniformly distributed random numbers on \f$[0, 1)^2\f$
 #[derive(Debug, Clone)]
 pub struct IndependentSampler {
-    pub base_seed: u64,
-    pub sample_count: i32,
-    pub current_sample: i32,
-    pub current_dimension: i32,
+    base_seed: u64,
+    sample_count: i32,
+    current_sample: i32,
+    current_dimension: i32,
+}
+
+impl IndependentSampler {
+    pub fn new(sample_count: i32) -> IndependentSampler {
+        IndependentSampler {
+            base_seed: 123,
+            sample_count,
+            current_sample: 0,
+            current_dimension: 0,
+        }
+    }
 }
 
 impl Sampler for IndependentSampler {

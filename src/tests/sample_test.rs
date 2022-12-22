@@ -22,7 +22,6 @@ pub trait SampleTest {
 
 pub struct MaterialTest {
     material: Arc<MaterialType>,
-    // normal: Vec3,
     incoming: Vec3,
     hit: HitInfo,
 }
