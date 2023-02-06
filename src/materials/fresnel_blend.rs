@@ -29,7 +29,7 @@ impl FresnelBlend {
         } else if v.is_object() {
             mf.create_material(&refracted_v)
         } else {
-            panic!("NOOOOOO refr : {}", refracted_v);
+            panic!("NOOOOOO refr : {refracted_v}");
         };
 
         let reflected_v = v.get("refl").expect("no refl").clone();
@@ -42,7 +42,7 @@ impl FresnelBlend {
         } else if v.is_object() {
             mf.create_material(&reflected_v)
         } else {
-            panic!("NOOOOOO refl : {}", reflected_v);
+            panic!("NOOOOOO refl : {reflected_v}");
         };
         FresnelBlend {
             ior,

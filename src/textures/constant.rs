@@ -26,7 +26,7 @@ impl ConstantTexture {
         } else if v.is_object() {
             read::<Vec3>(v, "color")
         } else {
-            panic!("unable to read texture {:?}", v);
+            panic!("unable to read texture {v:?}");
         };
         ConstantTexture { color }
     }

@@ -186,7 +186,7 @@ pub fn create_surface_group(
                 let split_method = read_or(accel_value, "split_method", SplitMethod::Middle);
                 SurfaceGroupType::from(Bvh::new(surfaces, &split_method))
             }
-            _ => panic!("Unusported accelerator {}", type_acceletator),
+            _ => panic!("Unusported accelerator {type_acceletator}"),
         }
     } else {
         // default to a naive linear accelerator

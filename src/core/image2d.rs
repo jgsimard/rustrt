@@ -11,7 +11,6 @@ pub struct Array2d<T> {
     pub size_y: usize,
 }
 
-
 impl<T: std::clone::Clone + std::default::Default> Array2d<T> {
     fn index_1d(&self, x: usize, y: usize) -> usize {
         y * self.size_x + x
@@ -78,7 +77,7 @@ impl Image2d {
                 img_buffer.put_pixel(x as u32, y as u32, Rgb([v.x as u8, v.y as u8, v.z as u8]));
             }
         }
-        println!("raw image : min {}, max {}", min, max);
+        println!("raw image : min {min}, max {max}");
         let img = image::DynamicImage::ImageRgb8(img_buffer);
         img.save(path).unwrap();
     }

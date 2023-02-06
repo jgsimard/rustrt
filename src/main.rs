@@ -70,8 +70,8 @@ fn main() {
     let scene = Scene::new(&scene_json);
     let image = scene.raytrace();
 
-    println!("Number of intersection tests: {:?}", INTERSECTION_TEST);
-    println!("Number of rays traced: {:?}", RAYS);
+    println!("Number of intersection tests: {INTERSECTION_TEST:?}");
+    println!("Number of rays traced: {RAYS:?}");
     println!(
         "Average number of intersection tests per ray: {}",
         (INTERSECTION_TEST.load(Ordering::SeqCst) as f32) / (RAYS.load(Ordering::SeqCst) as f32)

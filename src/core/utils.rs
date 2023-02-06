@@ -81,10 +81,10 @@ pub fn spherical_uv_to_direction(uv: Vec2) -> Vec3 {
 pub fn read<T: for<'de> serde::de::Deserialize<'de>>(v: &Value, name: &str) -> T {
     from_value::<T>(
         (*v.get(name)
-            .unwrap_or_else(|| panic!("could not read {}", name)))
+            .unwrap_or_else(|| panic!("could not read {name}")))
         .clone(),
     )
-    .unwrap_or_else(|_v| panic!("could not transform {}", name))
+    .unwrap_or_else(|_v| panic!("could not transform {name}"))
 }
 
 pub fn read_or<T: for<'de> serde::de::Deserialize<'de>>(v: &Value, name: &str, default: T) -> T {
@@ -108,12 +108,12 @@ pub trait Factory<T> {
 
 #[allow(unused)]
 pub fn rad2deg(rad: f32) -> f32 {
-    const RAD2DEG_FACTOR : f32 = 180.0 / std::f32::consts::PI;
+    const RAD2DEG_FACTOR: f32 = 180.0 / std::f32::consts::PI;
     rad * RAD2DEG_FACTOR
 }
 
 pub fn deg2rad(deg: f32) -> f32 {
-    const DEG2RAD_FACTOR : f32 = std::f32::consts::PI / 180.0;
+    const DEG2RAD_FACTOR: f32 = std::f32::consts::PI / 180.0;
     deg * DEG2RAD_FACTOR
 }
 

@@ -50,7 +50,7 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
             _ => unimplemented!("Texture type {}", texture_type),
         }
     } else {
-        panic!("unable to read texture {:?}", v);
+        panic!("unable to read texture {v:?}");
     };
     texture
 }
