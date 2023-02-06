@@ -12,7 +12,7 @@ pub struct Aabb {
 }
 
 impl Aabb {
-    pub fn new() -> Aabb {
+    pub const fn new() -> Aabb {
         Aabb {
             max: Vec3::new(f32::MIN, f32::MIN, f32::MIN),
             min: Vec3::new(f32::MAX, f32::MAX, f32::MAX),

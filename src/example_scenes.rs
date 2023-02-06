@@ -17,7 +17,7 @@ pub fn create_example_scene(scene_number: i32) -> Value {
 }
 
 fn create_sphere_scene() -> Value {
-    let data = r#"
+    json!(
     {
         "camera":
         {
@@ -33,13 +33,11 @@ fn create_sphere_scene() -> Value {
         ],
         "sampler": {"samples": 1},
         "background": [1, 1, 1]
-    }
-    "#;
-    serde_json::from_str(data).unwrap()
+    })
 }
 
 fn create_sphere_plane_scene() -> Value {
-    let data = r#"
+    json!(
     {
         "camera":
         {
@@ -63,9 +61,7 @@ fn create_sphere_plane_scene() -> Value {
         "sampler": {"samples": 1},
         "background": [1, 1, 1],
         "accelerator" : { "type": "bbh"}
-    }"#;
-
-    serde_json::from_str(data).unwrap()
+    })
 }
 
 fn create_steinbach_scene() -> Value {
@@ -158,7 +154,7 @@ fn create_shirley_scene() -> Value {
             "aperture": 0.1,
             "resolution": [600, 400]
         },
-        "sampler": {"samples": 100},
+        "sampler": {"samples": 10},
         "background": [1, 1, 1],
         "accelerator" : { "type": "bbh"}
     });

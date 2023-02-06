@@ -2,9 +2,9 @@ use nalgebra_glm::{Vec2, Vec3};
 use serde_json::Value;
 
 use crate::core::ray::Ray;
+use crate::core::sampling::sample_disk;
 use crate::core::transform::Transform;
 use crate::core::utils::{deg2rad, read_or};
-use crate::core::sampling::sample_disk;
 
 /// A virtual pinhole camera.
 ///

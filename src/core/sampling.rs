@@ -30,7 +30,7 @@ pub fn sample_sphere(rv: Vec2) -> Vec3 {
 
 /// Probability density of `sample_sphere`()
 #[allow(unused)]
-pub fn sample_sphere_pdf() -> f32 {
+pub const fn sample_sphere_pdf() -> f32 {
     INV_FOURPI
 }
 

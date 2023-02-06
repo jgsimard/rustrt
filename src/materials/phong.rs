@@ -1,3 +1,6 @@
+use nalgebra_glm::{dot, normalize, Vec2, Vec3};
+use serde_json::Value;
+
 use crate::core::onb::Onb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{sample_hemisphere_cosine_power, sample_hemisphere_cosine_power_pdf};
@@ -5,9 +8,6 @@ use crate::core::utils::{read_or, reflect};
 use crate::materials::Material;
 use crate::surfaces::{HitInfo, ScatterRecord};
 use crate::textures::{create_texture, Texture, TextureType};
-
-use nalgebra_glm::{dot, normalize, Vec2, Vec3};
-use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Phong {

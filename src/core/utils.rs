@@ -108,11 +108,13 @@ pub trait Factory<T> {
 
 #[allow(unused)]
 pub fn rad2deg(rad: f32) -> f32 {
-    180.0 / std::f32::consts::PI * rad
+    const RAD2DEG_FACTOR : f32 = 180.0 / std::f32::consts::PI;
+    rad * RAD2DEG_FACTOR
 }
 
-pub fn deg2rad(rad: f32) -> f32 {
-    std::f32::consts::PI / 180.0 * rad
+pub fn deg2rad(deg: f32) -> f32 {
+    const DEG2RAD_FACTOR : f32 = std::f32::consts::PI / 180.0;
+    deg * DEG2RAD_FACTOR
 }
 
 pub fn luminance(c: &Vec3) -> f32 {

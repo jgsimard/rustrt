@@ -1,8 +1,7 @@
-use rand::prelude::*;
-// extern crate lazy_static;
-use crate::core::sampling::random_in_unit_sphere;
-
 use nalgebra_glm::{dot, Vec3};
+use rand::prelude::*;
+
+use crate::core::sampling::random_in_unit_sphere;
 
 fn generate_perm(rng: &mut impl Rng) -> Vec<u8> {
     let mut p = Vec::with_capacity(256);

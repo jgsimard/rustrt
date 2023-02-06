@@ -62,18 +62,16 @@ use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
 use crate::materials::phong::Phong;
 
-// #[derive(Debug, PartialEq, Serialize, Deserialize)]
-
 #[enum_dispatch(Material)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum MaterialType {
-    Lambertian,
-    Dielectric,
-    Metal,
-    DiffuseLight,
-    FresnelBlend,
-    Phong,
-    BlinnPhong,
+    Lambertian(Lambertian),
+    Dielectric(Dielectric),
+    Metal(Metal),
+    DiffuseLight(DiffuseLight),
+    FresnelBlend(FresnelBlend),
+    Phong(Phong),
+    BlinnPhong(BlinnPhong),
 }
 
 pub struct MaterialFactory {
@@ -104,6 +102,7 @@ impl MaterialFactory {
             "blinn_phong" => MaterialType::from(BlinnPhong::new(v)),
             _ => unimplemented!("The material type '{}' ", type_material),
         };
+
         Arc::new(material)
     }
 }

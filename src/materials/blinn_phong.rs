@@ -39,7 +39,7 @@ impl Material for BlinnPhong {
 
         if dot(&mirror_dir, &hit.gn) >= 0.0 {
             let srec = ScatterRecord {
-                attenuation: self.albedo.value(hit).unwrap(),
+                attenuation: self.albedo.value(hit)?,
                 wo: mirror_dir,
                 is_specular: false,
             };
@@ -52,6 +52,7 @@ impl Material for BlinnPhong {
         let random_normal = normalize(&(-normalize(wi) + normalize(scattered)));
         let cosine = f32::max(dot(&random_normal, &hit.gn), 0.0);
         let normal_pdf = sample_hemisphere_cosine_power_pdf(self.exponent, cosine);
+        // account for a warping of the PDF by the reflection operation
         let final_pdf = normal_pdf / (4.0 * dot(&(-wi), &random_normal));
         if dot(scattered, &hit.gn) >= 0.0 {
             final_pdf

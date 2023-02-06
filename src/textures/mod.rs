@@ -4,10 +4,11 @@ mod image;
 mod marble;
 mod perlin;
 
-use crate::surfaces::HitInfo;
 use enum_dispatch::enum_dispatch;
 use nalgebra_glm::Vec3;
 use serde_json::Value;
+
+use crate::surfaces::HitInfo;
 
 #[enum_dispatch]
 pub trait Texture {
@@ -29,9 +30,11 @@ pub enum TextureType {
 }
 
 pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
-    let v = j.get(thing_name).unwrap().clone();
+    let Some(v) = j.get(thing_name) else {
+        panic!("No texture with the name {thing_name}")
+    };
     let texture = if v.is_number() | v.is_array() {
-        TextureType::from(ConstantTexture::new(&v))
+        TextureType::from(ConstantTexture::new(v))
     } else if v.is_object() {
         let texture_type = v
             .get("type")
@@ -40,13 +43,11 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
             .expect("unable to get texture type");
 
         match texture_type {
-            "constant" => TextureType::from(ConstantTexture::new(&v)),
-            "checker" => TextureType::from(CheckerTexture::new(&v)),
-            "marble" => TextureType::from(MarbleTexture::new(&v)),
-            "image" => TextureType::from(ImageTexture::new(&v)),
-            _ => {
-                unimplemented!("Texture type {}", texture_type);
-            }
+            "constant" => TextureType::from(ConstantTexture::new(v)),
+            "checker" => TextureType::from(CheckerTexture::new(v)),
+            "marble" => TextureType::from(MarbleTexture::new(v)),
+            "image" => TextureType::from(ImageTexture::new(v)),
+            _ => unimplemented!("Texture type {}", texture_type),
         }
     } else {
         panic!("unable to read texture {:?}", v);
@@ -107,9 +108,7 @@ mod tests {
             "albedo": {
                 "type": "marble",
                 "scale": 3,
-                "veins": [
-                    0.08, 0.1, 0.08
-                ],
+                "veins": [0.08, 0.1, 0.08],
                 "base": [0.38, 0.4, 0.38]
             }
         });

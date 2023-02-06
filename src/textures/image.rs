@@ -1,10 +1,10 @@
 use nalgebra_glm::Vec3;
+use serde_json::Value;
 
 use crate::core::image2d::Image2d;
 use crate::core::utils::read;
 use crate::surfaces::HitInfo;
 use crate::textures::Texture;
-use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ImageTexture {

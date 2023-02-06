@@ -1,12 +1,12 @@
+use nalgebra_glm::{dot, normalize, Vec2, Vec3};
+use serde_json::Value;
+
 use crate::core::onb::Onb;
 use crate::core::ray::Ray;
 use crate::core::sampling::{random_in_unit_sphere, sample_hemisphere_cosine};
 use crate::materials::Material;
 use crate::surfaces::{HitInfo, ScatterRecord};
 use crate::textures::{create_texture, Texture, TextureType};
-
-use nalgebra_glm::{dot, normalize, Vec2, Vec3};
-use serde_json::Value;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Lambertian {
@@ -112,7 +112,10 @@ mod tests {
             approx::assert_abs_diff_eq!(correct_attenuation, lambert_attenuation, epsilon = 1e-5);
             // approx::assert_abs_diff_eq!(correct_direction, lambert_scattered.direction, epsilon = 1e-5);
         } else {
-            println!("Lambert scatter incorrect! Scattering should have been successful\n");
+            assert!(
+                false,
+                "Lambert scatter incorrect! Scattering should have been successful"
+            );
         }
     }
 

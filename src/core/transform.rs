@@ -1,10 +1,10 @@
-use crate::core::aabb::Aabb;
-use crate::core::ray::Ray;
-use crate::core::utils::{deg2rad, read_or};
-
 use nalgebra_glm::{cross, normalize, Mat3x4, Mat4, Vec3};
 use serde_json::{from_value, Value};
 use std::ops::Mul;
+
+use crate::core::aabb::Aabb;
+use crate::core::ray::Ray;
+use crate::core::utils::{deg2rad, read_or};
 
 /// Homogeneous coordinate transformation
 ///

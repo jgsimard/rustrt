@@ -18,17 +18,7 @@ impl Onb {
         Onb { axis: [u, v, w] }
     }
 
-    pub fn u(&self) -> Vec3 {
-        self.axis[0]
-    }
-    pub fn v(&self) -> Vec3 {
-        self.axis[1]
-    }
-    pub fn w(&self) -> Vec3 {
-        self.axis[2]
-    }
-
     pub fn local(&self, a: &Vec3) -> Vec3 {
-        a.x * self.u() + a.y * self.v() + a.z * self.w()
+        a.x * self.axis[0] + a.y * self.axis[1] + a.z * self.axis[2]
     }
 }

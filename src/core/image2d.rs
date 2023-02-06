@@ -11,6 +11,7 @@ pub struct Array2d<T> {
     pub size_y: usize,
 }
 
+
 impl<T: std::clone::Clone + std::default::Default> Array2d<T> {
     fn index_1d(&self, x: usize, y: usize) -> usize {
         y * self.size_x + x
