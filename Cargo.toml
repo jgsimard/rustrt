@@ -7,10 +7,10 @@ rust-version = "1.65.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nalgebra = {version ="0.31", features = ["serde-serialize"]}
-nalgebra-glm = "0.17"
+nalgebra = {version ="0.32", features = ["serde-serialize"]}
+nalgebra-glm = "0.18"
 rand = "0.8"
-clap = { version = "4.0", features = ["derive"] } 
+clap = { version = "4.1", features = ["derive"] } 
 serde = "1.0"
 serde_json = "1.0"
 image = "0.24"
@@ -20,7 +20,7 @@ tobj = "3.2"
 approx = "0.5"
 partition = "0.1"
 lazy_static = "1.4"
-rayon = "1.5"
+rayon = "1.6"
 rand_chacha = "0.3"
 
 [profile.dev]
