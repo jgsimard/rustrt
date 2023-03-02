@@ -98,7 +98,7 @@ impl Mesh {
                 .map(|p| Vector3::new(p[0] as usize, p[1] as usize, p[2] as usize))
                 .collect();
 
-            assert!(mesh.positions.len() % 3 == 0);
+            assert_eq!(mesh.positions.len() % 3, 0);
 
             let m = v.as_object().unwrap();
             let material = sf.get_material(m);
@@ -254,23 +254,6 @@ impl Surface for Triangle {
         aabb
     }
 
-    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
-        if let Some(hit) = self.intersect(&Ray::new(*o, *dir)) {
-            let v0 = self.vertex(0);
-            let v1 = self.vertex(1);
-            let v2 = self.vertex(2);
-
-            let pdf = sample_triangle_pdf(&v0, &v1, &v2);
-
-            let distance2 = hit.t * hit.t * length2(dir);
-            let cosine = f32::abs(dot(dir, &hit.gn) / length(dir));
-            let geometry_factor = distance2 / cosine;
-
-            return geometry_factor * pdf;
-        }
-        0.0
-    }
-
     fn sample(&self, origin: &Vec3, rv: Vec2) -> Option<EmitterRecord> {
         let v0 = self.vertex(0);
         let v1 = self.vertex(1);
@@ -312,6 +295,23 @@ impl Surface for Triangle {
         };
 
         Some(erec)
+    }
+
+    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
+        if let Some(hit) = self.intersect(&Ray::new(*o, *dir)) {
+            let v0 = self.vertex(0);
+            let v1 = self.vertex(1);
+            let v2 = self.vertex(2);
+
+            let pdf = sample_triangle_pdf(&v0, &v1, &v2);
+
+            let distance2 = hit.t * hit.t * length2(dir);
+            let cosine = f32::abs(dot(dir, &hit.gn) / length(dir));
+            let geometry_factor = distance2 / cosine;
+
+            return geometry_factor * pdf;
+        }
+        0.0
     }
 
     // TODO : change this if multiple materials !

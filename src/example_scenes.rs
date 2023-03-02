@@ -133,7 +133,7 @@ fn create_steinbach_scene() -> Value {
             "albedo": 1.0
         }
     }));
-    scene["surfaces"] = serde_json::Value::Array(surfaces);
+    scene["surfaces"] = Value::Array(surfaces);
 
     scene
 }
@@ -250,7 +250,7 @@ fn create_shirley_scene() -> Value {
         }
     }));
 
-    scene["surfaces"] = serde_json::Value::Array(surfaces);
+    scene["surfaces"] = Value::Array(surfaces);
 
     scene
 }

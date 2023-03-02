@@ -26,7 +26,7 @@ The repository structure is the following
 I used the crate `enum_delegate` to replace dynamic dispatch with enums. You can download assets from the web or from this [link](https://www.dropbox.com/sh/e8svsmy22xoan8y/AACxsE8_LpUDohmDYx8flEIta?dl=0)
 
 ## Renders
-I have included renders of the [Cornell Box scene](https://en.wikipedia.org/wiki/Cornell_box) scene using the path tracing algorithms I have implemented so far. All images are rendered using the name low number of samples per pixel.
+I have included renders of the [Cornell Box scene](https://en.wikipedia.org/wiki/Cornell_box) using the path tracing algorithms I have implemented so far. All images are rendered using the name low number of samples per pixel.
 
 ### Naive Path Tracer
 ![jensen_mats](images/test_1_mats.png)

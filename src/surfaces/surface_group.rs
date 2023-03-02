@@ -22,17 +22,6 @@ impl Surface for LinearSurfaceGroup {
         option_hit
     }
 
-    fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
-        // must multiply this by the child pdf
-        let n_sufaces = self.surfaces.len() as f32;
-        1.0 / n_sufaces
-    }
-
-    fn pdf_child(&self, o: &Vec3, dir: &Vec3, rv: f32) -> f32 {
-        let index = (rv * (self.surfaces.len() as f32)) as usize;
-        self.surfaces[index].pdf(o, dir)
-    }
-
     fn sample(&self, origin: &Vec3, rv: Vec2) -> Option<EmitterRecord> {
         let index = (rv.x * (self.surfaces.len() as f32)) as usize;
         self.surfaces[index].sample(origin, rv)
@@ -41,6 +30,17 @@ impl Surface for LinearSurfaceGroup {
     fn sample_from_group(&self, o: &Vec3, rv: Vec2, rv1: f32) -> Option<EmitterRecord> {
         let index = (rv1 * (self.surfaces.len() as f32)) as usize;
         self.surfaces[index].sample(o, rv)
+    }
+
+    fn pdf_child(&self, o: &Vec3, dir: &Vec3, rv: f32) -> f32 {
+        let index = (rv * (self.surfaces.len() as f32)) as usize;
+        self.surfaces[index].pdf(o, dir)
+    }
+
+    fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
+        // must multiply this by the child pdf
+        let n_sufaces = self.surfaces.len() as f32;
+        1.0 / n_sufaces
     }
 
     fn is_emissive(&self) -> bool {

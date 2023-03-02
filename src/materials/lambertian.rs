@@ -112,10 +112,7 @@ mod tests {
             approx::assert_abs_diff_eq!(correct_attenuation, lambert_attenuation, epsilon = 1e-5);
             // approx::assert_abs_diff_eq!(correct_direction, lambert_scattered.direction, epsilon = 1e-5);
         } else {
-            assert!(
-                false,
-                "Lambert scatter incorrect! Scattering should have been successful"
-            );
+            panic!("Lambert scatter incorrect! Scattering should have been successful");
         }
     }
 

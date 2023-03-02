@@ -74,10 +74,6 @@ impl MaterialTest {
 }
 
 impl SampleTest for MaterialTest {
-    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3, _rv: f32) -> f32 {
-        self.material.pdf(&self.incoming, dir, &self.hit)
-    }
-
     fn sample(&self, params: &mut SampleTestParameters, rv: Vec2, _rv1: f32) -> Option<Vec3> {
         if let Some(srec) = self.material.sample(&self.incoming, &self.hit, rv) {
             let dir = srec.wo;
@@ -93,6 +89,10 @@ impl SampleTest for MaterialTest {
         } else {
             None
         }
+    }
+
+    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3, _rv: f32) -> f32 {
+        self.material.pdf(&self.incoming, dir, &self.hit)
     }
 }
 
@@ -146,16 +146,16 @@ impl SurfaceTest {
 }
 
 impl SampleTest for SurfaceTest {
-    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3, rv: f32) -> f32 {
-        self.surface_group.pdf_child(&Vec3::zeros(), dir, rv)
-    }
-
     fn sample(&self, _params: &mut SampleTestParameters, rv: Vec2, rv1: f32) -> Option<Vec3> {
         let erec = self
             .surface_group
             .sample_from_group(&Vec3::zeros(), rv, rv1)?;
         let dir = normalize(&erec.wi);
         Some(dir)
+    }
+
+    fn pdf(&self, _params: &mut SampleTestParameters, dir: &Vec3, rv: f32) -> f32 {
+        self.surface_group.pdf_child(&Vec3::zeros(), dir, rv)
     }
 }
 

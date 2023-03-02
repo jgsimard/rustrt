@@ -11,7 +11,7 @@ pub struct Array2d<T> {
     pub size_y: usize,
 }
 
-impl<T: std::clone::Clone + std::default::Default> Array2d<T> {
+impl<T: Clone + Default> Array2d<T> {
     fn index_1d(&self, x: usize, y: usize) -> usize {
         y * self.size_x + x
     }
@@ -29,7 +29,7 @@ impl<T: std::clone::Clone + std::default::Default> Array2d<T> {
     }
 }
 
-impl<T: std::clone::Clone + std::default::Default> Index<(usize, usize)> for Array2d<T> {
+impl<T: Clone + Default> Index<(usize, usize)> for Array2d<T> {
     type Output = T;
 
     fn index(&self, pos: (usize, usize)) -> &Self::Output {
@@ -38,7 +38,7 @@ impl<T: std::clone::Clone + std::default::Default> Index<(usize, usize)> for Arr
     }
 }
 
-impl<T: std::clone::Clone + std::default::Default> IndexMut<(usize, usize)> for Array2d<T> {
+impl<T: Clone + Default> IndexMut<(usize, usize)> for Array2d<T> {
     fn index_mut(&mut self, pos: (usize, usize)) -> &mut Self::Output {
         let index = self.index_1d(pos.0, pos.1);
         &mut self.data[index]

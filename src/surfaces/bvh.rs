@@ -55,10 +55,10 @@ impl Surface for Bvh {
         self.bbox.clone()
     }
 
-    fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
+    fn sample(&self, _o: &Vec3, _rv: Vec2) -> Option<EmitterRecord> {
         unimplemented!()
     }
-    fn sample(&self, _o: &Vec3, _rv: Vec2) -> Option<EmitterRecord> {
+    fn pdf(&self, _o: &Vec3, _dir: &Vec3) -> f32 {
         unimplemented!()
     }
     fn is_emissive(&self) -> bool {

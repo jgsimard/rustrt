@@ -86,19 +86,6 @@ impl Surface for Sphere {
         self.transform.aabb(&self.local_bounds())
     }
 
-    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
-        let test_ray = Ray::new(*o, *dir);
-        if let Some(_hit) = self.intersect(&test_ray) {
-            let center = self.transform.point(&Vec3::zeros());
-            // let direction = center - o;
-            let dist = length(&(o - center));
-            let cos_theta_max = f32::sqrt(dist * dist - self.radius * self.radius) / dist;
-            let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
-            return pdf;
-        }
-        0.0
-    }
-
     fn sample(&self, o: &Vec3, rv: Vec2) -> Option<EmitterRecord> {
         let center = self.transform.point(&Vec3::zeros());
         let direction_centre: Vec3 = center - o;
@@ -132,6 +119,19 @@ impl Surface for Sphere {
         };
 
         Some(erec)
+    }
+
+    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
+        let test_ray = Ray::new(*o, *dir);
+        if let Some(_hit) = self.intersect(&test_ray) {
+            let center = self.transform.point(&Vec3::zeros());
+            // let direction = center - o;
+            let dist = length(&(o - center));
+            let cos_theta_max = f32::sqrt(dist * dist - self.radius * self.radius) / dist;
+            let pdf = sample_sphere_cap_pdf(cos_theta_max, cos_theta_max);
+            return pdf;
+        }
+        0.0
     }
 
     fn is_emissive(&self) -> bool {

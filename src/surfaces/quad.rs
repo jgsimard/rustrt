@@ -63,22 +63,6 @@ impl Surface for Quad {
         self.transform.aabb(&self.local_bounds())
     }
 
-    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
-        if let Some(hit) = self.intersect(&Ray::new(*o, *dir)) {
-            let v0 = self.transform.vector(&Vec3::new(self.size.x, 0.0, 0.0));
-            let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
-
-            let area = 4.0 * length(&cross(&v0, &v1));
-            let distance2 = hit.t * hit.t * length2(dir);
-            let cosine = f32::abs(dot(dir, &hit.gn) / length(dir));
-            let geometry_factor = distance2 / cosine;
-            let pdf = 1.0 / area;
-
-            return geometry_factor * pdf;
-        }
-        0.0
-    }
-
     fn sample(&self, o: &Vec3, rv: Vec2) -> Option<EmitterRecord> {
         let new_rv = (rv * 2.0).add_scalar(-1.0);
         let temp = new_rv.component_mul(&self.size);
@@ -123,6 +107,22 @@ impl Surface for Quad {
         };
 
         Some(erec)
+    }
+
+    fn pdf(&self, o: &Vec3, dir: &Vec3) -> f32 {
+        if let Some(hit) = self.intersect(&Ray::new(*o, *dir)) {
+            let v0 = self.transform.vector(&Vec3::new(self.size.x, 0.0, 0.0));
+            let v1 = self.transform.vector(&Vec3::new(0.0, self.size.y, 0.0));
+
+            let area = 4.0 * length(&cross(&v0, &v1));
+            let distance2 = hit.t * hit.t * length2(dir);
+            let cosine = f32::abs(dot(dir, &hit.gn) / length(dir));
+            let geometry_factor = distance2 / cosine;
+            let pdf = 1.0 / area;
+
+            return geometry_factor * pdf;
+        }
+        0.0
     }
 
     fn is_emissive(&self) -> bool {

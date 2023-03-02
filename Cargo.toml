@@ -25,6 +25,8 @@ rand_chacha = "0.3"
 
 [profile.dev]
 opt-level = 3 # otherwise it takes forever
+incremental = true
+codegen-units = 512
 
 [profile.test]
 opt-level = 3 # otherwise sampling tests take forever

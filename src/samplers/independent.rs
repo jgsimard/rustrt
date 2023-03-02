@@ -28,6 +28,11 @@ impl IndependentSampler {
 impl Sampler for IndependentSampler {
     fn start_pixel(&mut self, _x: i32, _y: i32) {}
 
+    fn advance(&mut self) {
+        self.current_dimension = 0;
+        self.current_sample += 1;
+    }
+
     fn next1f(&mut self, rng: &mut impl Rng) -> f32 {
         self.current_dimension += 1;
         rng.gen()
@@ -38,16 +43,11 @@ impl Sampler for IndependentSampler {
         Vec2::new(rng.gen(), rng.gen())
     }
 
-    fn advance(&mut self) {
-        self.current_dimension = 0;
-        self.current_sample += 1;
-    }
-
-    fn seed(&self) -> u64 {
-        self.base_seed
-    }
     fn sample_count(&self) -> i32 {
         self.sample_count
+    }
+    fn seed(&self) -> u64 {
+        self.base_seed
     }
     // fn set_rng(&mut self, rng: ChaCha8Rng) {
     //     self.rng = rng
