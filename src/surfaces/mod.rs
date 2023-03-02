@@ -121,9 +121,9 @@ impl Factory<SurfaceType> for SurfaceFactory {
         let surface_type = m.get("type").unwrap().as_str().unwrap();
 
         let vec_surfaces = match surface_type {
-            "sphere" => vec![SurfaceType::from(Sphere::new(v, self))],
-            "quad" => vec![SurfaceType::from(Quad::new(v, self))],
-            "triangle" => vec![SurfaceType::from(Triangle::new(v, self))],
+            "sphere" => vec![SurfaceType::Sphere(Sphere::new(v, self))],
+            "quad" => vec![SurfaceType::Quad(Quad::new(v, self))],
+            "triangle" => vec![SurfaceType::Triangle(Triangle::new(v, self))],
             "mesh" => Mesh::read(v, self),
             "group" => {
                 let Some(children) = m.get("children") else {
@@ -184,13 +184,13 @@ pub fn create_surface_group(
         match type_acceletator {
             "bbh" => {
                 let split_method = read_or(accel_value, "split_method", SplitMethod::Middle);
-                SurfaceGroupType::from(Bvh::new(surfaces, &split_method))
+                SurfaceGroupType::Bvh(Bvh::new(surfaces, &split_method))
             }
             _ => panic!("Unusported accelerator {type_acceletator}"),
         }
     } else {
         // default to a naive linear accelerator
-        SurfaceGroupType::from(LinearSurfaceGroup {
+        SurfaceGroupType::LinearSurfaceGroup(LinearSurfaceGroup {
             surfaces: surfaces.clone(),
         })
     }

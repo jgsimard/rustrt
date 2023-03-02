@@ -122,7 +122,7 @@ impl Mesh {
             let mut triangles = (0..n_triangles)
                 .into_iter()
                 .map(|i| {
-                    SurfaceType::from(Triangle {
+                    SurfaceType::Triangle(Triangle {
                         mesh: rc_mesh.clone(),
                         face_idx: i,
                     })

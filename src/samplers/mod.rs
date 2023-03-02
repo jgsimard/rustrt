@@ -71,7 +71,7 @@ pub fn create_sampler(map: &Map<String, Value>) -> SamplerType {
     match sampler_type {
         "independent" => {
             let samples = read_or(&sampler_json, "samples", 1);
-            SamplerType::from(IndependentSampler::new(samples))
+            SamplerType::Independent(IndependentSampler::new(samples))
         }
         _ => unimplemented!("Sampler type {}", sampler_type),
     }

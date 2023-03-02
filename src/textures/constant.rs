@@ -50,7 +50,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        let target_texture = TextureType::from(ConstantTexture {
+        let target_texture = TextureType::Constant(ConstantTexture {
             color: Vec3::new(1.0, 1.0, 1.0),
         });
         assert_eq!(target_texture, texture);
@@ -63,7 +63,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        let target_texture = TextureType::from(ConstantTexture {
+        let target_texture = TextureType::Constant(ConstantTexture {
             color: Vec3::new(1.0, 1.0, 1.0),
         });
         assert_eq!(target_texture, texture);
@@ -79,7 +79,7 @@ mod tests {
         });
 
         let texture = create_texture(&v, "albedo");
-        let target_texture = TextureType::from(ConstantTexture {
+        let target_texture = TextureType::Constant(ConstantTexture {
             color: Vec3::new(0.73, 0.73, 0.73),
         });
         assert_eq!(target_texture, texture);

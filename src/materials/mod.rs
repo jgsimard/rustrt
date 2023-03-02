@@ -93,13 +93,13 @@ impl MaterialFactory {
             .expect("material type should be a string");
 
         let material = match type_material {
-            "lambertian" => MaterialType::from(Lambertian::new(v)),
-            "metal" => MaterialType::from(Metal::new(v)),
-            "dielectric" => MaterialType::from(Dielectric::new(v)),
-            "diffuse_light" => MaterialType::from(DiffuseLight::new(v)),
-            "fresnel_blend" => MaterialType::from(FresnelBlend::new(v, self)),
-            "phong" => MaterialType::from(Phong::new(v)),
-            "blinn_phong" => MaterialType::from(BlinnPhong::new(v)),
+            "lambertian" => MaterialType::Lambertian(Lambertian::new(v)),
+            "metal" => MaterialType::Metal(Metal::new(v)),
+            "dielectric" => MaterialType::Dielectric(Dielectric::new(v)),
+            "diffuse_light" => MaterialType::DiffuseLight(DiffuseLight::new(v)),
+            "fresnel_blend" => MaterialType::FresnelBlend(FresnelBlend::new(v, self)),
+            "phong" => MaterialType::Phong(Phong::new(v)),
+            "blinn_phong" => MaterialType::BlinnPhong(BlinnPhong::new(v)),
             _ => unimplemented!("The material type '{}' ", type_material),
         };
 

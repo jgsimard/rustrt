@@ -130,7 +130,7 @@ impl Bvh {
             || Bvh::new_node(left, max_leaf_size, split_method, pb),
             || Bvh::new_node(right, max_leaf_size, split_method, pb),
         );
-        let children = vec![SurfaceType::from(c1), SurfaceType::from(c2)];
+        let children = vec![SurfaceType::Bvh(c1), SurfaceType::Bvh(c2)];
 
         let mut bbox = Aabb::new();
         for child in &children {

@@ -34,7 +34,7 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
         panic!("No texture with the name {thing_name}")
     };
     let texture = if v.is_number() | v.is_array() {
-        TextureType::from(ConstantTexture::new(v))
+        TextureType::Constant(ConstantTexture::new(v))
     } else if v.is_object() {
         let texture_type = v
             .get("type")
@@ -43,10 +43,10 @@ pub fn create_texture(j: &Value, thing_name: &str) -> TextureType {
             .expect("unable to get texture type");
 
         match texture_type {
-            "constant" => TextureType::from(ConstantTexture::new(v)),
-            "checker" => TextureType::from(CheckerTexture::new(v)),
-            "marble" => TextureType::from(MarbleTexture::new(v)),
-            "image" => TextureType::from(ImageTexture::new(v)),
+            "constant" => TextureType::Constant(ConstantTexture::new(v)),
+            "checker" => TextureType::Checker(CheckerTexture::new(v)),
+            "marble" => TextureType::Marble(MarbleTexture::new(v)),
+            "image" => TextureType::Image(ImageTexture::new(v)),
             _ => unimplemented!("Texture type {}", texture_type),
         }
     } else {
