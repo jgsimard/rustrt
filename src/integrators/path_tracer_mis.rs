@@ -49,14 +49,19 @@ impl Integrator for PathTracerMISIntegrator {
 
             // sample material
             let rv_mat = sampler.next2f(rng);
-            let Some(srec) = hit.mat.sample(&ray.direction, &hit, rv_mat) else { break };
+            let Some(srec) = hit.mat.sample(&ray.direction, &hit, rv_mat) else {
+                break;
+            };
 
             // sample light
             let rv_light = sampler.next2f(rng);
             let Some(emit_rec) =
                 scene
                     .emitters
-                    .sample_from_group(&hit.p, rv_light, sampler.next1f(rng)) else { break };
+                    .sample_from_group(&hit.p, rv_light, sampler.next1f(rng))
+            else {
+                break;
+            };
 
             // mixture weight
             let pdf_mat = hit.mat.pdf(&ray.direction, &srec.wo, &hit);

@@ -120,7 +120,6 @@ impl Mesh {
             let rc_mesh = Arc::new(my_mesh);
 
             let mut triangles = (0..n_triangles)
-                .into_iter()
                 .map(|i| {
                     SurfaceType::Triangle(Triangle {
                         mesh: rc_mesh.clone(),

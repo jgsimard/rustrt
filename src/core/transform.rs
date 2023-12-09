@@ -183,6 +183,7 @@ mod tests {
     use nalgebra::{Matrix4, Vector3};
     use nalgebra_glm::Mat4;
     use serde_json::json;
+    use approx::assert_abs_diff_eq;
 
     #[test]
     fn parse_from_at_to_up() {
@@ -198,7 +199,7 @@ mod tests {
             0.970_142, 0.062_519, -0.234_339, -10.0, 0.0, 0.966_205, 0.257_773, 10.0, 0.242_535,
             -0.250_076, 0.937_357, 40.0, 0.0, 0.0, 0.0, 1.0,
         );
-        approx::assert_abs_diff_eq!(m, transform.m, epsilon = 1e-5);
+        assert_abs_diff_eq!(m, transform.m, epsilon = 1e-5);
     }
 
     #[test]
@@ -212,12 +213,12 @@ mod tests {
         let transform_inverse = transform.inverse();
 
         let res = transform.clone() * transform_inverse.clone();
-        approx::assert_abs_diff_eq!(identity, res.m, epsilon = 1e-5);
-        approx::assert_abs_diff_eq!(identity, res.m_inv, epsilon = 1e-5);
+        assert_abs_diff_eq!(identity, res.m, epsilon = 1e-5);
+        assert_abs_diff_eq!(identity, res.m_inv, epsilon = 1e-5);
 
         let res = transform_inverse * transform;
-        approx::assert_abs_diff_eq!(identity, res.m, epsilon = 1e-5);
-        approx::assert_abs_diff_eq!(identity, res.m_inv, epsilon = 1e-5);
+        assert_abs_diff_eq!(identity, res.m, epsilon = 1e-5);
+        assert_abs_diff_eq!(identity, res.m_inv, epsilon = 1e-5);
     }
 
     #[test]
@@ -251,24 +252,24 @@ mod tests {
         let correct_transformed_ray_position = Vector3::new(-0.093_030_2, -0.564_666, -0.312_187);
         let correct_transformed_ray_direction = Vector3::new(-0.932_945, -0.088_575, -0.348_953);
 
-        approx::assert_abs_diff_eq!(
+        assert_abs_diff_eq!(
             correct_transformed_vector,
             transformed_vector,
             epsilon = 1e-5
         );
-        approx::assert_abs_diff_eq!(correct_transformed_point, transformed_point, epsilon = 1e-5);
-        approx::assert_abs_diff_eq!(
+        assert_abs_diff_eq!(correct_transformed_point, transformed_point, epsilon = 1e-5);
+        assert_abs_diff_eq!(
             correct_transformed_normal,
             transformed_normal,
             epsilon = 1e-5
         );
 
-        approx::assert_abs_diff_eq!(
+        assert_abs_diff_eq!(
             correct_transformed_ray_position,
             transformed_ray.origin,
             epsilon = 1e-5
         );
-        approx::assert_abs_diff_eq!(
+        assert_abs_diff_eq!(
             correct_transformed_ray_direction,
             transformed_ray.direction,
             epsilon = 1e-5
