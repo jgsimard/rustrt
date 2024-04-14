@@ -22,6 +22,7 @@ partition = "0.1"
 lazy_static = "1.4"
 rayon = "1.8"
 rand_chacha = "0.3"
+itertools = "0.12"
 
 [profile.dev]
 opt-level = 3 # otherwise it takes forever

@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use nalgebra_glm::{dot, normalize, Vec2, Vec3};
 use rand::Rng;
 use serde_json::{Map, Value};
@@ -203,29 +204,25 @@ impl SampleTestParameters {
             self.image_height / HISTO_SUBSAMPLE,
         );
         let pdf_size = pdf.size();
-        for y in 0..pdf.size_y {
-            for x in 0..pdf.size_x {
-                let mut accum = 0.0;
-                for sx in 0..HISTO_SUBSAMPLE {
-                    for sy in 0..HISTO_SUBSAMPLE {
-                        for _ in 0..NB_SAMPLES {
-                            let pixel = Vec2::new(
-                                (HISTO_SUBSAMPLE * x + sx) as f32,
-                                (HISTO_SUBSAMPLE * y + sy) as f32,
-                            );
-                            let dir = self.pixel_to_direction(pixel);
-                            let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
-                            let pixel_area = (PI / self.image_width as f32)
-                                * (PI * 2.0 / self.image_height as f32)
-                                * sin_theta;
-                            let value = sample_test.pdf(self, &dir, rng.gen());
-                            accum += value / (NB_SAMPLES as f32);
-                            integral += pixel_area * value / (NB_SAMPLES as f32);
-                        }
-                    }
+        for (x, y) in (0..pdf.size_x).cartesian_product(0..pdf.size_y) {
+            let mut accum = 0.0;
+            for (sx, sy) in (0..HISTO_SUBSAMPLE).cartesian_product(0..HISTO_SUBSAMPLE) {
+                for _ in 0..NB_SAMPLES {
+                    let pixel = Vec2::new(
+                        (HISTO_SUBSAMPLE * x + sx) as f32,
+                        (HISTO_SUBSAMPLE * y + sy) as f32,
+                    );
+                    let dir = self.pixel_to_direction(pixel);
+                    let sin_theta = f32::sqrt(f32::max(1.0 - dir.z * dir.z, 0.0));
+                    let pixel_area = (PI / self.image_width as f32)
+                        * (PI * 2.0 / self.image_height as f32)
+                        * sin_theta;
+                    let value = sample_test.pdf(self, &dir, rng.gen());
+                    accum += value / (NB_SAMPLES as f32);
+                    integral += pixel_area * value / (NB_SAMPLES as f32);
                 }
-                pdf[(x, y)] = accum / ((HISTO_SUBSAMPLE * HISTO_SUBSAMPLE) as f32);
             }
+            pdf[(x, y)] = accum / ((HISTO_SUBSAMPLE * HISTO_SUBSAMPLE) as f32);
         }
 
         // Step 2: Generate histogram of samples
@@ -265,17 +262,10 @@ impl SampleTestParameters {
 
         // Now upscale our histogram and pdf
         let mut histo_fullres = Array2d::<f32>::new(self.image_width, self.image_height);
-        for y in 0..histo_fullres.size_y {
-            for x in 0..histo_fullres.size_x {
-                histo_fullres[(x, y)] = histogram[(x / HISTO_SUBSAMPLE, y / HISTO_SUBSAMPLE)];
-            }
-        }
-
         let mut pdf_fullres = Array2d::<f32>::new(self.image_width, self.image_height);
-        for y in 0..pdf_fullres.size_y {
-            for x in 0..pdf_fullres.size_x {
-                pdf_fullres[(x, y)] = pdf[(x / HISTO_SUBSAMPLE, y / HISTO_SUBSAMPLE)];
-            }
+        for (x, y) in (0..histo_fullres.size_x).cartesian_product(0..histo_fullres.size_y) {
+            histo_fullres[(x, y)] = histogram[(x / HISTO_SUBSAMPLE, y / HISTO_SUBSAMPLE)];
+            pdf_fullres[(x, y)] = pdf[(x / HISTO_SUBSAMPLE, y / HISTO_SUBSAMPLE)]
         }
 
         // Step 3: For auto-exposure, compute 99.95th percentile instead of maximum for increased robustness
@@ -283,12 +273,10 @@ impl SampleTestParameters {
         values.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         let max_value = values[((pdf_size as f32 - 1.0) * 0.9995) as usize];
-        if values
-            .iter()
-            .any(|value| value.is_nan() || value.is_infinite())
-        {
-            nan_or_inf = true;
-        }
+        nan_or_inf = nan_or_inf
+            || values
+                .iter()
+                .any(|value| value.is_nan() || value.is_infinite());
 
         // Generate heat maps
         fs::create_dir_all("tests").expect("unable to create tests dir");
@@ -298,7 +286,7 @@ impl SampleTestParameters {
             .save(&PathBuf::from(format!("tests/{}-sampled.png", self.name)));
 
         // Output statistics
-        println!("Integral of PDF (should be close to 1): {}\n", integral);
+        println!("Integral of PDF (should be close to 1): {integral}\n");
 
         let sample_integral = (valid_samples as f32) / (self.num_samples as f32);
         println!(

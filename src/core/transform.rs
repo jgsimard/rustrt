@@ -180,10 +180,10 @@ fn parse(json: &Value) -> Transform {
 mod tests {
     use crate::core::ray::Ray;
     use crate::core::transform::Transform;
+    use approx::assert_abs_diff_eq;
     use nalgebra::{Matrix4, Vector3};
     use nalgebra_glm::Mat4;
     use serde_json::json;
-    use approx::assert_abs_diff_eq;
 
     #[test]
     fn parse_from_at_to_up() {
