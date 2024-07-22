@@ -1,5 +1,5 @@
 use image::Rgb;
-use image::{io::Reader as ImageReader, GenericImageView, Pixel};
+use image::{ImageReader, GenericImageView, Pixel};
 use nalgebra_glm::{clamp, comp_max, comp_min, Vec3};
 use std::ops::{Index, IndexMut};
 use std::path::Path;
