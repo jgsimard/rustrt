@@ -37,6 +37,7 @@ pub struct HitInfo {
 /// Data record for conveniently querying and sampling emitters
 pub struct EmitterRecord {
     /// Origin point from which we sample the emitter
+    #[allow(dead_code)]
     pub o: Vec3,
     /// Direction vector from 'o' to 'hit.p
     pub wi: Vec3,
