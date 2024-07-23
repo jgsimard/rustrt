@@ -105,7 +105,7 @@ mod tests {
                         }
                     }, {
                         "type": "mesh",
-                        "filename": "assets/cube.obj",
+                        "filename": "../assets/cube.obj",
                         "material": {
                             "type": "lambertian",
                             "albedo": 1.0

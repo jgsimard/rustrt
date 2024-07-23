@@ -122,7 +122,7 @@ mod tests {
         let v = json!({
             "albedo": {
                 "type": "image",
-                "filename": "assets/earth.jpg"
+                "filename": "../assets/earth.jpg"
             }
         });
 
