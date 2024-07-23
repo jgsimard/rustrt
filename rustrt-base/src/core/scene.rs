@@ -27,7 +27,7 @@ impl Scene {
         println!("Parsing...");
         let map_json = scene_json.as_object().unwrap();
 
-        // check if all fields are expeted ones (no all implemented)
+        // check if all fields are expected ones (no all implemented)
         let toplevel_fields = [
             "integrator",
             "media",
